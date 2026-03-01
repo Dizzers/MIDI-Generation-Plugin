@@ -1,0 +1,77 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Environments
+venv/
+.venv/
+env/
+ENV/
+
+# =========================
+# Logs / Temp
+# =========================
+*.log
+*.tmp
+*.bak
+tmp/
+temp/
+
+# =========================
+# Training artifacts
+# =========================
+checkpoints/*.pth
+checkpoints/*.pt
+checkpoints/*.ckpt
+checkpoints/*.bin
+checkpoints/history.json
+checkpoints/generation_metrics.json
+checkpoints/plots/
+
+# Generated audio/MIDI
+generated/
+generated_*/
+*.mid
+*.midi
+
+# Local cache
+.cache/
+
+# =========================
+# Dataset artifacts (large files)
+# =========================
+dataset/processed/chunks/*.npy
+dataset/processed/tokens/*.npy
+dataset/processed/meta/*.json
+dataset/processed/meta/*.txt
+dataset/midi_raw/
+
+# Keep vocab by default (small and useful for reproducibility)
+!dataset/processed/vocab.json
+
+# Optional Kaggle bundles/archives
+#kaggle_bundle/checkpoints/*.pth
+forcollab.zip
+
