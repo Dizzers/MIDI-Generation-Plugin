@@ -71,7 +71,3 @@ dataset/midi_raw/
 # Keep vocab by default (small and useful for reproducibility)
 !dataset/processed/vocab.json
 
-# Optional Kaggle bundles/archives
-#kaggle_bundle/checkpoints/*.pth
-forcollab.zip
-

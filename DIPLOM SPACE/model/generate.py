@@ -12,7 +12,12 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from model.transformer import TransformerLM
 
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+if torch.cuda.is_available():
+    DEVICE = "cuda"
+elif torch.backends.mps.is_available():
+    DEVICE = "mps"
+else:
+    DEVICE = "cpu"
 TIME_SHIFT_RESOLUTION = 0.05
 ROLES = ["MELODY", "BASS", "CHORDS"]
 
@@ -84,7 +89,6 @@ def sample_next_token(
     filtered = top_k_top_p_filter(adjusted, top_k=top_k, top_p=top_p)
     probs = torch.softmax(filtered, dim=-1)
     if torch.isnan(probs).any() or probs.sum() <= 0:
-        # fallback на greedy, если фильтры выбили всё
         return torch.argmax(adjusted).item()
     return torch.multinomial(probs, 1).item()
 
@@ -178,6 +182,15 @@ def save_arrangement(tokens_by_role, out_path):
     score.write("midi", fp=str(out_path))
 
 
+def clean_state_dict(state_dict):
+    if not state_dict:
+        return state_dict
+    first_key = next(iter(state_dict.keys()))
+    if first_key.startswith("module."):
+        return {k.replace("module.", "", 1): v for k, v in state_dict.items()}
+    return state_dict
+
+
 def load_model_and_vocab(checkpoint_path, vocab_path):
     with open(vocab_path) as f:
         vocab = json.load(f)
@@ -185,7 +198,8 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     id2token = {int(k): v for k, v in vocab["id2token"].items()}
     model = TransformerLM(len(token2id), pad_id=token2id.get("<PAD>")).to(DEVICE)
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
-    model.load_state_dict(checkpoint["model_state_dict"] if "model_state_dict" in checkpoint else checkpoint)
+    state_dict = checkpoint["model_state_dict"] if "model_state_dict" in checkpoint else checkpoint
+    model.load_state_dict(clean_state_dict(state_dict))
     return model, token2id, id2token
 
 
@@ -212,6 +226,8 @@ def main():
     if args.seed is not None:
         random.seed(args.seed)
         torch.manual_seed(args.seed)
+        if DEVICE == "cuda":
+            torch.cuda.manual_seed_all(args.seed)
         if DEVICE == "mps":
             torch.mps.manual_seed(args.seed)
 

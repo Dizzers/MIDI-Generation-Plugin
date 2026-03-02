@@ -1,11 +1,12 @@
 import json
 import math
+import os
 import random
 import sys
-import os
 from pathlib import Path
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
@@ -27,17 +28,20 @@ except Exception:
 
 
 # =========================
-# CONFIG (редактируй здесь)
+# CONFIG (edit here)
 # =========================
 SEED = 42
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+if torch.cuda.is_available():
+    DEVICE = "cuda"
+elif torch.backends.mps.is_available():
+    DEVICE = "mps"
+else:
+    DEVICE = "cpu"
 
 NUM_EPOCHS = 120
-BATCH_SIZE = 8
+BATCH_SIZE = 16
 LEARNING_RATE = 1e-4
 
-# Количество сэмплов на эпоху.
-# Для реального обучения увеличивай до 12000-20000.
 SAMPLES_PER_EPOCH = 12000
 
 EARLY_STOPPING_PATIENCE = 8
@@ -45,7 +49,6 @@ VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
 SAMPLING_STRATEGY = "mixed"  # "balanced" | "mixed"
 
-# Стабилизация role-weights
 ROLE_WEIGHT_ALPHA = 0.2
 MAX_ROLE_WEIGHT = 2.0
 
@@ -54,20 +57,42 @@ CHUNKS_DIR = PROJECT_ROOT / "dataset" / "processed" / "chunks"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
-# Дообучение с лучшего чекпоинта
 RESUME_FROM_CHECKPOINT = True
 RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
 LOAD_OPTIMIZER_STATE = False
 
 MAX_LEN = 512
+
+# Kaggle / 2x T4 tuning
+ENABLE_MULTI_GPU = True
+USE_AMP = True
+NUM_WORKERS = 4
+PIN_MEMORY = DEVICE == "cuda"
+PERSISTENT_WORKERS = True
 # =========================
 
 
 def set_seed(seed):
     random.seed(seed)
     torch.manual_seed(seed)
+    if DEVICE == "cuda":
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.benchmark = True
     if DEVICE == "mps":
         torch.mps.manual_seed(seed)
+
+
+def unwrap_model(model):
+    return model.module if isinstance(model, nn.DataParallel) else model
+
+
+def clean_state_dict(state_dict):
+    if not state_dict:
+        return state_dict
+    first_key = next(iter(state_dict.keys()))
+    if first_key.startswith("module."):
+        return {k.replace("module.", "", 1): v for k, v in state_dict.items()}
+    return state_dict
 
 
 def build_loaders():
@@ -102,9 +127,15 @@ def build_loaders():
     val_idx = indices[train_size:train_size + val_size]
     test_idx = indices[train_size + val_size:]
 
-    train_loader = DataLoader(Subset(dataset, train_idx), batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(Subset(dataset, val_idx), batch_size=BATCH_SIZE, shuffle=False)
-    test_loader = DataLoader(Subset(dataset, test_idx), batch_size=BATCH_SIZE, shuffle=False)
+    loader_kwargs = {
+        "batch_size": BATCH_SIZE,
+        "num_workers": NUM_WORKERS,
+        "pin_memory": PIN_MEMORY,
+        "persistent_workers": PERSISTENT_WORKERS and NUM_WORKERS > 0,
+    }
+    train_loader = DataLoader(Subset(dataset, train_idx), shuffle=True, **loader_kwargs)
+    val_loader = DataLoader(Subset(dataset, val_idx), shuffle=False, **loader_kwargs)
+    test_loader = DataLoader(Subset(dataset, test_idx), shuffle=False, **loader_kwargs)
 
     return dataset, role_counts, train_loader, val_loader, test_loader
 
@@ -204,7 +235,7 @@ def sequence_music_metrics(token_ids, id2token, pad_id):
     }
 
 
-def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token):
+def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled):
     model.eval()
     total_loss = 0.0
     total_samples = 0
@@ -228,12 +259,13 @@ def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token):
 
     with torch.no_grad():
         for x, y in loader:
-            x = x.to(DEVICE)
-            y = y.to(DEVICE)
+            x = x.to(DEVICE, non_blocking=PIN_MEMORY)
+            y = y.to(DEVICE, non_blocking=PIN_MEMORY)
 
-            logits = model(x)
+            with torch.cuda.amp.autocast(enabled=amp_enabled):
+                logits = model(x)
+
             batch_size, seq_len, _ = logits.shape
-
             token_losses = F.cross_entropy(
                 logits.view(-1, vocab_size),
                 y.view(-1),
@@ -368,10 +400,15 @@ def main():
     pad_id = token2id["<PAD>"]
 
     model = TransformerLM(vocab_size, pad_id=pad_id).to(DEVICE)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="min", factor=0.5, patience=3
-    )
+    if DEVICE == "cuda" and ENABLE_MULTI_GPU and torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
+        print(f"✅ Multi-GPU enabled: {torch.cuda.device_count()} GPUs")
+
+    optimizer = torch.optim.AdamW(unwrap_model(model).parameters(), lr=LEARNING_RATE)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
+
+    amp_enabled = USE_AMP and DEVICE == "cuda"
+    scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
 
     role_token_ids = {
         "MELODY": token2id["<ROLE_MELODY>"],
@@ -401,13 +438,13 @@ def main():
     if RESUME_FROM_CHECKPOINT and RESUME_CHECKPOINT_PATH.exists():
         checkpoint = torch.load(RESUME_CHECKPOINT_PATH, map_location=DEVICE)
         if "model_state_dict" in checkpoint:
-            model.load_state_dict(checkpoint["model_state_dict"])
+            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
             if LOAD_OPTIMIZER_STATE and "optimizer_state_dict" in checkpoint:
                 optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
             start_epoch = int(checkpoint.get("epoch", 0))
             best_val_loss = float(checkpoint.get("val_loss", best_val_loss))
         else:
-            model.load_state_dict(checkpoint)
+            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint))
         print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
 
     history_path = CHECKPOINT_DIR / "history.json"
@@ -430,22 +467,26 @@ def main():
             pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS} [TRAIN]")
 
             for x, y in pbar:
-                x = x.to(DEVICE)
-                y = y.to(DEVICE)
-                logits = model(x)
-                loss = weighted_loss(logits, y, role_token_ids, role_weights, pad_id)
+                x = x.to(DEVICE, non_blocking=PIN_MEMORY)
+                y = y.to(DEVICE, non_blocking=PIN_MEMORY)
 
-                optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-                optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
+                with torch.cuda.amp.autocast(enabled=amp_enabled):
+                    logits = model(x)
+                    loss = weighted_loss(logits, y, role_token_ids, role_weights, pad_id)
+
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(unwrap_model(model).parameters(), max_norm=1.0)
+                scaler.step(optimizer)
+                scaler.update()
 
                 total_train_loss += loss.item()
                 pbar.set_postfix({"loss": f"{loss.item():.4f}"})
 
             avg_train_loss = total_train_loss / max(1, len(train_loader))
             avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = evaluate(
-                model, val_loader, vocab_size, pad_id, role_token_ids, id2token
+                model, val_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
             )
 
             history["train_loss"].append(avg_train_loss)
@@ -478,7 +519,7 @@ def main():
                 torch.save(
                     {
                         "epoch": epoch + 1,
-                        "model_state_dict": model.state_dict(),
+                        "model_state_dict": unwrap_model(model).state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "val_loss": avg_val_loss,
                     },
@@ -495,7 +536,7 @@ def main():
                 break
 
         print("\n✅ Обучение завершено!")
-        torch.save(model.state_dict(), str(CHECKPOINT_DIR / "model_final.pth"))
+        torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_final.pth"))
         print("💾 Финальная модель сохранена")
 
         with open(CHECKPOINT_DIR / "history.json", "w") as f:
@@ -505,9 +546,9 @@ def main():
         best_cp = CHECKPOINT_DIR / "model_best.pth"
         if best_cp.exists():
             checkpoint = torch.load(best_cp, map_location=DEVICE)
-            model.load_state_dict(checkpoint["model_state_dict"])
+            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
             test_loss, test_acc, test_ppl, test_role_metrics, test_music_metrics = evaluate(
-                model, test_loader, vocab_size, pad_id, role_token_ids, id2token
+                model, test_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
             )
             print("\n🧪 Test метрики (best checkpoint):")
             print(f"  Test Loss: {test_loss:.4f}")
@@ -529,7 +570,7 @@ def main():
 
     except KeyboardInterrupt:
         print("\n⚠️  Обучение прервано пользователем")
-        torch.save(model.state_dict(), str(CHECKPOINT_DIR / "model_interrupted.pth"))
+        torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_interrupted.pth"))
         print("💾 Модель сохранена как model_interrupted.pth")
 
 
