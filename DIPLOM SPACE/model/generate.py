@@ -196,9 +196,17 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
         vocab = json.load(f)
     token2id = vocab["token2id"]
     id2token = {int(k): v for k, v in vocab["id2token"].items()}
-    model = TransformerLM(len(token2id), pad_id=token2id.get("<PAD>")).to(DEVICE)
+
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
-    state_dict = checkpoint["model_state_dict"] if "model_state_dict" in checkpoint else checkpoint
+    model_config = checkpoint.get("model_config") if isinstance(checkpoint, dict) else None
+    if model_config is None:
+        model = TransformerLM(len(token2id), pad_id=token2id.get("<PAD>")).to(DEVICE)
+    else:
+        if model_config.get("pad_id") is None:
+            model_config = {**model_config, "pad_id": token2id.get("<PAD>")}
+        model = TransformerLM(len(token2id), **model_config).to(DEVICE)
+
+    state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
     model.load_state_dict(clean_state_dict(state_dict))
     return model, token2id, id2token
 

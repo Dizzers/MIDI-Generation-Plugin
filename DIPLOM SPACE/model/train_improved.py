@@ -14,9 +14,16 @@ from tqdm import tqdm
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-mpl_cache_dir = PROJECT_ROOT / ".cache" / "matplotlib"
-mpl_cache_dir.mkdir(parents=True, exist_ok=True)
-os.environ.setdefault("MPLCONFIGDIR", str(mpl_cache_dir))
+# Matplotlib cache (Kaggle input dirs are read-only)
+try:
+    mpl_cache_dir = PROJECT_ROOT / ".cache" / "matplotlib"
+    mpl_cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("MPLCONFIGDIR", str(mpl_cache_dir))
+except OSError:
+    tmp_root = Path(os.environ.get("TMPDIR", "/tmp"))
+    mpl_cache_dir = tmp_root / "matplotlib"
+    mpl_cache_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = str(mpl_cache_dir)
 
 from model.dataset import MIDIDataset
 from model.transformer import TransformerLM
@@ -41,16 +48,19 @@ else:
 NUM_EPOCHS = 120
 BATCH_SIZE = 16
 LEARNING_RATE = 1e-4
+WEIGHT_DECAY = 0.01
 
-SAMPLES_PER_EPOCH = 12000
+SAMPLES_PER_EPOCH = 20000
+GRAD_ACCUM_STEPS = 2
+LABEL_SMOOTHING = 0.05
 
 EARLY_STOPPING_PATIENCE = 8
 VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
 SAMPLING_STRATEGY = "mixed"  # "balanced" | "mixed"
 
-ROLE_WEIGHT_ALPHA = 0.2
-MAX_ROLE_WEIGHT = 2.0
+ROLE_WEIGHT_ALPHA = 0.4
+MAX_ROLE_WEIGHT = 4.0
 
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
 CHUNKS_DIR = PROJECT_ROOT / "dataset" / "processed" / "chunks"
@@ -62,6 +72,13 @@ RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
 LOAD_OPTIMIZER_STATE = False
 
 MAX_LEN = 512
+
+# Model size
+D_MODEL = 384
+N_HEADS = 8
+N_LAYERS = 8
+D_FF = 1536
+DROPOUT = 0.15
 
 # Kaggle / 2x T4 tuning
 ENABLE_MULTI_GPU = True
@@ -78,6 +95,12 @@ def set_seed(seed):
     if DEVICE == "cuda":
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.benchmark = True
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        try:
+            torch.set_float32_matmul_precision("high")
+        except Exception:
+            pass
     if DEVICE == "mps":
         torch.mps.manual_seed(seed)
 
@@ -157,6 +180,7 @@ def weighted_loss(logits, targets, role_token_ids, role_weights, pad_id):
         targets.view(-1),
         reduction="none",
         ignore_index=pad_id,
+        label_smoothing=LABEL_SMOOTHING,
     ).view(batch_size, seq_len)
 
     valid_mask = (targets != pad_id).float()
@@ -270,7 +294,8 @@ def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_en
                 logits.view(-1, vocab_size),
                 y.view(-1),
                 reduction="none",
-                ignore_index=pad_id
+                ignore_index=pad_id,
+                label_smoothing=LABEL_SMOOTHING,
             ).view(batch_size, seq_len)
 
             valid_mask = (y != pad_id)
@@ -399,12 +424,26 @@ def main():
     vocab_size = len(token2id)
     pad_id = token2id["<PAD>"]
 
-    model = TransformerLM(vocab_size, pad_id=pad_id).to(DEVICE)
+    model_config = {
+        "d_model": D_MODEL,
+        "n_heads": N_HEADS,
+        "n_layers": N_LAYERS,
+        "d_ff": D_FF,
+        "dropout": DROPOUT,
+        "max_len": MAX_LEN,
+        "pad_id": pad_id,
+    }
+
+    model = TransformerLM(vocab_size, **model_config).to(DEVICE)
     if DEVICE == "cuda" and ENABLE_MULTI_GPU and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         print(f"✅ Multi-GPU enabled: {torch.cuda.device_count()} GPUs")
 
-    optimizer = torch.optim.AdamW(unwrap_model(model).parameters(), lr=LEARNING_RATE)
+    optimizer = torch.optim.AdamW(
+        unwrap_model(model).parameters(),
+        lr=LEARNING_RATE,
+        weight_decay=WEIGHT_DECAY,
+    )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
 
     amp_enabled = USE_AMP and DEVICE == "cuda"
@@ -466,23 +505,37 @@ def main():
             total_train_loss = 0.0
             pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS} [TRAIN]")
 
+            optimizer.zero_grad(set_to_none=True)
+            step_in_epoch = 0
+
             for x, y in pbar:
                 x = x.to(DEVICE, non_blocking=PIN_MEMORY)
                 y = y.to(DEVICE, non_blocking=PIN_MEMORY)
 
-                optimizer.zero_grad(set_to_none=True)
                 with torch.cuda.amp.autocast(enabled=amp_enabled):
                     logits = model(x)
                     loss = weighted_loss(logits, y, role_token_ids, role_weights, pad_id)
+                    loss = loss / max(1, GRAD_ACCUM_STEPS)
 
                 scaler.scale(loss).backward()
+                step_in_epoch += 1
+
+                if step_in_epoch % GRAD_ACCUM_STEPS == 0:
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(unwrap_model(model).parameters(), max_norm=1.0)
+                    scaler.step(optimizer)
+                    scaler.update()
+                    optimizer.zero_grad(set_to_none=True)
+
+                total_train_loss += loss.item() * max(1, GRAD_ACCUM_STEPS)
+                pbar.set_postfix({"loss": f"{loss.item() * max(1, GRAD_ACCUM_STEPS):.4f}"})
+
+            if step_in_epoch % GRAD_ACCUM_STEPS != 0:
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(unwrap_model(model).parameters(), max_norm=1.0)
                 scaler.step(optimizer)
                 scaler.update()
-
-                total_train_loss += loss.item()
-                pbar.set_postfix({"loss": f"{loss.item():.4f}"})
+                optimizer.zero_grad(set_to_none=True)
 
             avg_train_loss = total_train_loss / max(1, len(train_loader))
             avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = evaluate(
@@ -522,6 +575,7 @@ def main():
                         "model_state_dict": unwrap_model(model).state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "val_loss": avg_val_loss,
+                        "model_config": model_config,
                     },
                     str(CHECKPOINT_DIR / "model_best.pth"),
                 )
