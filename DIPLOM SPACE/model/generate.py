@@ -22,6 +22,15 @@ TIME_SHIFT_RESOLUTION = 0.05
 ROLES = ["MELODY", "BASS", "CHORDS"]
 
 
+def build_conditioning_maps(token2id):
+    role_to_index = {"MELODY": 0, "BASS": 1, "CHORDS": 2}
+    genre_tokens = sorted([t for t in token2id.keys() if t.startswith("<GENRE_")])
+    if not genre_tokens:
+        genre_tokens = ["<GENRE_NONE>"]
+    genre_to_index = {tok[7:-1]: i for i, tok in enumerate(genre_tokens) if tok.startswith("<GENRE_")}
+    return role_to_index, genre_to_index, len(genre_tokens)
+
+
 def top_k_top_p_filter(logits, top_k=0, top_p=1.0):
     filtered = logits.clone()
     vocab_size = filtered.shape[-1]
@@ -105,12 +114,22 @@ def generate_tokens(
     top_p=0.95,
     repetition_penalty=1.1,
     no_repeat_ngram_size=4,
+    role_to_index=None,
+    genre_to_index=None,
 ):
     role_token = f"<ROLE_{role}>"
     genre_token = f"<GENRE_{genre}>"
     for token in ["<BOS>", role_token, genre_token]:
         if token not in token2id:
             raise ValueError(f"Token {token} not found in vocab")
+
+    if role_to_index is None or genre_to_index is None:
+        role_to_index, genre_to_index, _ = build_conditioning_maps(token2id)
+
+    role_idx = role_to_index.get(role, 0)
+    genre_idx = genre_to_index.get(genre, 0)
+    role_id = torch.tensor([role_idx], dtype=torch.long, device=DEVICE)
+    genre_id = torch.tensor([genre_idx], dtype=torch.long, device=DEVICE)
 
     generated = [token2id["<BOS>"], token2id[role_token], token2id[genre_token]]
     eos_id = token2id.get("<EOS>")
@@ -119,7 +138,7 @@ def generate_tokens(
     with torch.no_grad():
         for _ in range(max_len):
             x = torch.tensor(generated, dtype=torch.long).unsqueeze(0).to(DEVICE)
-            logits = model(x)[0, -1]
+            logits = model(x, role_id=role_id, genre_id=genre_id)[0, -1]
             next_token_id = sample_next_token(
                 logits=logits,
                 generated=generated,
@@ -197,6 +216,9 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     token2id = vocab["token2id"]
     id2token = {int(k): v for k, v in vocab["id2token"].items()}
 
+    role_to_index, genre_to_index, num_genres = build_conditioning_maps(token2id)
+    num_roles = 3
+
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
     model_config = checkpoint.get("model_config") if isinstance(checkpoint, dict) else None
     if model_config is None:
@@ -204,11 +226,15 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     else:
         if model_config.get("pad_id") is None:
             model_config = {**model_config, "pad_id": token2id.get("<PAD>")}
+        if model_config.get("num_roles") is None:
+            model_config = {**model_config, "num_roles": num_roles}
+        if model_config.get("num_genres") is None:
+            model_config = {**model_config, "num_genres": num_genres}
         model = TransformerLM(len(token2id), **model_config).to(DEVICE)
 
     state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
     model.load_state_dict(clean_state_dict(state_dict))
-    return model, token2id, id2token
+    return model, token2id, id2token, role_to_index, genre_to_index
 
 
 def parse_args():
@@ -244,8 +270,8 @@ def main():
     out_dir = PROJECT_ROOT / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    model, token2id, id2token = load_model_and_vocab(checkpoint_path, vocab_path)
-    print(f"🖥️  Device: {DEVICE}")
+    model, token2id, id2token, role_to_index, genre_to_index = load_model_and_vocab(checkpoint_path, vocab_path)
+    print(f"Device: {DEVICE}")
 
     eos_count = 0
     for i in range(1, args.samples + 1):
@@ -265,6 +291,8 @@ def main():
                     top_p=args.top_p,
                     repetition_penalty=args.repetition_penalty,
                     no_repeat_ngram_size=args.no_repeat_ngram_size,
+                    role_to_index=role_to_index,
+                    genre_to_index=genre_to_index,
                 )
                 tokens_by_role[role] = tokens
                 all_eos = all_eos and ended_by_eos
@@ -285,6 +313,8 @@ def main():
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
                 no_repeat_ngram_size=args.no_repeat_ngram_size,
+                role_to_index=role_to_index,
+                genre_to_index=genre_to_index,
             )
             out_path = out_dir / f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}.mid"
             save_single(tokens, out_path, args.role.upper())
@@ -292,7 +322,7 @@ def main():
                 eos_count += 1
         print(f"🎵 Saved: {out_path}")
 
-    print(f"📊 EOS rate: {eos_count / max(1, args.samples):.3f}")
+    print(f"EOS rate: {eos_count / max(1, args.samples):.3f}")
 
 
 if __name__ == "__main__":

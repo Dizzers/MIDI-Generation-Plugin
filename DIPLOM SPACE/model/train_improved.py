@@ -8,7 +8,10 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Subset
+from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -34,9 +37,6 @@ except Exception:
     plt = None
 
 
-# =========================
-# CONFIG (edit here)
-# =========================
 SEED = 42
 if torch.cuda.is_available():
     DEVICE = "cuda"
@@ -50,17 +50,31 @@ BATCH_SIZE = 16
 LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 0.01
 
-SAMPLES_PER_EPOCH = 20000
+SAMPLES_PER_EPOCH = 50000
 GRAD_ACCUM_STEPS = 2
 LABEL_SMOOTHING = 0.05
 
 EARLY_STOPPING_PATIENCE = 8
 VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
-SAMPLING_STRATEGY = "mixed"  # "balanced" | "mixed"
+SAMPLING_STRATEGY = "role_cap" 
+ROLE_SAMPLING_MAX_FRACTION = {
+    "chords": 0.50,
+    "melody": 0.25,
+    "bass": 0.25,
+}
 
-ROLE_WEIGHT_ALPHA = 0.4
-MAX_ROLE_WEIGHT = 4.0
+ROLE_WEIGHT_ALPHA = 0.6
+MAX_ROLE_WEIGHT = 8.0
+
+AUGMENT_CONFIG = {
+    "transpose_prob": 0.5,
+    "transpose_range": 5,
+    "time_stretch_prob": 0.35,
+    "time_stretch_range": (0.9, 1.1),
+    "velocity_jitter_prob": 0.35,
+    "velocity_jitter": 1,
+}
 
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
 CHUNKS_DIR = PROJECT_ROOT / "dataset" / "processed" / "chunks"
@@ -74,20 +88,19 @@ ALLOW_OLD_CHECKPOINT_RESUME = False
 
 MAX_LEN = 512
 
-# Model size
 D_MODEL = 384
 N_HEADS = 8
 N_LAYERS = 8
 D_FF = 1536
 DROPOUT = 0.15
 
-# Kaggle / 2x T4 tuning
-ENABLE_MULTI_GPU = True
+USE_DDP = False  
+DDP_BACKEND = "nccl"
+ENABLE_DATA_PARALLEL = True 
 USE_AMP = True
 NUM_WORKERS = 4
 PIN_MEMORY = DEVICE == "cuda"
 PERSISTENT_WORKERS = True
-# =========================
 
 
 def set_seed(seed):
@@ -106,8 +119,27 @@ def set_seed(seed):
         torch.mps.manual_seed(seed)
 
 
+def setup_distributed():
+    if not USE_DDP:
+        return False, 0, 1, 0
+    if DEVICE != "cuda":
+        return False, 0, 1, 0
+    if "LOCAL_RANK" not in os.environ:
+        return False, 0, 1, 0
+    local_rank = int(os.environ["LOCAL_RANK"])
+    torch.cuda.set_device(local_rank)
+    dist.init_process_group(backend=DDP_BACKEND)
+    rank = dist.get_rank()
+    world_size = dist.get_world_size()
+    return True, local_rank, world_size, rank
+
+
+def is_main_process(use_ddp, rank):
+    return (not use_ddp) or rank == 0
+
+
 def unwrap_model(model):
-    return model.module if isinstance(model, nn.DataParallel) else model
+    return model.module if isinstance(model, (nn.DataParallel, DDP)) else model
 
 
 def clean_state_dict(state_dict):
@@ -125,7 +157,7 @@ def is_compatible_checkpoint(checkpoint, model_config, vocab_size):
     if "model_config" not in checkpoint:
         return False, "checkpoint has no model_config"
     ckpt_cfg = checkpoint["model_config"]
-    for key in ["d_model", "n_heads", "n_layers", "d_ff", "dropout", "max_len"]:
+    for key in ["d_model", "n_heads", "n_layers", "d_ff", "dropout", "max_len", "num_roles", "num_genres"]:
         if ckpt_cfg.get(key) != model_config.get(key):
             return False, f"model_config mismatch on {key}"
     if ckpt_cfg.get("pad_id") != model_config.get("pad_id"):
@@ -135,14 +167,16 @@ def is_compatible_checkpoint(checkpoint, model_config, vocab_size):
     return True, "compatible"
 
 
-def build_loaders():
+def build_loaders(use_ddp=False, rank=0, world_size=1):
     dataset = MIDIDataset(
         chunks_dir=str(CHUNKS_DIR),
         vocab_path=str(VOCAB_PATH),
         max_len=MAX_LEN,
         samples_per_epoch=SAMPLES_PER_EPOCH,
         sampling_strategy=SAMPLING_STRATEGY,
-        seed=SEED,
+        seed=SEED + rank,
+        augment_config=AUGMENT_CONFIG,
+        role_sampling_max_fraction=ROLE_SAMPLING_MAX_FRACTION,
     )
 
     role_counts = {
@@ -167,17 +201,35 @@ def build_loaders():
     val_idx = indices[train_size:train_size + val_size]
     test_idx = indices[train_size + val_size:]
 
+    train_subset = Subset(dataset, train_idx)
+    val_subset = Subset(dataset, val_idx)
+    test_subset = Subset(dataset, test_idx)
+
+    train_sampler = None
+    if use_ddp:
+        train_sampler = DistributedSampler(
+            train_subset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=True,
+        )
+
     loader_kwargs = {
         "batch_size": BATCH_SIZE,
         "num_workers": NUM_WORKERS,
         "pin_memory": PIN_MEMORY,
         "persistent_workers": PERSISTENT_WORKERS and NUM_WORKERS > 0,
     }
-    train_loader = DataLoader(Subset(dataset, train_idx), shuffle=True, **loader_kwargs)
-    val_loader = DataLoader(Subset(dataset, val_idx), shuffle=False, **loader_kwargs)
-    test_loader = DataLoader(Subset(dataset, test_idx), shuffle=False, **loader_kwargs)
+    train_loader = DataLoader(
+        train_subset,
+        shuffle=(train_sampler is None),
+        sampler=train_sampler,
+        **loader_kwargs,
+    )
+    val_loader = DataLoader(val_subset, shuffle=False, **loader_kwargs)
+    test_loader = DataLoader(test_subset, shuffle=False, **loader_kwargs)
 
-    return dataset, role_counts, train_loader, val_loader, test_loader
+    return dataset, role_counts, train_loader, val_loader, test_loader, train_sampler
 
 
 def build_role_weights(role_counts):
@@ -299,12 +351,14 @@ def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_en
     music_count = 0
 
     with torch.no_grad():
-        for x, y in loader:
+        for x, y, role_idx, genre_idx in loader:
             x = x.to(DEVICE, non_blocking=PIN_MEMORY)
             y = y.to(DEVICE, non_blocking=PIN_MEMORY)
+            role_idx = role_idx.to(DEVICE, non_blocking=PIN_MEMORY)
+            genre_idx = genre_idx.to(DEVICE, non_blocking=PIN_MEMORY)
 
             with torch.cuda.amp.autocast(enabled=amp_enabled):
-                logits = model(x)
+                logits = model(x, role_id=role_idx, genre_id=genre_idx)
 
             batch_size, seq_len, _ = logits.shape
             token_losses = F.cross_entropy(
@@ -364,7 +418,7 @@ def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_en
 
 def save_plots(history):
     if plt is None:
-        print("⚠️ matplotlib не установлен, графики пропущены")
+        print(" matplotlib не установлен, графики пропущены")
         return
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -422,17 +476,30 @@ def main():
     print("📦 Загружаем компоненты...")
     set_seed(SEED)
     CHECKPOINT_DIR.mkdir(exist_ok=True)
-    print(f"🖥️  Device: {DEVICE}")
 
-    dataset, role_counts, train_loader, val_loader, test_loader = build_loaders()
-    print("✓ Датасет загружен:")
-    print(f"  - Train: {len(train_loader.dataset)}")
-    print(f"  - Val: {len(val_loader.dataset)}")
-    print(f"  - Test: {len(test_loader.dataset)}")
-    print(
-        f"  - Role chunks: MELODY={role_counts['MELODY']}, "
-        f"BASS={role_counts['BASS']}, CHORDS={role_counts['CHORDS']}"
+    use_ddp, local_rank, world_size, rank = setup_distributed()
+    if use_ddp:
+        global DEVICE
+        DEVICE = f"cuda:{local_rank}"
+    is_main = is_main_process(use_ddp, rank)
+    if is_main:
+        print(f"🖥️  Device: {DEVICE}")
+
+    dataset, role_counts, train_loader, val_loader, test_loader, train_sampler = build_loaders(
+        use_ddp=use_ddp,
+        rank=rank,
+        world_size=world_size,
     )
+
+    if is_main:
+        print("✓ Датасет загружен:")
+        print(f"  - Train: {len(train_loader.dataset)}")
+        print(f"  - Val: {len(val_loader.dataset)}")
+        print(f"  - Test: {len(test_loader.dataset)}")
+        print(
+            f"  - Role chunks: MELODY={role_counts['MELODY']}, "
+            f"BASS={role_counts['BASS']}, CHORDS={role_counts['CHORDS']}"
+        )
 
     with open(VOCAB_PATH) as f:
         vocab = json.load(f)
@@ -440,6 +507,9 @@ def main():
     id2token = {int(k): v for k, v in vocab["id2token"].items()}
     vocab_size = len(token2id)
     pad_id = token2id["<PAD>"]
+
+    num_roles = 3
+    num_genres = dataset.num_genres
 
     model_init_config = {
         "d_model": D_MODEL,
@@ -449,13 +519,18 @@ def main():
         "dropout": DROPOUT,
         "max_len": MAX_LEN,
         "pad_id": pad_id,
+        "num_roles": num_roles,
+        "num_genres": num_genres,
     }
     model_config = {**model_init_config, "vocab_size": vocab_size}
 
     model = TransformerLM(vocab_size, **model_init_config).to(DEVICE)
-    if DEVICE == "cuda" and ENABLE_MULTI_GPU and torch.cuda.device_count() > 1:
+    if use_ddp:
+        model = DDP(model, device_ids=[local_rank])
+    elif DEVICE == "cuda" and ENABLE_DATA_PARALLEL and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
-        print(f"✅ Multi-GPU enabled: {torch.cuda.device_count()} GPUs")
+        if is_main:
+            print(f"DataParallel enabled: {torch.cuda.device_count()} GPUs")
 
     optimizer = torch.optim.AdamW(
         unwrap_model(model).parameters(),
@@ -464,7 +539,7 @@ def main():
     )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
 
-    amp_enabled = USE_AMP and DEVICE == "cuda"
+    amp_enabled = USE_AMP and DEVICE.startswith("cuda")
     scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
 
     role_token_ids = {
@@ -473,10 +548,11 @@ def main():
         "CHORDS": token2id["<ROLE_CHORDS>"]
     }
     role_weights = build_role_weights(role_counts)
-    print(
-        f"⚖️  Role weights: MELODY={role_weights['MELODY']:.2f}, "
-        f"BASS={role_weights['BASS']:.2f}, CHORDS={role_weights['CHORDS']:.2f}"
-    )
+    if is_main:
+        print(
+            f"⚖️  Role weights: MELODY={role_weights['MELODY']:.2f}, "
+            f"BASS={role_weights['BASS']:.2f}, CHORDS={role_weights['CHORDS']:.2f}"
+        )
 
     history = {
         "train_loss": [],
@@ -501,19 +577,23 @@ def main():
                 optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
             start_epoch = int(checkpoint.get("epoch", 0))
             best_val_loss = float(checkpoint.get("val_loss", best_val_loss))
-            print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
+            if is_main:
+                print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
         elif ALLOW_OLD_CHECKPOINT_RESUME:
             try:
                 state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
                 unwrap_model(model).load_state_dict(clean_state_dict(state_dict))
-                print("⚠️ Loaded old checkpoint without model_config. Use with caution.")
+                if is_main:
+                    print("⚠️ Loaded old checkpoint without model_config. Use with caution.")
             except Exception as exc:
-                print(f"⚠️ Skipping resume: incompatible checkpoint ({exc})")
+                if is_main:
+                    print(f"⚠️ Skipping resume: incompatible checkpoint ({exc})")
         else:
-            print(f"⚠️ Skipping resume: incompatible checkpoint ({reason})")
+            if is_main:
+                print(f"⚠️ Skipping resume: incompatible checkpoint ({reason})")
 
     history_path = CHECKPOINT_DIR / "history.json"
-    if RESUME_FROM_CHECKPOINT and history_path.exists():
+    if RESUME_FROM_CHECKPOINT and history_path.exists() and is_main:
         try:
             with open(history_path) as f:
                 loaded_history = json.load(f)
@@ -522,24 +602,32 @@ def main():
                     history[key] = loaded_history[key]
             print(f"📚 История подгружена: {history_path}")
         except Exception:
-            print("⚠️ Не удалось загрузить history.json, создаю новую историю")
+            print(" Не удалось загрузить history.json, создаю новую историю")
 
-    print("\n🚀 Начинаем обучение...\n")
+    if is_main:
+        print("\n Начинаем обучение...\n")
+
     try:
         for epoch in range(start_epoch, NUM_EPOCHS):
             model.train()
             total_train_loss = 0.0
-            pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS} [TRAIN]")
+
+            if train_sampler is not None:
+                train_sampler.set_epoch(epoch)
+
+            pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS} [TRAIN]") if is_main else train_loader
 
             optimizer.zero_grad(set_to_none=True)
             step_in_epoch = 0
 
-            for x, y in pbar:
+            for x, y, role_idx, genre_idx in pbar:
                 x = x.to(DEVICE, non_blocking=PIN_MEMORY)
                 y = y.to(DEVICE, non_blocking=PIN_MEMORY)
+                role_idx = role_idx.to(DEVICE, non_blocking=PIN_MEMORY)
+                genre_idx = genre_idx.to(DEVICE, non_blocking=PIN_MEMORY)
 
                 with torch.cuda.amp.autocast(enabled=amp_enabled):
-                    logits = model(x)
+                    logits = model(x, role_id=role_idx, genre_id=genre_idx)
                     loss = weighted_loss(logits, y, role_token_ids, role_weights, pad_id)
                     loss = loss / max(1, GRAD_ACCUM_STEPS)
 
@@ -554,7 +642,8 @@ def main():
                     optimizer.zero_grad(set_to_none=True)
 
                 total_train_loss += loss.item() * max(1, GRAD_ACCUM_STEPS)
-                pbar.set_postfix({"loss": f"{loss.item() * max(1, GRAD_ACCUM_STEPS):.4f}"})
+                if is_main:
+                    pbar.set_postfix({"loss": f"{loss.item() * max(1, GRAD_ACCUM_STEPS):.4f}"})
 
             if step_in_epoch % GRAD_ACCUM_STEPS != 0:
                 scaler.unscale_(optimizer)
@@ -564,94 +653,119 @@ def main():
                 optimizer.zero_grad(set_to_none=True)
 
             avg_train_loss = total_train_loss / max(1, len(train_loader))
-            avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = evaluate(
-                model, val_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
-            )
 
-            history["train_loss"].append(avg_train_loss)
-            history["val_loss"].append(avg_val_loss)
-            history["val_acc"].append(val_acc)
-            history["val_ppl"].append(val_ppl)
-            history["learning_rates"].append(optimizer.param_groups[0]["lr"])
-            history["role_metrics"].append(role_metrics)
-            history["music_metrics"].append(music_metrics)
-
-            print(f"✓ Epoch {epoch + 1}")
-            print(f"  Train Loss: {avg_train_loss:.4f}")
-            print(f"  Val Loss: {avg_val_loss:.4f}")
-            print(f"  Val Acc: {val_acc:.4f}")
-            print(f"  Val PPL: {val_ppl:.2f}")
-            print(
-                f"  Role Val Acc: M={role_metrics['MELODY']['acc']:.3f}, "
-                f"B={role_metrics['BASS']['acc']:.3f}, C={role_metrics['CHORDS']['acc']:.3f}"
-            )
-            print(
-                f"  Music: repeat={music_metrics['repeat_rate']:.3f}, "
-                f"diversity={music_metrics['unique_token_ratio']:.3f}, "
-                f"scale_cov={music_metrics['scale_coverage']:.3f}"
-            )
-            print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}\n")
-
-            if avg_val_loss < best_val_loss:
-                best_val_loss = avg_val_loss
-                early_stop_counter = 0
-                torch.save(
-                    {
-                        "epoch": epoch + 1,
-                        "model_state_dict": unwrap_model(model).state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "val_loss": avg_val_loss,
-                        "model_config": model_config,
-                    },
-                    str(CHECKPOINT_DIR / "model_best.pth"),
+            if is_main:
+                avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = evaluate(
+                    model, val_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
                 )
-                print(f"💾 Лучшая модель сохранена (Val Loss: {avg_val_loss:.4f})\n")
             else:
-                early_stop_counter += 1
-                print(f"⚠️  Val Loss не улучшилась ({early_stop_counter}/{EARLY_STOPPING_PATIENCE})\n")
+                avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = 0.0, 0.0, 0.0, {}, {}
+
+            if use_ddp:
+                loss_tensor = torch.tensor([avg_val_loss], device=DEVICE, dtype=torch.float32)
+                dist.broadcast(loss_tensor, src=0)
+                avg_val_loss = float(loss_tensor.item())
 
             scheduler.step(avg_val_loss)
-            if early_stop_counter >= EARLY_STOPPING_PATIENCE:
-                print("🛑 Early stopping активирован!")
-                break
 
-        print("\n✅ Обучение завершено!")
-        torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_final.pth"))
-        print("💾 Финальная модель сохранена")
+            if is_main:
+                history["train_loss"].append(avg_train_loss)
+                history["val_loss"].append(avg_val_loss)
+                history["val_acc"].append(val_acc)
+                history["val_ppl"].append(val_ppl)
+                history["learning_rates"].append(optimizer.param_groups[0]["lr"])
+                history["role_metrics"].append(role_metrics)
+                history["music_metrics"].append(music_metrics)
 
-        with open(CHECKPOINT_DIR / "history.json", "w") as f:
-            json.dump(history, f, indent=2)
-        print("📊 История обучения сохранена")
+                print(f"✓ Epoch {epoch + 1}")
+                print(f"  Train Loss: {avg_train_loss:.4f}")
+                print(f"  Val Loss: {avg_val_loss:.4f}")
+                print(f"  Val Acc: {val_acc:.4f}")
+                print(f"  Val PPL: {val_ppl:.2f}")
+                print(
+                    f"  Role Val Acc: M={role_metrics['MELODY']['acc']:.3f}, "
+                    f"B={role_metrics['BASS']['acc']:.3f}, C={role_metrics['CHORDS']['acc']:.3f}"
+                )
+                print(
+                    f"  Music: repeat={music_metrics['repeat_rate']:.3f}, "
+                    f"diversity={music_metrics['unique_token_ratio']:.3f}, "
+                    f"scale_cov={music_metrics['scale_coverage']:.3f}"
+                )
+                print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}\n")
 
-        best_cp = CHECKPOINT_DIR / "model_best.pth"
-        if best_cp.exists():
-            checkpoint = torch.load(best_cp, map_location=DEVICE)
-            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
-            test_loss, test_acc, test_ppl, test_role_metrics, test_music_metrics = evaluate(
-                model, test_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
-            )
-            print("\n🧪 Test метрики (best checkpoint):")
-            print(f"  Test Loss: {test_loss:.4f}")
-            print(f"  Test Acc: {test_acc:.4f}")
-            print(f"  Test PPL: {test_ppl:.2f}")
-            print(
-                f"  Role Test Acc: M={test_role_metrics['MELODY']['acc']:.3f}, "
-                f"B={test_role_metrics['BASS']['acc']:.3f}, "
-                f"C={test_role_metrics['CHORDS']['acc']:.3f}"
-            )
-            print(
-                f"  Music Test: repeat={test_music_metrics['repeat_rate']:.3f}, "
-                f"diversity={test_music_metrics['unique_token_ratio']:.3f}, "
-                f"scale_cov={test_music_metrics['scale_coverage']:.3f}"
-            )
+                if avg_val_loss < best_val_loss:
+                    best_val_loss = avg_val_loss
+                    early_stop_counter = 0
+                    torch.save(
+                        {
+                            "epoch": epoch + 1,
+                            "model_state_dict": unwrap_model(model).state_dict(),
+                            "optimizer_state_dict": optimizer.state_dict(),
+                            "val_loss": avg_val_loss,
+                            "model_config": model_config,
+                        },
+                        str(CHECKPOINT_DIR / "model_best.pth"),
+                    )
+                    print(f"💾 Лучшая модель сохранена (Val Loss: {avg_val_loss:.4f})\n")
+                else:
+                    early_stop_counter += 1
+                    print(f"⚠️  Val Loss не улучшилась ({early_stop_counter}/{EARLY_STOPPING_PATIENCE})\n")
 
-        save_plots(history)
-        print(f"📈 Графики сохранены в {PLOTS_DIR}")
+            if use_ddp:
+                stop_tensor = torch.tensor([1 if early_stop_counter >= EARLY_STOPPING_PATIENCE else 0], device=DEVICE)
+                dist.broadcast(stop_tensor, src=0)
+                if stop_tensor.item() == 1:
+                    if is_main:
+                        print(" Early stopping активирован!")
+                    break
+            else:
+                if early_stop_counter >= EARLY_STOPPING_PATIENCE:
+                    if is_main:
+                        print(" Early stopping активирован!")
+                    break
+
+        if is_main:
+            print("\n Обучение завершено!")
+            torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_final.pth"))
+            print(" Финальная модель сохранена")
+
+            with open(CHECKPOINT_DIR / "history.json", "w") as f:
+                json.dump(history, f, indent=2)
+            print(" История обучения сохранена")
+
+            best_cp = CHECKPOINT_DIR / "model_best.pth"
+            if best_cp.exists():
+                checkpoint = torch.load(best_cp, map_location=DEVICE)
+                unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
+                test_loss, test_acc, test_ppl, test_role_metrics, test_music_metrics = evaluate(
+                    model, test_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
+                )
+                print("\n🧪 Test метрики (best checkpoint):")
+                print(f"  Test Loss: {test_loss:.4f}")
+                print(f"  Test Acc: {test_acc:.4f}")
+                print(f"  Test PPL: {test_ppl:.2f}")
+                print(
+                    f"  Role Test Acc: M={test_role_metrics['MELODY']['acc']:.3f}, "
+                    f"B={test_role_metrics['BASS']['acc']:.3f}, "
+                    f"C={test_role_metrics['CHORDS']['acc']:.3f}"
+                )
+                print(
+                    f"  Music Test: repeat={test_music_metrics['repeat_rate']:.3f}, "
+                    f"diversity={test_music_metrics['unique_token_ratio']:.3f}, "
+                    f"scale_cov={test_music_metrics['scale_coverage']:.3f}"
+                )
+
+            save_plots(history)
+            print(f"Графики сохранены в {PLOTS_DIR}")
 
     except KeyboardInterrupt:
-        print("\n⚠️  Обучение прервано пользователем")
-        torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_interrupted.pth"))
-        print("💾 Модель сохранена как model_interrupted.pth")
+        if is_main:
+            print("\n Обучение прервано пользователем")
+            torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_interrupted.pth"))
+            print("Модель сохранена как model_interrupted.pth")
+
+    if use_ddp:
+        dist.destroy_process_group()
 
 
 if __name__ == "__main__":

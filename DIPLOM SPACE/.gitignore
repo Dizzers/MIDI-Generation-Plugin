@@ -71,3 +71,6 @@ dataset/midi_raw/
 # Keep vocab by default (small and useful for reproducibility)
 !dataset/processed/vocab.json
 
+*.zip
+**/*.npy
+**/dataset/processed/

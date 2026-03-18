@@ -12,7 +12,6 @@ import pickle
 
 warnings.filterwarnings("ignore", category=m21.midi.translate.TranslateWarning)
 
-# Таймаут для parsing MIDI файлов
 TIMEOUT_SECONDS = 10
 
 MIN_TOTAL_NOTES = 5
@@ -111,7 +110,6 @@ def process_midi_file(path, genre):
         "reason": None
     }
 
-    # Прежде всего проверяем можно ли вообще открыть файл с таймаутом
     try:
         score = m21.converter.parse(path, forceSource=True)
     except KeyboardInterrupt:
@@ -177,7 +175,6 @@ def process_dataset(root_dir):
     errors = []
     timeouts = []
     
-    # Сначала считаем все файлы
     all_files = []
     for genre in os.listdir(root_dir):
         genre_path = os.path.join(root_dir, genre)
@@ -189,12 +186,11 @@ def process_dataset(root_dir):
                 full_path = os.path.join(genre_path, fname)
                 all_files.append((full_path, genre))
     
-    print(f"📊 Найдено {len(all_files)} MIDI файлов")
-    print(f"🔄 Начинаем обработку...\n")
+    print(f" Найдено {len(all_files)} MIDI файлов")
+    print(f" Начинаем обработку...\n")
 
-    # Обрабатываем с прогресс-баром
     for full_path, genre in tqdm(all_files, desc="Обработка MIDI", unit="файл"):
-        # Сначала проверяем может ли файл быть распарсен с таймаутом
+        
         try:
             result = subprocess.run(
                 [sys.executable, "dataset/_parse_single_midi.py", full_path],
@@ -205,7 +201,7 @@ def process_dataset(root_dir):
             )
             
             if result.returncode != 0:
-                # Файл не парсится
+
                 stats["error"] += 1
                 errors.append({
                     "file": os.path.basename(full_path),
@@ -214,7 +210,7 @@ def process_dataset(root_dir):
                 continue
                 
         except subprocess.TimeoutExpired:
-            # Файл зависает - пропускаем
+
             stats["error"] += 1
             timeouts.append(full_path)
             errors.append({
@@ -223,7 +219,7 @@ def process_dataset(root_dir):
             })
             continue
         except Exception as e:
-            # Ошибка при запуске subprocess
+            
             stats["error"] += 1
             errors.append({
                 "file": os.path.basename(full_path),
@@ -231,7 +227,7 @@ def process_dataset(root_dir):
             })
             continue
         
-        # Если файл прошёл проверку - полная обработка
+        
         try:
             res = process_midi_file(full_path, genre)
             files_log.append(res)
@@ -264,14 +260,14 @@ def process_dataset(root_dir):
     with open(os.path.join(OUTPUT_DIR, "meta", "errors.json"), "w") as f:
         json.dump(errors, f, indent=2)
     
-    # Сохраняем список проблемных файлов (timeout)
+    
     if timeouts:
         with open(os.path.join(OUTPUT_DIR, "meta", "timeout_files.txt"), "w") as f:
             for pf in timeouts:
                 f.write(pf + "\n")
 
     print("\n" + "=" * 50)
-    print("✅ ОБРАБОТКА ЗАВЕРШЕНА")
+    print("ОБРАБОТКА ЗАВЕРШЕНА")
     print("=" * 50)
     print(f"Обработано:      {stats['processed']:6d}")
     print(f"Отклонено:       {stats['rejected']:6d}")

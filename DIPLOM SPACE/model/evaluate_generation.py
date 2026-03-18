@@ -26,7 +26,6 @@ def note_on_off_balance(tokens):
 
 
 def chord_role_consistency(tokens):
-    # Проксимация: в CHORDS роли чаще должно быть >=2 NOTE_ON до следующего TIME_SHIFT
     groups = []
     cur = 0
     for tok in tokens:
@@ -123,7 +122,7 @@ def main():
     random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    model, token2id, id2token = load_model_and_vocab(
+    model, token2id, id2token, role_to_index, genre_to_index = load_model_and_vocab(
         PROJECT_ROOT / args.checkpoint,
         PROJECT_ROOT / args.vocab,
     )
@@ -152,6 +151,8 @@ def main():
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
                 no_repeat_ngram_size=args.no_repeat_ngram_size,
+                role_to_index=role_to_index,
+                genre_to_index=genre_to_index,
             )
             generated[role] = tokens
             all_eos = all_eos and ended_by_eos
@@ -188,7 +189,7 @@ def main():
     out_path = PROJECT_ROOT / "checkpoints" / "generation_metrics.json"
     with open(out_path, "w") as f:
         json.dump(out, f, indent=2)
-    print(f"💾 Saved metrics: {out_path}")
+    print(f"Saved metrics: {out_path}")
 
 
 if __name__ == "__main__":

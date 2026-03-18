@@ -14,7 +14,7 @@ TOKENS_DIR = os.path.join(BASE_DIR, "processed", "tokens")
 
 os.makedirs(TOKENS_DIR, exist_ok=True)
 
-TIME_SHIFT_RESOLUTION = 0.05  # quarterLength step
+TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
 
 
@@ -40,8 +40,6 @@ def extract_events(part):
         pitch = n.pitch.midi
         vel = n.volume.velocity
 
-        # В одном времени NOTE_OFF должен идти раньше NOTE_ON, чтобы корректно
-        # закрывать ноты при совпадающих границах.
         events.append((start, 1, "NOTE_ON", pitch, vel))
         events.append((start + dur, 0, "NOTE_OFF", pitch, None))
 
@@ -78,9 +76,8 @@ def tokenize_dataset():
     vocab = set()
     errors = []
 
-    # Фильтруем только валидные файлы
     valid_entries = [e for e in files if e["status"] == "ok"]
-    print(f"📝 Токенизация {len(valid_entries)} валидных MIDI файлов...\n")
+    print(f" Токенизация {len(valid_entries)} валидных MIDI файлов...\n")
 
     for entry in tqdm(valid_entries, desc="Токенизация", unit="файл"):
         genre = entry["genre"]
@@ -91,7 +88,6 @@ def tokenize_dataset():
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            # Пропускаем файлы, которые не парсятся
             errors.append({
                 "file": entry["file"],
                 "error": str(e)[:100]
@@ -123,7 +119,6 @@ def tokenize_dataset():
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            # Пропускаем файлы с ошибками при обработке токенов
             errors.append({
                 "file": entry["file"],
                 "error": f"token_error: {str(e)[:100]}"
@@ -131,7 +126,7 @@ def tokenize_dataset():
             continue
 
     print("\n" + "=" * 50)
-    print("✅ ТОКЕНИЗАЦИЯ ЗАВЕРШЕНА")
+    print("ТОКЕНИЗАЦИЯ ЗАВЕРШЕНА")
     print("=" * 50)
     
     for role, seqs in role_tokens.items():
@@ -150,7 +145,6 @@ def tokenize_dataset():
         "<GENRE_TRAP>"
     ]
 
-    # Убираем дубли если вдруг есть
     vocab_clean = [t for t in vocab if t not in SPECIAL_TOKENS]
 
     vocab_list = SPECIAL_TOKENS + sorted(vocab_clean)
@@ -170,7 +164,7 @@ def tokenize_dataset():
     print(f"\n📊 Vocab size: {len(vocab_list)} tokens")
     
     if errors:
-        print(f"⚠️  Ошибок при токенизации: {len(errors)}")
+        print(f" Ошибок при токенизации: {len(errors)}")
         with open(os.path.join(BASE_DIR, "processed", "tokenize_errors.json"), "w") as f:
             json.dump(errors, f, indent=2)
     
