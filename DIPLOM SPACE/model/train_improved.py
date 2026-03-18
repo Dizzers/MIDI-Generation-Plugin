@@ -70,6 +70,7 @@ PLOTS_DIR = CHECKPOINT_DIR / "plots"
 RESUME_FROM_CHECKPOINT = True
 RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
 LOAD_OPTIMIZER_STATE = False
+ALLOW_OLD_CHECKPOINT_RESUME = False
 
 MAX_LEN = 512
 
@@ -116,6 +117,22 @@ def clean_state_dict(state_dict):
     if first_key.startswith("module."):
         return {k.replace("module.", "", 1): v for k, v in state_dict.items()}
     return state_dict
+
+
+def is_compatible_checkpoint(checkpoint, model_config, vocab_size):
+    if not isinstance(checkpoint, dict):
+        return False, "checkpoint is not a dict"
+    if "model_config" not in checkpoint:
+        return False, "checkpoint has no model_config"
+    ckpt_cfg = checkpoint["model_config"]
+    for key in ["d_model", "n_heads", "n_layers", "d_ff", "dropout", "max_len"]:
+        if ckpt_cfg.get(key) != model_config.get(key):
+            return False, f"model_config mismatch on {key}"
+    if ckpt_cfg.get("pad_id") != model_config.get("pad_id"):
+        return False, "model_config mismatch on pad_id"
+    if ckpt_cfg.get("vocab_size") is not None and ckpt_cfg.get("vocab_size") != vocab_size:
+        return False, "model_config mismatch on vocab_size"
+    return True, "compatible"
 
 
 def build_loaders():
@@ -424,7 +441,7 @@ def main():
     vocab_size = len(token2id)
     pad_id = token2id["<PAD>"]
 
-    model_config = {
+    model_init_config = {
         "d_model": D_MODEL,
         "n_heads": N_HEADS,
         "n_layers": N_LAYERS,
@@ -433,8 +450,9 @@ def main():
         "max_len": MAX_LEN,
         "pad_id": pad_id,
     }
+    model_config = {**model_init_config, "vocab_size": vocab_size}
 
-    model = TransformerLM(vocab_size, **model_config).to(DEVICE)
+    model = TransformerLM(vocab_size, **model_init_config).to(DEVICE)
     if DEVICE == "cuda" and ENABLE_MULTI_GPU and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         print(f"✅ Multi-GPU enabled: {torch.cuda.device_count()} GPUs")
@@ -452,7 +470,7 @@ def main():
     role_token_ids = {
         "MELODY": token2id["<ROLE_MELODY>"],
         "BASS": token2id["<ROLE_BASS>"],
-        "CHORDS": token2id["<ROLE_CHORDS>"],
+        "CHORDS": token2id["<ROLE_CHORDS>"]
     }
     role_weights = build_role_weights(role_counts)
     print(
@@ -476,15 +494,23 @@ def main():
 
     if RESUME_FROM_CHECKPOINT and RESUME_CHECKPOINT_PATH.exists():
         checkpoint = torch.load(RESUME_CHECKPOINT_PATH, map_location=DEVICE)
-        if "model_state_dict" in checkpoint:
+        ok, reason = is_compatible_checkpoint(checkpoint, model_config, vocab_size)
+        if ok:
             unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
             if LOAD_OPTIMIZER_STATE and "optimizer_state_dict" in checkpoint:
                 optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
             start_epoch = int(checkpoint.get("epoch", 0))
             best_val_loss = float(checkpoint.get("val_loss", best_val_loss))
+            print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
+        elif ALLOW_OLD_CHECKPOINT_RESUME:
+            try:
+                state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
+                unwrap_model(model).load_state_dict(clean_state_dict(state_dict))
+                print("⚠️ Loaded old checkpoint without model_config. Use with caution.")
+            except Exception as exc:
+                print(f"⚠️ Skipping resume: incompatible checkpoint ({exc})")
         else:
-            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint))
-        print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
+            print(f"⚠️ Skipping resume: incompatible checkpoint ({reason})")
 
     history_path = CHECKPOINT_DIR / "history.json"
     if RESUME_FROM_CHECKPOINT and history_path.exists():
