@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
-
+# Модель трансформера для языкового моделирования токенов MIDI
 class TransformerLM(nn.Module):
  
     def __init__(
