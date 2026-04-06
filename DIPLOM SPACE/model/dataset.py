@@ -17,6 +17,8 @@ class MIDIDataset(Dataset):
         seed=42,
         augment_config=None,
         role_sampling_max_fraction=None,
+        data_override=None,
+        apply_augmentation=True,
     ):
         self.max_len = max_len
         self.samples_per_epoch = samples_per_epoch
@@ -24,6 +26,10 @@ class MIDIDataset(Dataset):
         self.rng = random.Random(seed)
         self.augment_config = augment_config or {}
         self.role_sampling_max_fraction = role_sampling_max_fraction or {}
+        self.apply_augmentation = apply_augmentation
+
+        self.base_seed = seed
+        self._vocab_path = vocab_path
 
         with open(vocab_path) as f:
             vocab = json.load(f)
@@ -35,9 +41,13 @@ class MIDIDataset(Dataset):
         self.unk = self.token2id["<UNK>"]
 
         self.data = {}
-        for role in ["chords", "melody", "bass"]:
-            path = f"{chunks_dir}/{role}_chunks.npy"
-            self.data[role] = np.load(path, allow_pickle=True)
+        if data_override is not None:
+            for role in ["chords", "melody", "bass"]:
+                self.data[role] = np.array(data_override.get(role, []), dtype=object)
+        else:
+            for role in ["chords", "melody", "bass"]:
+                path = f"{chunks_dir}/{role}_chunks.npy"
+                self.data[role] = np.load(path, allow_pickle=True)
 
         self.roles = list(self.data.keys())
         self.role_to_index = {"melody": 0, "bass": 1, "chords": 2}
@@ -55,6 +65,20 @@ class MIDIDataset(Dataset):
         self.velocity_values = [v for v in self.velocity_values if v is not None]
 
         self.samples = self._build_samples()
+
+    def clone_with_data(self, data_override, samples_per_epoch=None, apply_augmentation=None, seed_offset=0):
+        return MIDIDataset(
+            chunks_dir="",
+            vocab_path=self._vocab_path,
+            max_len=self.max_len,
+            samples_per_epoch=self.samples_per_epoch if samples_per_epoch is None else samples_per_epoch,
+            sampling_strategy=self.sampling_strategy,
+            seed=self.base_seed + seed_offset,
+            augment_config=self.augment_config,
+            role_sampling_max_fraction=self.role_sampling_max_fraction,
+            data_override=data_override,
+            apply_augmentation=self.apply_augmentation if apply_augmentation is None else apply_augmentation,
+        )
 
     def _parse_hex_token(self, token):
         try:
@@ -218,7 +242,8 @@ class MIDIDataset(Dataset):
         role, item_idx = self.samples[idx]
         tokens = self.data[role][item_idx]
 
-        tokens = self._apply_augmentation(tokens)
+        if self.apply_augmentation:
+            tokens = self._apply_augmentation(tokens)
 
         role_idx = self.role_to_index.get(role, 0)
         genre_idx = self._extract_genre_index(tokens)

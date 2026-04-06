@@ -32,18 +32,23 @@ def extract_events(part):
     events = []
 
     for n in part.flatten().notes:
-        if not n.isNote:
-            continue
-
         start = float(n.offset)
         dur = float(n.quarterLength)
-        pitch = n.pitch.midi
-        vel = n.volume.velocity
 
-        events.append((start, 1, "NOTE_ON", pitch, vel))
-        events.append((start + dur, 0, "NOTE_OFF", pitch, None))
+        if n.isNote:
+            pitches = [n.pitch.midi]
+            vel = n.volume.velocity
+        elif n.isChord:
+            pitches = [p.midi for p in n.pitches]
+            vel = n.volume.velocity
+        else:
+            continue
 
-    events.sort(key=lambda x: (x[0], x[1]))
+        for pitch in pitches:
+            events.append((start, 1, "NOTE_ON", pitch, vel))
+            events.append((start + dur, 0, "NOTE_OFF", pitch, None))
+
+    events.sort(key=lambda x: (x[0], x[1], x[3]))
 
     return events
 
@@ -58,7 +63,7 @@ def events_to_tokens(events):
             tokens.append(f"TIME_SHIFT_{quantize_time(delta):#06x}")
 
         if etype == "NOTE_ON":
-            tokens.extend([f"NOTE_ON_{pitch:#04x}", f"VELOCITY_{velocity_bin(vel or 64):#02x}"])
+            tokens.extend([f"VELOCITY_{velocity_bin(vel or 64):#02x}", f"NOTE_ON_{pitch:#04x}"])
         else:
             tokens.append(f"NOTE_OFF_{pitch:#04x}")
 

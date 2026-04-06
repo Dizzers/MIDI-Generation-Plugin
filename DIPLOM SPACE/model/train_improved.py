@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
@@ -168,7 +168,7 @@ def is_compatible_checkpoint(checkpoint, model_config, vocab_size):
 
 
 def build_loaders(use_ddp=False, rank=0, world_size=1):
-    dataset = MIDIDataset(
+    base_dataset = MIDIDataset(
         chunks_dir=str(CHUNKS_DIR),
         vocab_path=str(VOCAB_PATH),
         max_len=MAX_LEN,
@@ -179,36 +179,60 @@ def build_loaders(use_ddp=False, rank=0, world_size=1):
         role_sampling_max_fraction=ROLE_SAMPLING_MAX_FRACTION,
     )
 
-    role_counts = {
-        "MELODY": len(dataset.data["melody"]),
-        "BASS": len(dataset.data["bass"]),
-        "CHORDS": len(dataset.data["chords"]),
-    }
-
     if VAL_SPLIT + TEST_SPLIT >= 1.0:
         raise ValueError("VAL_SPLIT + TEST_SPLIT must be < 1.0")
 
-    total = len(dataset)
-    val_size = max(1, int(total * VAL_SPLIT))
-    test_size = max(1, int(total * TEST_SPLIT))
-    train_size = total - val_size - test_size
-    if train_size <= 0:
-        raise ValueError("Train split became empty")
+    split_rng = random.Random(SEED)
+    split_data = {"train": {}, "val": {}, "test": {}}
+    role_counts = {}
 
-    indices = list(range(total))
-    random.shuffle(indices)
-    train_idx = indices[:train_size]
-    val_idx = indices[train_size:train_size + val_size]
-    test_idx = indices[train_size + val_size:]
+    for role in ["melody", "bass", "chords"]:
+        role_items = list(base_dataset.data[role])
+        role_counts[role.upper()] = len(role_items)
+        role_indices = list(range(len(role_items)))
+        split_rng.shuffle(role_indices)
 
-    train_subset = Subset(dataset, train_idx)
-    val_subset = Subset(dataset, val_idx)
-    test_subset = Subset(dataset, test_idx)
+        val_size = max(1, int(len(role_indices) * VAL_SPLIT)) if len(role_indices) > 2 else 0
+        test_size = max(1, int(len(role_indices) * TEST_SPLIT)) if len(role_indices) - val_size > 1 else 0
+        train_size = len(role_indices) - val_size - test_size
+
+        if train_size <= 0:
+            train_size = max(1, len(role_indices) - 2)
+            remaining = len(role_indices) - train_size
+            val_size = 1 if remaining > 0 else 0
+            test_size = 1 if remaining > 1 else 0
+
+        train_idx = role_indices[:train_size]
+        val_idx = role_indices[train_size:train_size + val_size]
+        test_idx = role_indices[train_size + val_size:train_size + val_size + test_size]
+
+        split_data["train"][role] = [role_items[i] for i in train_idx]
+        split_data["val"][role] = [role_items[i] for i in val_idx]
+        split_data["test"][role] = [role_items[i] for i in test_idx]
+
+    train_dataset = base_dataset.clone_with_data(
+        split_data["train"],
+        samples_per_epoch=SAMPLES_PER_EPOCH,
+        apply_augmentation=True,
+        seed_offset=11,
+    )
+    val_dataset = base_dataset.clone_with_data(
+        split_data["val"],
+        samples_per_epoch=None,
+        apply_augmentation=False,
+        seed_offset=22,
+    )
+    test_dataset = base_dataset.clone_with_data(
+        split_data["test"],
+        samples_per_epoch=None,
+        apply_augmentation=False,
+        seed_offset=33,
+    )
 
     train_sampler = None
     if use_ddp:
         train_sampler = DistributedSampler(
-            train_subset,
+            train_dataset,
             num_replicas=world_size,
             rank=rank,
             shuffle=True,
@@ -221,15 +245,15 @@ def build_loaders(use_ddp=False, rank=0, world_size=1):
         "persistent_workers": PERSISTENT_WORKERS and NUM_WORKERS > 0,
     }
     train_loader = DataLoader(
-        train_subset,
+        train_dataset,
         shuffle=(train_sampler is None),
         sampler=train_sampler,
         **loader_kwargs,
     )
-    val_loader = DataLoader(val_subset, shuffle=False, **loader_kwargs)
-    test_loader = DataLoader(test_subset, shuffle=False, **loader_kwargs)
+    val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
+    test_loader = DataLoader(test_dataset, shuffle=False, **loader_kwargs)
 
-    return dataset, role_counts, train_loader, val_loader, test_loader, train_sampler
+    return train_dataset, role_counts, train_loader, val_loader, test_loader, train_sampler
 
 
 def build_role_weights(role_counts):
