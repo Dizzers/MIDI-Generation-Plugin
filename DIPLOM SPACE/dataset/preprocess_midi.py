@@ -21,7 +21,9 @@ MELODY_PITCH_MIN = 64
 BASS_PITCH_MAX = 75
 CHORD_POLYPHONY_MIN = 2.0
 
-OUTPUT_DIR = "dataset/processed"
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
+OUTPUT_DIR = str(BASE_DIR / "processed")
 
 def ensure_dirs():
     os.makedirs(os.path.join(OUTPUT_DIR, "meta"), exist_ok=True)
@@ -193,11 +195,11 @@ def process_dataset(root_dir):
         
         try:
             result = subprocess.run(
-                [sys.executable, "dataset/_parse_single_midi.py", full_path],
+                [sys.executable, str(BASE_DIR / "_parse_single_midi.py"), full_path],
                 capture_output=True,
                 text=True,
                 timeout=TIMEOUT_SECONDS,
-                cwd="/Volumes/T7/Университет/PythonProject/DIPLOM SPACE"
+                cwd=str(PROJECT_ROOT)
             )
             
             if result.returncode != 0:
@@ -279,7 +281,5 @@ def process_dataset(root_dir):
 
 
 if __name__ == "__main__":
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    RAW_MIDI_DIR = os.path.join(BASE_DIR, "midi_raw")
-
+    RAW_MIDI_DIR = str(BASE_DIR / "midi_raw")
     process_dataset(RAW_MIDI_DIR)
