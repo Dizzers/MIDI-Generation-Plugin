@@ -1,8 +1,14 @@
-import numpy as np
 import os
+from pathlib import Path
+
+import numpy as np
 
 MAX_LEN = 512
 STRIDE = 256
+BASE_DIR = Path(__file__).resolve().parent
+PROCESSED_DIR = BASE_DIR / "processed"
+TOKENS_DIR = PROCESSED_DIR / "tokens"
+CHUNKS_DIR = PROCESSED_DIR / "chunks"
 
 def chunk_sequence(seq, max_len, stride):
     chunks = []
@@ -14,10 +20,10 @@ def chunk_sequence(seq, max_len, stride):
     return chunks
 
 def process_role(role):
-    input_path = f"dataset/processed/tokens/{role}.npy"
-    output_path = f"dataset/processed/chunks/{role}_chunks.npy"
+    input_path = TOKENS_DIR / f"{role}.npy"
+    output_path = CHUNKS_DIR / f"{role}_chunks.npy"
 
-    os.makedirs("dataset/processed/chunks", exist_ok=True)
+    os.makedirs(CHUNKS_DIR, exist_ok=True)
 
     sequences = np.load(input_path, allow_pickle=True)
 
