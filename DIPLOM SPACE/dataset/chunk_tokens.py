@@ -3,11 +3,11 @@ from pathlib import Path
 
 import numpy as np
 
-MAX_LEN = 512
-STRIDE = 256
+MAX_LEN = 256
+STRIDE = 128
 SHUFFLE_SEED = 42
 MAX_CHUNKS_PER_ROLE = {
-    "chords": 12000,
+    "chords": 8000,
     "melody": None,
     "bass": None,
 }
