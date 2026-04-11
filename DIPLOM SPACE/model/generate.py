@@ -5,9 +5,11 @@ import sys
 from pathlib import Path
 
 import music21 as m21
+import numpy as np
 import torch
 
 PROJECT_ROOT = Path(__file__).parent.parent
+DATASET_TOKENS_DIR = PROJECT_ROOT / "dataset" / "processed" / "tokens"
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from model.transformer import TransformerLM
@@ -18,6 +20,7 @@ elif torch.backends.mps.is_available():
     DEVICE = "mps"
 else:
     DEVICE = "cpu"
+
 TIME_SHIFT_RESOLUTION = 0.05
 ROLES = ["MELODY", "BASS", "CHORDS"]
 
@@ -29,6 +32,47 @@ def build_conditioning_maps(token2id):
         genre_tokens = ["<GENRE_NONE>"]
     genre_to_index = {tok[7:-1]: i for i, tok in enumerate(genre_tokens) if tok.startswith("<GENRE_")}
     return role_to_index, genre_to_index, len(genre_tokens)
+
+
+def build_token_groups(token2id):
+    groups = {
+        "velocity_ids": [],
+        "note_on_ids": [],
+        "note_off_ids": [],
+        "time_shift_ids": [],
+        "special_body_banned_ids": [],
+        "note_on_pitch_to_id": {},
+        "note_off_pitch_to_id": {},
+    }
+
+    for token, token_id in token2id.items():
+        if token.startswith("VELOCITY_"):
+            groups["velocity_ids"].append(token_id)
+        elif token.startswith("NOTE_ON_"):
+            groups["note_on_ids"].append(token_id)
+            try:
+                groups["note_on_pitch_to_id"][int(token.split("_")[2], 16)] = token_id
+            except Exception:
+                pass
+        elif token.startswith("NOTE_OFF_"):
+            groups["note_off_ids"].append(token_id)
+            try:
+                groups["note_off_pitch_to_id"][int(token.split("_")[2], 16)] = token_id
+            except Exception:
+                pass
+        elif token.startswith("TIME_SHIFT_"):
+            groups["time_shift_ids"].append(token_id)
+
+        if (
+            token in {"<PAD>", "<BOS>", "<UNK>"}
+            or token.startswith("<ROLE_")
+            or token.startswith("<GENRE_")
+        ):
+            groups["special_body_banned_ids"].append(token_id)
+
+    for key in ["velocity_ids", "note_on_ids", "note_off_ids", "time_shift_ids", "special_body_banned_ids"]:
+        groups[key] = torch.tensor(sorted(groups[key]), dtype=torch.long, device=DEVICE)
+    return groups
 
 
 def top_k_top_p_filter(logits, top_k=0, top_p=1.0):
@@ -77,18 +121,97 @@ def get_banned_next_tokens(generated, no_repeat_ngram_size):
     return banned
 
 
+def token_pitch(token_name):
+    if token_name.startswith("NOTE_ON_") or token_name.startswith("NOTE_OFF_"):
+        try:
+            return int(token_name.split("_")[2], 16)
+        except Exception:
+            return None
+    return None
+
+
+def collect_active_pitches(generated, id2token):
+    active = set()
+    for token_id in generated:
+        token_name = id2token[token_id]
+        pitch = token_pitch(token_name)
+        if pitch is None:
+            continue
+        if token_name.startswith("NOTE_ON_"):
+            active.add(pitch)
+        elif token_name.startswith("NOTE_OFF_"):
+            active.discard(pitch)
+    return active
+
+
+def apply_generation_constraints(logits, generated, id2token, token_groups, eos_id=None, min_body_tokens=24):
+    constrained = logits.clone()
+
+    if token_groups["special_body_banned_ids"].numel() > 0:
+        constrained.index_fill_(0, token_groups["special_body_banned_ids"], float("-inf"))
+
+    prefix_len = 3
+    body_len = max(0, len(generated) - prefix_len)
+    if eos_id is not None and body_len < min_body_tokens:
+        constrained[eos_id] = float("-inf")
+
+    active_pitches = collect_active_pitches(generated[prefix_len:], id2token)
+    for pitch in active_pitches:
+        note_on_id = token_groups["note_on_pitch_to_id"].get(pitch)
+        if note_on_id is not None:
+            constrained[note_on_id] = float("-inf")
+    inactive_pitches = set(token_groups["note_off_pitch_to_id"].keys()) - active_pitches
+    for pitch in inactive_pitches:
+        note_off_id = token_groups["note_off_pitch_to_id"].get(pitch)
+        if note_off_id is not None:
+            constrained[note_off_id] = float("-inf")
+
+    last_token = id2token[generated[-1]]
+    if last_token.startswith("VELOCITY_"):
+        allowed = torch.tensor(
+            sorted(
+                token_groups["note_on_pitch_to_id"][pitch]
+                for pitch in (set(token_groups["note_on_pitch_to_id"].keys()) - active_pitches)
+            ),
+            dtype=torch.long,
+            device=DEVICE,
+        )
+        constrained.fill_(float("-inf"))
+        if allowed.numel() > 0:
+            constrained.index_copy_(0, allowed, logits.index_select(0, allowed))
+    else:
+        if token_groups["note_on_ids"].numel() > 0:
+            constrained.index_fill_(0, token_groups["note_on_ids"], float("-inf"))
+
+    if torch.isinf(constrained).all():
+        return logits
+    return constrained
+
+
 def sample_next_token(
     logits,
     generated,
+    id2token,
+    token_groups,
     temperature=1.0,
     top_k=0,
     top_p=1.0,
     repetition_penalty=1.0,
     no_repeat_ngram_size=0,
+    eos_id=None,
+    min_body_tokens=24,
 ):
     temperature = max(1e-5, float(temperature))
     adjusted = logits / temperature
     adjusted = apply_repetition_penalty(adjusted, generated, repetition_penalty)
+    adjusted = apply_generation_constraints(
+        adjusted,
+        generated,
+        id2token=id2token,
+        token_groups=token_groups,
+        eos_id=eos_id,
+        min_body_tokens=min_body_tokens,
+    )
 
     banned = get_banned_next_tokens(generated, no_repeat_ngram_size)
     if banned:
@@ -102,20 +225,50 @@ def sample_next_token(
     return torch.multinomial(probs, 1).item()
 
 
+def load_role_token_sequences(role):
+    role_path = DATASET_TOKENS_DIR / f"{role.lower()}.npy"
+    if not role_path.exists():
+        return []
+    return np.load(role_path, allow_pickle=True).tolist()
+
+
+def choose_primer_tokens(role, genre, primer_mode, primer_len, role_sequences_cache):
+    if primer_mode == "none" or primer_len <= 0:
+        return []
+
+    if role not in role_sequences_cache:
+        role_sequences_cache[role] = load_role_token_sequences(role)
+
+    role_sequences = role_sequences_cache[role]
+    genre_token = f"<GENRE_{genre}>"
+    filtered = [seq for seq in role_sequences if len(seq) > 2 and seq[0] == f"<ROLE_{role}>" and seq[1] == genre_token]
+    if not filtered:
+        filtered = [seq for seq in role_sequences if len(seq) > 2]
+    if not filtered:
+        return []
+
+    sequence = random.choice(filtered)
+    return list(sequence[2:2 + primer_len])
+
+
 def generate_tokens(
     model,
     token2id,
     id2token,
     role="MELODY",
     genre="TRAP",
-    max_len=512,
-    temperature=1.0,
-    top_k=20,
-    top_p=0.95,
-    repetition_penalty=1.1,
+    max_len=256,
+    temperature=0.95,
+    top_k=12,
+    top_p=0.9,
+    repetition_penalty=1.15,
     no_repeat_ngram_size=4,
     role_to_index=None,
     genre_to_index=None,
+    primer_mode="dataset",
+    primer_len=24,
+    role_sequences_cache=None,
+    min_body_tokens=24,
 ):
     role_token = f"<ROLE_{role}>"
     genre_token = f"<GENRE_{genre}>"
@@ -125,28 +278,41 @@ def generate_tokens(
 
     if role_to_index is None or genre_to_index is None:
         role_to_index, genre_to_index, _ = build_conditioning_maps(token2id)
+    if role_sequences_cache is None:
+        role_sequences_cache = {}
 
     role_idx = role_to_index.get(role, 0)
     genre_idx = genre_to_index.get(genre, 0)
     role_id = torch.tensor([role_idx], dtype=torch.long, device=DEVICE)
     genre_id = torch.tensor([genre_idx], dtype=torch.long, device=DEVICE)
+    token_groups = build_token_groups(token2id)
 
     generated = [token2id["<BOS>"], token2id[role_token], token2id[genre_token]]
+    generated.extend(
+        token2id.get(tok, token2id.get("<UNK>"))
+        for tok in choose_primer_tokens(role, genre, primer_mode, primer_len, role_sequences_cache)
+        if tok in token2id
+    )
     eos_id = token2id.get("<EOS>")
 
     model.eval()
     with torch.no_grad():
         for _ in range(max_len):
-            x = torch.tensor(generated, dtype=torch.long).unsqueeze(0).to(DEVICE)
+            context = generated[-model.max_len:]
+            x = torch.tensor(context, dtype=torch.long).unsqueeze(0).to(DEVICE)
             logits = model(x, role_id=role_id, genre_id=genre_id)[0, -1]
             next_token_id = sample_next_token(
                 logits=logits,
-                generated=generated,
+                generated=context,
+                id2token=id2token,
+                token_groups=token_groups,
                 temperature=temperature,
                 top_k=top_k,
                 top_p=top_p,
                 repetition_penalty=repetition_penalty,
                 no_repeat_ngram_size=no_repeat_ngram_size,
+                eos_id=eos_id,
+                min_body_tokens=min_body_tokens,
             )
             generated.append(next_token_id)
             if eos_id is not None and next_token_id == eos_id:
@@ -169,7 +335,7 @@ def tokens_to_part(tokens, part_name):
             current_offset += step * TIME_SHIFT_RESOLUTION
         elif tok.startswith("VELOCITY_"):
             bin_idx = int(tok.split("_")[1], 16)
-            last_velocity = int(bin_idx * (127 / 7))
+            last_velocity = max(1, min(127, int(round((bin_idx / 7) * 127))))
         elif tok.startswith("NOTE_ON_"):
             pitch = int(tok.split("_")[2], 16)
             active_notes[pitch] = (current_offset, last_velocity)
@@ -183,8 +349,18 @@ def tokens_to_part(tokens, part_name):
             note = m21.note.Note(pitch)
             note.offset = start
             note.quarterLength = dur
-            note.volume.velocity = max(1, min(127, velocity))
+            note.volume.velocity = velocity
             part.append(note)
+
+    if active_notes:
+        final_offset = current_offset + (2 * TIME_SHIFT_RESOLUTION)
+        for pitch, (start, velocity) in active_notes.items():
+            note = m21.note.Note(pitch)
+            note.offset = start
+            note.quarterLength = max(TIME_SHIFT_RESOLUTION, final_offset - start)
+            note.volume.velocity = velocity
+            part.append(note)
+
     return part
 
 
@@ -222,7 +398,12 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
     model_config = checkpoint.get("model_config") if isinstance(checkpoint, dict) else None
     if model_config is None:
-        model = TransformerLM(len(token2id), pad_id=token2id.get("<PAD>")).to(DEVICE)
+        model = TransformerLM(
+            len(token2id),
+            pad_id=token2id.get("<PAD>"),
+            num_roles=num_roles,
+            num_genres=num_genres,
+        ).to(DEVICE)
     else:
         if model_config.get("pad_id") is None:
             model_config = {**model_config, "pad_id": token2id.get("<PAD>")}
@@ -241,18 +422,38 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Generate MIDI samples")
     parser.add_argument("--checkpoint", type=str, default="checkpoints/model_best.pth")
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
-    parser.add_argument("--role", type=str, default="MELODY", choices=ROLES + ["ALL"])
-    parser.add_argument("--genre", type=str, default="TRAP")
-    parser.add_argument("--max-len", type=int, default=400)
-    parser.add_argument("--temperature", type=float, default=1.0)
-    parser.add_argument("--top-k", type=int, default=20)
-    parser.add_argument("--top-p", type=float, default=0.95)
-    parser.add_argument("--repetition-penalty", type=float, default=1.0)
+    parser.add_argument("--role", type=str, default="ALL", choices=ROLES + ["ALL"])
+    parser.add_argument("--genre", type=str, default="CLASSICAL")
+    parser.add_argument("--max-len", type=int, default=192)
+    parser.add_argument("--temperature", type=float, default=0.95)
+    parser.add_argument("--top-k", type=int, default=12)
+    parser.add_argument("--top-p", type=float, default=0.90)
+    parser.add_argument("--repetition-penalty", type=float, default=1.15)
     parser.add_argument("--no-repeat-ngram-size", type=int, default=4)
-    parser.add_argument("--samples", type=int, default=16)
+    parser.add_argument("--primer-mode", type=str, default="dataset", choices=["dataset", "none"])
+    parser.add_argument("--primer-len", type=int, default=24)
+    parser.add_argument("--min-body-tokens", type=int, default=24)
+    parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--out-dir", type=str, default="generated")
     return parser.parse_args()
+
+
+def save_metadata(out_dir, sample_name, args, tokens_by_role):
+    body_lengths = {}
+    eos_flags = {}
+    for role, tokens in tokens_by_role.items():
+        body = [t for t in tokens if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_"))]
+        body_lengths[role] = len(body)
+        eos_flags[role] = bool(tokens and tokens[-1] == "<EOS>")
+
+    payload = {
+        "config": vars(args),
+        "body_lengths": body_lengths,
+        "ended_by_eos": eos_flags,
+    }
+    with open(out_dir / f"{sample_name}.json", "w") as f:
+        json.dump(payload, f, indent=2)
 
 
 def main():
@@ -271,7 +472,12 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     model, token2id, id2token, role_to_index, genre_to_index = load_model_and_vocab(checkpoint_path, vocab_path)
+    role_sequences_cache = {}
     print(f"Device: {DEVICE}")
+    print(
+        f"Generation config: role={args.role}, genre={args.genre.upper()}, temp={args.temperature}, "
+        f"top_k={args.top_k}, top_p={args.top_p}, primer={args.primer_mode}:{args.primer_len}"
+    )
 
     eos_count = 0
     for i in range(1, args.samples + 1):
@@ -293,11 +499,17 @@ def main():
                     no_repeat_ngram_size=args.no_repeat_ngram_size,
                     role_to_index=role_to_index,
                     genre_to_index=genre_to_index,
+                    primer_mode=args.primer_mode,
+                    primer_len=args.primer_len,
+                    role_sequences_cache=role_sequences_cache,
+                    min_body_tokens=args.min_body_tokens,
                 )
                 tokens_by_role[role] = tokens
                 all_eos = all_eos and ended_by_eos
-            out_path = out_dir / f"sample_{i:02d}_arrangement_{args.genre.lower()}.mid"
+            sample_name = f"sample_{i:02d}_arrangement_{args.genre.lower()}"
+            out_path = out_dir / f"{sample_name}.mid"
             save_arrangement(tokens_by_role, out_path)
+            save_metadata(out_dir, sample_name, args, tokens_by_role)
             if all_eos:
                 eos_count += 1
         else:
@@ -315,12 +527,18 @@ def main():
                 no_repeat_ngram_size=args.no_repeat_ngram_size,
                 role_to_index=role_to_index,
                 genre_to_index=genre_to_index,
+                primer_mode=args.primer_mode,
+                primer_len=args.primer_len,
+                role_sequences_cache=role_sequences_cache,
+                min_body_tokens=args.min_body_tokens,
             )
-            out_path = out_dir / f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}.mid"
+            sample_name = f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}"
+            out_path = out_dir / f"{sample_name}.mid"
             save_single(tokens, out_path, args.role.upper())
+            save_metadata(out_dir, sample_name, args, {args.role.upper(): tokens})
             if ended_by_eos:
                 eos_count += 1
-        print(f"🎵 Saved: {out_path}")
+        print(f"Saved: {out_path}")
 
     print(f"EOS rate: {eos_count / max(1, args.samples):.3f}")
 
