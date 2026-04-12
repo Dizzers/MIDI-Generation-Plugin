@@ -397,6 +397,7 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
 
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
     model_config = checkpoint.get("model_config") if isinstance(checkpoint, dict) else None
+    
     if model_config is None:
         model = TransformerLM(
             len(token2id),
@@ -405,12 +406,22 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
             num_genres=num_genres,
         ).to(DEVICE)
     else:
-        if model_config.get("pad_id") is None:
-            model_config = {**model_config, "pad_id": token2id.get("<PAD>")}
-        if model_config.get("num_roles") is None:
-            model_config = {**model_config, "num_roles": num_roles}
-        if model_config.get("num_genres") is None:
-            model_config = {**model_config, "num_genres": num_genres}
+        # Создаём копию конфигурации
+        model_config = dict(model_config)
+        
+        # Удаляем vocab_size из model_config, если он там есть
+        if 'vocab_size' in model_config:
+            del model_config['vocab_size']
+        
+        # Устанавливаем недостающие параметры
+        if 'pad_id' not in model_config:
+            model_config['pad_id'] = token2id.get("<PAD>")
+        if 'num_roles' not in model_config:
+            model_config['num_roles'] = num_roles
+        if 'num_genres' not in model_config:
+            model_config['num_genres'] = num_genres
+        
+        # Создаём модель, передавая vocab_size как первый аргумент
         model = TransformerLM(len(token2id), **model_config).to(DEVICE)
 
     state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
