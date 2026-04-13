@@ -434,7 +434,7 @@ def parse_args():
     parser.add_argument("--checkpoint", type=str, default="checkpoints/model_best.pth")
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
     parser.add_argument("--role", type=str, default="ALL", choices=ROLES + ["ALL"])
-    parser.add_argument("--genre", type=str, default="CLASSICAL")
+    parser.add_argument("--genre", type=str, default="TRAP")
     parser.add_argument("--max-len", type=int, default=192)
     parser.add_argument("--temperature", type=float, default=0.95)
     parser.add_argument("--top-k", type=int, default=12)

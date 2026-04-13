@@ -16,6 +16,7 @@ os.makedirs(TOKENS_DIR, exist_ok=True)
 
 TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
+TARGET_GENRES = {"trap"}
 
 
 def velocity_bin(v):
@@ -81,7 +82,10 @@ def tokenize_dataset():
     vocab = set()
     errors = []
 
-    valid_entries = [e for e in files if e["status"] == "ok"]
+    valid_entries = [
+        e for e in files
+        if e["status"] == "ok" and ((not TARGET_GENRES) or e.get("genre", "").strip().lower() in TARGET_GENRES)
+    ]
     print(f" Токенизация {len(valid_entries)} валидных MIDI файлов...\n")
 
     for entry in tqdm(valid_entries, desc="Токенизация", unit="файл"):
@@ -146,7 +150,6 @@ def tokenize_dataset():
         "<ROLE_MELODY>",
         "<ROLE_BASS>",
         "<ROLE_CHORDS>",
-        "<GENRE_CLASSICAL>",
         "<GENRE_TRAP>"
     ]
 

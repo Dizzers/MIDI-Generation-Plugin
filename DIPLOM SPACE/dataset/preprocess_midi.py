@@ -8,7 +8,6 @@ import music21 as m21
 from tqdm import tqdm
 import subprocess
 import sys
-import pickle
 
 warnings.filterwarnings("ignore", category=m21.midi.translate.TranslateWarning)
 
@@ -16,89 +15,180 @@ TIMEOUT_SECONDS = 10
 
 MIN_TOTAL_NOTES = 5
 MIN_DURATION_SEC = 1
-
-MELODY_PITCH_MIN = 64
-BASS_PITCH_MAX = 75
-CHORD_POLYPHONY_MIN = 2.0
+MIN_TRACK_NOTES = 8
+TARGET_GENRES = {"trap"}
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 OUTPUT_DIR = str(BASE_DIR / "processed")
 
+
 def ensure_dirs():
     os.makedirs(os.path.join(OUTPUT_DIR, "meta"), exist_ok=True)
 
 
-def get_note_stats(notes):
-    pitches = [n.pitch.midi for n in notes if n.isNote]
+def _track_note_events(part):
+    """Extract per-note events from both Note and Chord objects."""
+    events = []
+    for obj in part.flatten().notes:
+        start = float(obj.offset)
+        dur = max(1e-3, float(obj.quarterLength))
+
+        if obj.isNote:
+            pitches = [int(obj.pitch.midi)]
+        elif obj.isChord:
+            pitches = [int(p.midi) for p in obj.pitches]
+        else:
+            continue
+
+        for pitch in pitches:
+            events.append((start, start + dur, pitch))
+    return events
+
+
+def _polyphony_features(events):
+    if not events:
+        return 0.0, 0.0
+
+    sweep = []
+    for start, end, _ in events:
+        sweep.append((start, +1))
+        sweep.append((end, -1))
+
+    sweep.sort(key=lambda x: (x[0], -x[1]))
+
+    cur = 0
+    peak = 0
+    weighted_sum = 0.0
+    total_time = 0.0
+    prev_t = sweep[0][0]
+
+    for t, delta in sweep:
+        dt = max(0.0, t - prev_t)
+        if dt > 0:
+            weighted_sum += cur * dt
+            total_time += dt
+        cur += delta
+        if cur > peak:
+            peak = cur
+        prev_t = t
+
+    mean_poly = (weighted_sum / total_time) if total_time > 0 else float(peak)
+    return float(peak), float(mean_poly)
+
+
+def _onset_chord_ratio(events):
+    if not events:
+        return 0.0
+
+    onset_map = defaultdict(int)
+    for start, _, _ in events:
+        key = round(start, 3)
+        onset_map[key] += 1
+
+    if not onset_map:
+        return 0.0
+
+    chord_like = sum(1 for c in onset_map.values() if c >= 2)
+    return chord_like / len(onset_map)
+
+
+def analyze_track(part):
+    events = _track_note_events(part)
+    if len(events) < MIN_TRACK_NOTES:
+        return None
+
+    pitches = [p for _, _, p in events]
     if not pitches:
         return None
 
-    durations = [n.quarterLength for n in notes if n.isNote]
+    peak_poly, mean_poly = _polyphony_features(events)
+    chord_onset_ratio = _onset_chord_ratio(events)
 
-    return {
+    low_ratio = sum(1 for p in pitches if p <= 52) / len(pitches)
+    high_ratio = sum(1 for p in pitches if p >= 72) / len(pitches)
+
+    stats = {
         "avg_pitch": float(np.mean(pitches)),
         "min_pitch": int(np.min(pitches)),
         "max_pitch": int(np.max(pitches)),
         "pitch_range": int(np.max(pitches) - np.min(pitches)),
         "note_count": len(pitches),
-        "avg_duration": float(np.mean(durations))
+        "duration": float(part.highestTime),
+        "polyphony_peak": peak_poly,
+        "polyphony_mean": mean_poly,
+        "chord_onset_ratio": float(chord_onset_ratio),
+        "low_pitch_ratio": float(low_ratio),
+        "high_pitch_ratio": float(high_ratio),
     }
-
-
-def estimate_polyphony(part):
-    events = []
-    for n in part.flat.notes:
-        if n.isNote:
-            start = float(n.offset)
-            end = float(n.offset + n.quarterLength)
-            events.append((start, 1))
-            events.append((end, -1))
-
-    if not events:
-        return 0.0
-
-    events.sort()
-    current = 0
-    max_poly = 0
-    for _, e in events:
-        current += e
-        max_poly = max(max_poly, current)
-
-    return float(max_poly)
-
-
-def analyze_track(part):
-    notes = list(part.flat.notes)
-    if len(notes) < 5:
-        return None
-
-    stats = get_note_stats(notes)
-    if stats is None:
-        return None
-
-    polyphony = estimate_polyphony(part)
-
-    stats["polyphony"] = polyphony
-    stats["duration"] = float(part.highestTime)
-
     return stats
+
+
+def _clamp01(x):
+    return float(max(0.0, min(1.0, x)))
 
 
 def classify_role(stats):
     """
-    Возвращает: "melody", "bass", "chords" или None
+    Return one of: melody, bass, chords, or None.
+    We prefer precision over recall to reduce noisy role labels.
     """
-    if stats["avg_pitch"] >= MELODY_PITCH_MIN and stats["polyphony"] <= 1.5:
-        return "melody"
+    avg_pitch = stats["avg_pitch"]
+    pitch_range = stats["pitch_range"]
+    poly_peak = stats["polyphony_peak"]
+    poly_mean = stats["polyphony_mean"]
+    chord_ratio = stats["chord_onset_ratio"]
+    low_ratio = stats["low_pitch_ratio"]
+    high_ratio = stats["high_pitch_ratio"]
 
-    if stats["avg_pitch"] <= BASS_PITCH_MAX and stats["polyphony"] <= 1.5:
-        return "bass"
+    score_chords = (
+        0.45 * _clamp01((poly_mean - 1.10) / 1.2)
+        + 0.25 * _clamp01((poly_peak - 2.0) / 4.0)
+        + 0.30 * _clamp01((chord_ratio - 0.15) / 0.6)
+    )
 
-    if stats["polyphony"] >= CHORD_POLYPHONY_MIN:
-        return "chords"
+    score_bass = (
+        0.50 * low_ratio
+        + 0.20 * _clamp01((62.0 - avg_pitch) / 20.0)
+        + 0.20 * _clamp01((1.35 - poly_mean) / 0.6)
+        + 0.10 * _clamp01((28.0 - pitch_range) / 24.0)
+    )
 
-    return None
+    score_melody = (
+        0.45 * high_ratio
+        + 0.25 * _clamp01((avg_pitch - 58.0) / 24.0)
+        + 0.20 * _clamp01((1.35 - poly_mean) / 0.6)
+        + 0.10 * _clamp01((pitch_range - 6.0) / 24.0)
+    )
+
+    scores = {
+        "chords": score_chords,
+        "bass": score_bass,
+        "melody": score_melody,
+    }
+
+    ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)
+    best_role, best_score = ranked[0]
+    second_score = ranked[1][1]
+
+    # Hard gates to avoid obvious role confusion.
+    if best_role == "chords":
+        if not (poly_mean >= 1.25 and poly_peak >= 2 and chord_ratio >= 0.18):
+            return None
+    elif best_role == "bass":
+        if not (low_ratio >= 0.45 and poly_mean <= 1.35):
+            return None
+    elif best_role == "melody":
+        if not (high_ratio >= 0.30 and poly_mean <= 1.35):
+            return None
+
+    # Reject ambiguous tracks.
+    if best_score < 0.42:
+        return None
+    if (best_score - second_score) < 0.08:
+        return None
+
+    return best_role
 
 
 def process_midi_file(path, genre):
@@ -128,6 +218,7 @@ def process_midi_file(path, genre):
         result["status"] = "error"
         result["reason"] = f"parts_error: {str(e)[:100]}"
         return result
+
     if not parts:
         result["status"] = "rejected"
         result["reason"] = "no_parts"
@@ -176,23 +267,26 @@ def process_dataset(root_dir):
     stats = defaultdict(int)
     errors = []
     timeouts = []
-    
+
     all_files = []
     for genre in os.listdir(root_dir):
+        genre_norm = genre.strip().lower()
+        if TARGET_GENRES and genre_norm not in TARGET_GENRES:
+            continue
+
         genre_path = os.path.join(root_dir, genre)
         if not os.path.isdir(genre_path):
             continue
-        
+
         for fname in os.listdir(genre_path):
             if fname.lower().endswith(".mid"):
                 full_path = os.path.join(genre_path, fname)
-                all_files.append((full_path, genre))
-    
+                all_files.append((full_path, genre_norm))
+
     print(f" Найдено {len(all_files)} MIDI файлов")
-    print(f" Начинаем обработку...\n")
+    print(" Начинаем обработку...\n")
 
     for full_path, genre in tqdm(all_files, desc="Обработка MIDI", unit="файл"):
-        
         try:
             result = subprocess.run(
                 [sys.executable, str(BASE_DIR / "_parse_single_midi.py"), full_path],
@@ -201,18 +295,16 @@ def process_dataset(root_dir):
                 timeout=TIMEOUT_SECONDS,
                 cwd=str(PROJECT_ROOT)
             )
-            
-            if result.returncode != 0:
 
+            if result.returncode != 0:
                 stats["error"] += 1
                 errors.append({
                     "file": os.path.basename(full_path),
                     "reason": result.stdout.strip()[:100]
                 })
                 continue
-                
-        except subprocess.TimeoutExpired:
 
+        except subprocess.TimeoutExpired:
             stats["error"] += 1
             timeouts.append(full_path)
             errors.append({
@@ -221,15 +313,13 @@ def process_dataset(root_dir):
             })
             continue
         except Exception as e:
-            
             stats["error"] += 1
             errors.append({
                 "file": os.path.basename(full_path),
                 "reason": f"subprocess_error: {str(e)[:100]}"
             })
             continue
-        
-        
+
         try:
             res = process_midi_file(full_path, genre)
             files_log.append(res)
@@ -261,8 +351,7 @@ def process_dataset(root_dir):
 
     with open(os.path.join(OUTPUT_DIR, "meta", "errors.json"), "w") as f:
         json.dump(errors, f, indent=2)
-    
-    
+
     if timeouts:
         with open(os.path.join(OUTPUT_DIR, "meta", "timeout_files.txt"), "w") as f:
             for pf in timeouts:
@@ -276,7 +365,7 @@ def process_dataset(root_dir):
     print(f"Ошибок (включая timeout): {stats['error']:6d}")
     if timeouts:
         print(f"\n⚠️  Зависших файлов: {len(timeouts)}")
-        print(f"   Сохранены в: dataset/processed/meta/timeout_files.txt")
+        print("   Сохранены в: dataset/processed/meta/timeout_files.txt")
     print("=" * 50)
 
 
