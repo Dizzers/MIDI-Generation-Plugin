@@ -23,6 +23,11 @@ else:
 
 TIME_SHIFT_RESOLUTION = 0.05
 ROLES = ["MELODY", "BASS", "CHORDS"]
+ROLE_PITCH_RANGE = {
+    "MELODY": (50, 96),
+    "BASS": (28, 60),
+    "CHORDS": (40, 84),
+}
 
 
 def build_conditioning_maps(token2id):
@@ -144,7 +149,30 @@ def collect_active_pitches(generated, id2token):
     return active
 
 
-def apply_generation_constraints(logits, generated, id2token, token_groups, eos_id=None, min_body_tokens=24):
+def body_elapsed_seconds(generated, id2token, prefix_len=3):
+    elapsed = 0.0
+    for token_id in generated[prefix_len:]:
+        token_name = id2token[token_id]
+        if token_name.startswith("TIME_SHIFT_"):
+            try:
+                elapsed += int(token_name.split("_")[2], 16) * TIME_SHIFT_RESOLUTION
+            except Exception:
+                pass
+    return elapsed
+
+
+def last_note_on_pitch(generated, id2token, prefix_len=3):
+    for token_id in reversed(generated[prefix_len:]):
+        token_name = id2token[token_id]
+        if token_name.startswith("NOTE_ON_"):
+            try:
+                return int(token_name.split("_")[2], 16)
+            except Exception:
+                return None
+    return None
+
+
+def apply_generation_constraints(logits, generated, id2token, token_groups, role=None, eos_id=None, min_body_tokens=24, max_melody_leap=12):
     constrained = logits.clone()
 
     if token_groups["special_body_banned_ids"].numel() > 0:
@@ -166,13 +194,25 @@ def apply_generation_constraints(logits, generated, id2token, token_groups, eos_
         if note_off_id is not None:
             constrained[note_off_id] = float("-inf")
 
+    pitch_lo, pitch_hi = ROLE_PITCH_RANGE.get(role or "", (0, 127))
+    for pitch, note_on_id in token_groups["note_on_pitch_to_id"].items():
+        if pitch < pitch_lo or pitch > pitch_hi:
+            constrained[note_on_id] = float("-inf")
+
     last_token = id2token[generated[-1]]
     if last_token.startswith("VELOCITY_"):
+        candidate_pitches = set(token_groups["note_on_pitch_to_id"].keys()) - active_pitches
+
+        if role == "MELODY":
+            lp = last_note_on_pitch(generated, id2token, prefix_len=prefix_len)
+            if lp is not None:
+                candidate_pitches = {
+                    p for p in candidate_pitches
+                    if abs(p - lp) <= max_melody_leap
+                }
+
         allowed = torch.tensor(
-            sorted(
-                token_groups["note_on_pitch_to_id"][pitch]
-                for pitch in (set(token_groups["note_on_pitch_to_id"].keys()) - active_pitches)
-            ),
+            sorted(token_groups["note_on_pitch_to_id"][pitch] for pitch in candidate_pitches),
             dtype=torch.long,
             device=DEVICE,
         )
@@ -193,6 +233,7 @@ def sample_next_token(
     generated,
     id2token,
     token_groups,
+    role=None,
     temperature=1.0,
     top_k=0,
     top_p=1.0,
@@ -200,6 +241,7 @@ def sample_next_token(
     no_repeat_ngram_size=0,
     eos_id=None,
     min_body_tokens=24,
+    max_melody_leap=12,
 ):
     temperature = max(1e-5, float(temperature))
     adjusted = logits / temperature
@@ -209,8 +251,10 @@ def sample_next_token(
         generated,
         id2token=id2token,
         token_groups=token_groups,
+        role=role,
         eos_id=eos_id,
         min_body_tokens=min_body_tokens,
+        max_melody_leap=max_melody_leap,
     )
 
     banned = get_banned_next_tokens(generated, no_repeat_ngram_size)
@@ -269,6 +313,8 @@ def generate_tokens(
     primer_len=24,
     role_sequences_cache=None,
     min_body_tokens=24,
+    target_seconds=2.5,
+    max_melody_leap=12,
 ):
     role_token = f"<ROLE_{role}>"
     genre_token = f"<GENRE_{genre}>"
@@ -294,6 +340,7 @@ def generate_tokens(
         if tok in token2id
     )
     eos_id = token2id.get("<EOS>")
+    elapsed = body_elapsed_seconds(generated, id2token, prefix_len=3)
 
     model.eval()
     with torch.no_grad():
@@ -306,6 +353,7 @@ def generate_tokens(
                 generated=context,
                 id2token=id2token,
                 token_groups=token_groups,
+                role=role,
                 temperature=temperature,
                 top_k=top_k,
                 top_p=top_p,
@@ -313,13 +361,172 @@ def generate_tokens(
                 no_repeat_ngram_size=no_repeat_ngram_size,
                 eos_id=eos_id,
                 min_body_tokens=min_body_tokens,
+                max_melody_leap=max_melody_leap,
             )
             generated.append(next_token_id)
+
+            next_tok = id2token[next_token_id]
+            if next_tok.startswith("TIME_SHIFT_"):
+                try:
+                    elapsed += int(next_tok.split("_")[2], 16) * TIME_SHIFT_RESOLUTION
+                except Exception:
+                    pass
+
             if eos_id is not None and next_token_id == eos_id:
+                break
+
+            if target_seconds is not None and elapsed >= float(target_seconds) and len(generated) >= (3 + min_body_tokens):
+                if eos_id is not None:
+                    generated.append(eos_id)
                 break
 
     ended_by_eos = bool(eos_id is not None and generated[-1] == eos_id)
     return [id2token[i] for i in generated], ended_by_eos
+
+
+def _body_tokens(tokens):
+    return [
+        t for t in tokens
+        if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_"))
+    ]
+
+
+def _ngram_repeat_rate(tokens, n=4):
+    body = _body_tokens(tokens)
+    if len(body) < n:
+        return 0.0
+    grams = [tuple(body[i:i+n]) for i in range(len(body) - n + 1)]
+    return 1.0 - (len(set(grams)) / max(1, len(grams)))
+
+
+def _note_on_off_balance(tokens):
+    body = _body_tokens(tokens)
+    on = sum(1 for t in body if t.startswith("NOTE_ON_"))
+    off = sum(1 for t in body if t.startswith("NOTE_OFF_"))
+    return 1.0 - abs(on - off) / max(1, on + off)
+
+
+def _quick_quality_score(tokens, role):
+    body = _body_tokens(tokens)
+    if not body:
+        return -1.0
+
+    repeat = _ngram_repeat_rate(tokens, n=4)
+    balance = _note_on_off_balance(tokens)
+    note_on = [t for t in body if t.startswith("NOTE_ON_")]
+    pitches = []
+    for t in note_on:
+        try:
+            pitches.append(int(t.split("_")[2], 16))
+        except Exception:
+            pass
+
+    if not pitches:
+        return -1.0
+
+    pitch_range = max(pitches) - min(pitches)
+
+    # role-sensitive soft priors
+    if role == "BASS":
+        role_score = sum(1 for p in pitches if p <= 55) / len(pitches)
+    elif role == "MELODY":
+        role_score = sum(1 for p in pitches if p >= 52) / len(pitches)
+    else:
+        role_score = min(1.0, pitch_range / 18.0)
+
+    # higher is better
+    return (0.45 * balance) + (0.30 * role_score) + (0.25 * (1.0 - repeat))
+
+
+def generate_best_candidate(
+    model,
+    token2id,
+    id2token,
+    role,
+    genre,
+    max_len,
+    temperature,
+    top_k,
+    top_p,
+    repetition_penalty,
+    no_repeat_ngram_size,
+    role_to_index,
+    genre_to_index,
+    primer_mode,
+    primer_len,
+    role_sequences_cache,
+    min_body_tokens,
+    target_seconds,
+    max_melody_leap,
+    candidates_per_sample=4,
+    diversity_jitter=0.08,
+):
+    best = None
+    best_score = None
+    seen = set()
+
+    attempts = max(1, int(candidates_per_sample))
+    for _ in range(attempts):
+        t = max(0.75, float(temperature) + random.uniform(-diversity_jitter, diversity_jitter))
+        p = min(0.98, max(0.84, float(top_p) + random.uniform(-0.03, 0.03)))
+        k = max(8, int(top_k + random.randint(-3, 3)))
+
+        tokens, ended = generate_tokens(
+            model=model,
+            token2id=token2id,
+            id2token=id2token,
+            role=role,
+            genre=genre,
+            max_len=max_len,
+            temperature=t,
+            top_k=k,
+            top_p=p,
+            repetition_penalty=repetition_penalty,
+            no_repeat_ngram_size=no_repeat_ngram_size,
+            role_to_index=role_to_index,
+            genre_to_index=genre_to_index,
+            primer_mode=primer_mode,
+            primer_len=primer_len,
+            role_sequences_cache=role_sequences_cache,
+            min_body_tokens=min_body_tokens,
+            target_seconds=target_seconds,
+            max_melody_leap=max_melody_leap,
+        )
+
+        sig = tuple(_body_tokens(tokens))
+        if sig in seen:
+            continue
+        seen.add(sig)
+
+        score = _quick_quality_score(tokens, role)
+        if best is None or score > best_score:
+            best = (tokens, ended)
+            best_score = score
+
+    if best is None:
+        return generate_tokens(
+            model=model,
+            token2id=token2id,
+            id2token=id2token,
+            role=role,
+            genre=genre,
+            max_len=max_len,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
+            no_repeat_ngram_size=no_repeat_ngram_size,
+            role_to_index=role_to_index,
+            genre_to_index=genre_to_index,
+            primer_mode=primer_mode,
+            primer_len=primer_len,
+            role_sequences_cache=role_sequences_cache,
+            min_body_tokens=min_body_tokens,
+            target_seconds=target_seconds,
+            max_melody_leap=max_melody_leap,
+        )
+
+    return best
 
 
 def tokens_to_part(tokens, part_name):
@@ -435,16 +642,20 @@ def parse_args():
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
     parser.add_argument("--role", type=str, default="ALL", choices=ROLES + ["ALL"])
     parser.add_argument("--genre", type=str, default="TRAP")
-    parser.add_argument("--max-len", type=int, default=192)
-    parser.add_argument("--temperature", type=float, default=0.95)
-    parser.add_argument("--top-k", type=int, default=12)
-    parser.add_argument("--top-p", type=float, default=0.90)
-    parser.add_argument("--repetition-penalty", type=float, default=1.15)
+    parser.add_argument("--max-len", type=int, default=128)
+    parser.add_argument("--temperature", type=float, default=1.00)
+    parser.add_argument("--top-k", type=int, default=16)
+    parser.add_argument("--top-p", type=float, default=0.93)
+    parser.add_argument("--repetition-penalty", type=float, default=1.20)
     parser.add_argument("--no-repeat-ngram-size", type=int, default=4)
     parser.add_argument("--primer-mode", type=str, default="dataset", choices=["dataset", "none"])
     parser.add_argument("--primer-len", type=int, default=24)
     parser.add_argument("--min-body-tokens", type=int, default=24)
+    parser.add_argument("--target-seconds", type=float, default=2.5)
+    parser.add_argument("--max-melody-leap", type=int, default=12)
     parser.add_argument("--samples", type=int, default=4)
+    parser.add_argument("--candidates-per-sample", type=int, default=4)
+    parser.add_argument("--diversity-jitter", type=float, default=0.08)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--out-dir", type=str, default="generated")
     return parser.parse_args()
@@ -487,7 +698,9 @@ def main():
     print(f"Device: {DEVICE}")
     print(
         f"Generation config: role={args.role}, genre={args.genre.upper()}, temp={args.temperature}, "
-        f"top_k={args.top_k}, top_p={args.top_p}, primer={args.primer_mode}:{args.primer_len}"
+        f"top_k={args.top_k}, top_p={args.top_p}, primer={args.primer_mode}:{args.primer_len}, "
+        f"target_seconds={args.target_seconds}, max_melody_leap={args.max_melody_leap}, "
+        f"candidates={args.candidates_per_sample}, jitter={args.diversity_jitter}"
     )
 
     eos_count = 0
@@ -496,7 +709,7 @@ def main():
             tokens_by_role = {}
             all_eos = True
             for role in ROLES:
-                tokens, ended_by_eos = generate_tokens(
+                tokens, ended_by_eos = generate_best_candidate(
                     model=model,
                     token2id=token2id,
                     id2token=id2token,
@@ -514,6 +727,10 @@ def main():
                     primer_len=args.primer_len,
                     role_sequences_cache=role_sequences_cache,
                     min_body_tokens=args.min_body_tokens,
+                    target_seconds=args.target_seconds,
+                    max_melody_leap=args.max_melody_leap,
+                    candidates_per_sample=args.candidates_per_sample,
+                    diversity_jitter=args.diversity_jitter,
                 )
                 tokens_by_role[role] = tokens
                 all_eos = all_eos and ended_by_eos
@@ -524,7 +741,7 @@ def main():
             if all_eos:
                 eos_count += 1
         else:
-            tokens, ended_by_eos = generate_tokens(
+            tokens, ended_by_eos = generate_best_candidate(
                 model=model,
                 token2id=token2id,
                 id2token=id2token,
@@ -542,6 +759,10 @@ def main():
                 primer_len=args.primer_len,
                 role_sequences_cache=role_sequences_cache,
                 min_body_tokens=args.min_body_tokens,
+                target_seconds=args.target_seconds,
+                max_melody_leap=args.max_melody_leap,
+                candidates_per_sample=args.candidates_per_sample,
+                diversity_jitter=args.diversity_jitter,
             )
             sample_name = f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}"
             out_path = out_dir / f"{sample_name}.mid"
