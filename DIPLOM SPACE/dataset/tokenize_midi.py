@@ -1,11 +1,10 @@
 import os
 import json
-import numpy as np
-import music21 as m21
 from collections import defaultdict
+
+import music21 as m21
+import numpy as np
 from tqdm import tqdm
-
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_DIR = os.path.join(BASE_DIR, "midi_raw")
@@ -17,6 +16,19 @@ os.makedirs(TOKENS_DIR, exist_ok=True)
 TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
 TARGET_GENRES = {"trap"}
+
+# Semi-auto controls to reduce chords domination without manual labeling.
+TRACK_LIMIT_PER_FILE = {
+    "chords": 1,
+    "melody": 3,
+    "bass": 2,
+}
+ROLE_SEQUENCE_CAP = {
+    "chords": 1200,
+    "melody": None,
+    "bass": None,
+}
+RNG_SEED = 42
 
 
 def velocity_bin(v):
@@ -50,8 +62,35 @@ def extract_events(part):
             events.append((start + dur, 0, "NOTE_OFF", pitch, None))
 
     events.sort(key=lambda x: (x[0], x[1], x[3]))
-
     return events
+
+
+def role_quality_pass(role, events):
+    note_on = [e for e in events if e[2] == "NOTE_ON"]
+    if len(note_on) < 8:
+        return False
+
+    pitches = [e[3] for e in note_on]
+    avg_pitch = float(np.mean(pitches)) if pitches else 0.0
+
+    onset_counts = defaultdict(int)
+    for t, _, etype, _, _ in note_on:
+        onset_counts[round(float(t), 3)] += 1
+    chord_onset_ratio = (
+        sum(1 for c in onset_counts.values() if c >= 2) / max(1, len(onset_counts))
+    )
+
+    if role == "chords":
+        return chord_onset_ratio >= 0.22
+
+    if role == "melody":
+        return chord_onset_ratio <= 0.30 and avg_pitch >= 50
+
+    if role == "bass":
+        low_ratio = sum(1 for p in pitches if p <= 55) / max(1, len(pitches))
+        return chord_onset_ratio <= 0.32 and low_ratio >= 0.28
+
+    return True
 
 
 def events_to_tokens(events):
@@ -73,7 +112,21 @@ def events_to_tokens(events):
     return tokens
 
 
+def cap_role_sequences(role_tokens):
+    rng = np.random.default_rng(RNG_SEED)
+    for role in ["chords", "melody", "bass"]:
+        cap = ROLE_SEQUENCE_CAP.get(role)
+        seqs = role_tokens.get(role, [])
+        if cap is None or len(seqs) <= cap:
+            continue
+        idx = rng.choice(len(seqs), size=cap, replace=False)
+        role_tokens[role] = [seqs[i] for i in idx]
+        print(f"{role:10s}: capped to {len(role_tokens[role])}")
+
+
 def tokenize_dataset():
+    print(f"tokenize_midi.py path: {os.path.abspath(__file__)}")
+    print(f"TARGET_GENRES={TARGET_GENRES}, TRACK_LIMIT_PER_FILE={TRACK_LIMIT_PER_FILE}, ROLE_SEQUENCE_CAP={ROLE_SEQUENCE_CAP}")
 
     with open(os.path.join(META_DIR, "files.json")) as f:
         files = json.load(f)
@@ -97,10 +150,7 @@ def tokenize_dataset():
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            errors.append({
-                "file": entry["file"],
-                "error": str(e)[:100]
-            })
+            errors.append({"file": entry["file"], "error": str(e)[:100]})
             continue
 
         try:
@@ -109,6 +159,10 @@ def tokenize_dataset():
                 if not tracks:
                     continue
 
+                lim = TRACK_LIMIT_PER_FILE.get(role)
+                if lim is not None and len(tracks) > lim:
+                    tracks = tracks[:lim]
+
                 for tid in tracks:
                     part = score.parts[tid]
 
@@ -116,11 +170,13 @@ def tokenize_dataset():
                     if not events:
                         continue
 
+                    if not role_quality_pass(role, events):
+                        continue
+
                     tokens = [
                         f"<ROLE_{role.upper()}>",
                         f"<GENRE_{genre.upper()}>"
                     ]
-
                     tokens += events_to_tokens(events)
 
                     role_tokens[role].append(tokens)
@@ -128,17 +184,17 @@ def tokenize_dataset():
         except KeyboardInterrupt:
             raise
         except Exception as e:
-            errors.append({
-                "file": entry["file"],
-                "error": f"token_error: {str(e)[:100]}"
-            })
+            errors.append({"file": entry["file"], "error": f"token_error: {str(e)[:100]}"})
             continue
+
+    cap_role_sequences(role_tokens)
 
     print("\n" + "=" * 50)
     print("ТОКЕНИЗАЦИЯ ЗАВЕРШЕНА")
     print("=" * 50)
-    
-    for role, seqs in role_tokens.items():
+
+    for role in ["chords", "melody", "bass"]:
+        seqs = role_tokens.get(role, [])
         np.save(os.path.join(TOKENS_DIR, f"{role}.npy"), np.array(seqs, dtype=object))
         print(f"{role:10s}: {len(seqs):6d} sequences")
 
@@ -150,11 +206,10 @@ def tokenize_dataset():
         "<ROLE_MELODY>",
         "<ROLE_BASS>",
         "<ROLE_CHORDS>",
-        "<GENRE_TRAP>"
+        "<GENRE_TRAP>",
     ]
 
     vocab_clean = [t for t in vocab if t not in SPECIAL_TOKENS]
-
     vocab_list = SPECIAL_TOKENS + sorted(vocab_clean)
 
     token2id = {t: i for i, t in enumerate(vocab_list)}
@@ -170,13 +225,14 @@ def tokenize_dataset():
         json.dump(vocab_dict, f, indent=2)
 
     print(f"\n📊 Vocab size: {len(vocab_list)} tokens")
-    
+
     if errors:
         print(f" Ошибок при токенизации: {len(errors)}")
         with open(os.path.join(BASE_DIR, "processed", "tokenize_errors.json"), "w") as f:
             json.dump(errors, f, indent=2)
-    
+
     print("=" * 50)
+
 
 if __name__ == "__main__":
     tokenize_dataset()

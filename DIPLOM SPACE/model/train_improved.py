@@ -59,9 +59,9 @@ VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
 SAMPLING_STRATEGY = "role_cap"
 ROLE_SAMPLING_MAX_FRACTION = {
-    "chords": 0.40,
-    "melody": 0.35,
-    "bass": 0.25,
+    "chords": 0.34,
+    "melody": 0.40,
+    "bass": 0.26,
 }
 
 ROLE_WEIGHT_ALPHA = 0.8

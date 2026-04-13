@@ -144,7 +144,7 @@ def classify_role(stats):
     score_chords = (
         0.45 * _clamp01((poly_mean - 1.10) / 1.2)
         + 0.25 * _clamp01((poly_peak - 2.0) / 4.0)
-        + 0.30 * _clamp01((chord_ratio - 0.15) / 0.6)
+        + 0.30 * _clamp01((chord_ratio - 0.22) / 0.5)
     )
 
     score_bass = (
@@ -173,19 +173,19 @@ def classify_role(stats):
 
     # Hard gates to avoid obvious role confusion.
     if best_role == "chords":
-        if not (poly_mean >= 1.25 and poly_peak >= 2 and chord_ratio >= 0.18):
+        if not (poly_mean >= 1.30 and poly_peak >= 2 and chord_ratio >= 0.24):
             return None
     elif best_role == "bass":
-        if not (low_ratio >= 0.45 and poly_mean <= 1.35):
+        if not (low_ratio >= 0.36 and poly_mean <= 1.40):
             return None
     elif best_role == "melody":
-        if not (high_ratio >= 0.30 and poly_mean <= 1.35):
+        if not (high_ratio >= 0.22 and poly_mean <= 1.40):
             return None
 
     # Reject ambiguous tracks.
-    if best_score < 0.42:
+    if best_score < 0.36:
         return None
-    if (best_score - second_score) < 0.08:
+    if (best_score - second_score) < 0.05:
         return None
 
     return best_role

@@ -7,7 +7,7 @@ MAX_LEN = 256
 STRIDE = 128
 SHUFFLE_SEED = 42
 MAX_CHUNKS_PER_ROLE = {
-    "chords": 8000,
+    "chords": 3000,
     "melody": None,
     "bass": None,
 }

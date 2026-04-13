@@ -202,26 +202,38 @@ class MIDIDataset(Dataset):
         new_val = max(0, min(max(self.velocity_values) if self.velocity_values else 7, val + jitter))
         return f"VELOCITY_{new_val:02X}"
 
-    def _apply_augmentation(self, tokens):
+    def _apply_augmentation(self, tokens, role=None):
         tokens_out = list(tokens)
         if not self.augment_config:
             return tokens_out
 
-        if self.rng.random() < self.augment_config.get("transpose_prob", 0.0):
-            tr = int(self.augment_config.get("transpose_range", 0))
+        role_overrides = self.augment_config.get("role_overrides", {})
+        role_cfg = role_overrides.get(role, {}) if role is not None else {}
+
+        transpose_prob = role_cfg.get("transpose_prob", self.augment_config.get("transpose_prob", 0.0))
+        transpose_range = role_cfg.get("transpose_range", self.augment_config.get("transpose_range", 0))
+
+        time_stretch_prob = role_cfg.get("time_stretch_prob", self.augment_config.get("time_stretch_prob", 0.0))
+        time_stretch_range = role_cfg.get("time_stretch_range", self.augment_config.get("time_stretch_range", (1.0, 1.0)))
+
+        velocity_jitter_prob = role_cfg.get("velocity_jitter_prob", self.augment_config.get("velocity_jitter_prob", 0.0))
+        velocity_jitter = role_cfg.get("velocity_jitter", self.augment_config.get("velocity_jitter", 0))
+
+        if self.rng.random() < transpose_prob:
+            tr = int(transpose_range)
             if tr > 0:
                 semitones = self.rng.randint(-tr, tr)
                 if semitones != 0:
                     tokens_out = [self._shift_note_token(t, semitones) for t in tokens_out]
 
-        if self.rng.random() < self.augment_config.get("time_stretch_prob", 0.0):
-            low, high = self.augment_config.get("time_stretch_range", (1.0, 1.0))
+        if self.rng.random() < time_stretch_prob:
+            low, high = time_stretch_range
             if low != 1.0 or high != 1.0:
                 factor = self.rng.uniform(low, high)
                 tokens_out = [self._stretch_time_token(t, factor) for t in tokens_out]
 
-        if self.rng.random() < self.augment_config.get("velocity_jitter_prob", 0.0):
-            jitter = int(self.augment_config.get("velocity_jitter", 0))
+        if self.rng.random() < velocity_jitter_prob:
+            jitter = int(velocity_jitter)
             if jitter > 0:
                 j = self.rng.randint(-jitter, jitter)
                 if j != 0:
@@ -243,7 +255,7 @@ class MIDIDataset(Dataset):
         tokens = self.data[role][item_idx]
 
         if self.apply_augmentation:
-            tokens = self._apply_augmentation(tokens)
+            tokens = self._apply_augmentation(tokens, role=role)
 
         role_idx = self.role_to_index.get(role, 0)
         genre_idx = self._extract_genre_index(tokens)
