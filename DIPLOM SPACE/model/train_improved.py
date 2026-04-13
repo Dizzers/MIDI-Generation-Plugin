@@ -50,7 +50,7 @@ BATCH_SIZE = 16
 LEARNING_RATE = 2e-4
 WEIGHT_DECAY = 0.01
 
-SAMPLES_PER_EPOCH = 12000
+SAMPLES_PER_EPOCH = 8000
 GRAD_ACCUM_STEPS = 1
 LABEL_SMOOTHING = 0.05
 
@@ -68,12 +68,38 @@ ROLE_WEIGHT_ALPHA = 0.8
 MAX_ROLE_WEIGHT = 10.0
 
 AUGMENT_CONFIG = {
-    "transpose_prob": 0.5,
-    "transpose_range": 5,
-    "time_stretch_prob": 0.35,
-    "time_stretch_range": (0.9, 1.1),
-    "velocity_jitter_prob": 0.35,
+    "transpose_prob": 0.20,
+    "transpose_range": 2,
+    "time_stretch_prob": 0.20,
+    "time_stretch_range": (0.95, 1.05),
+    "velocity_jitter_prob": 0.20,
     "velocity_jitter": 1,
+    "role_overrides": {
+        "melody": {
+            "transpose_prob": 0.55,
+            "transpose_range": 5,
+            "time_stretch_prob": 0.40,
+            "time_stretch_range": (0.90, 1.10),
+            "velocity_jitter_prob": 0.45,
+            "velocity_jitter": 2,
+        },
+        "bass": {
+            "transpose_prob": 0.65,
+            "transpose_range": 4,
+            "time_stretch_prob": 0.35,
+            "time_stretch_range": (0.92, 1.08),
+            "velocity_jitter_prob": 0.35,
+            "velocity_jitter": 1,
+        },
+        "chords": {
+            "transpose_prob": 0.10,
+            "transpose_range": 2,
+            "time_stretch_prob": 0.10,
+            "time_stretch_range": (0.97, 1.03),
+            "velocity_jitter_prob": 0.10,
+            "velocity_jitter": 1,
+        },
+    },
 }
 
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
@@ -81,7 +107,7 @@ CHUNKS_DIR = PROJECT_ROOT / "dataset" / "processed" / "chunks"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
-RESUME_FROM_CHECKPOINT = True
+RESUME_FROM_CHECKPOINT = False
 RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
 LOAD_OPTIMIZER_STATE = False
 ALLOW_OLD_CHECKPOINT_RESUME = False
