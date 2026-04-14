@@ -303,8 +303,8 @@ def weighted_loss(logits, targets, role_token_ids, role_weights, pad_id):
     ).view(batch_size, seq_len)
 
     valid_mask = (targets != pad_id)
-    # Ignore the first two predicted tokens (<ROLE_...> and <GENRE_...>) in loss/metrics.
-    prefix_len = min(2, seq_len)
+    # Ignore the first three predicted tokens (<ROLE_...>, <GENRE_...>, <KEY_...>) in loss/metrics.
+    prefix_len = min(3, seq_len)
     valid_mask[:, :prefix_len] = False
     valid_mask_f = valid_mask.float()
     token_count = valid_mask_f.sum(dim=1).clamp_min(1.0)
@@ -424,7 +424,7 @@ def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_en
             ).view(batch_size, seq_len)
 
             valid_mask = (y != pad_id)
-            prefix_len = min(2, seq_len)
+            prefix_len = min(3, seq_len)
             valid_mask[:, :prefix_len] = False
             token_count = valid_mask.sum(dim=1).clamp_min(1)
             sample_losses = (token_losses * valid_mask.float()).sum(dim=1) / token_count.float()

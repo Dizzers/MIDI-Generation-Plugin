@@ -17,7 +17,6 @@ TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
 TARGET_GENRES = {"trap"}
 
-# Semi-auto controls to reduce chords domination without manual labeling.
 TRACK_LIMIT_PER_FILE = {
     "chords": 1,
     "melody": 3,
@@ -30,6 +29,14 @@ ROLE_SEQUENCE_CAP = {
 }
 RNG_SEED = 42
 
+KEY_TOKENS = [
+    *(f"<KEY_{pc}_MAJ>" for pc in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]),
+    *(f"<KEY_{pc}_MIN>" for pc in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]),
+    "<KEY_UNKNOWN>",
+]
+
+NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+
 
 def velocity_bin(v):
     b = int((v / 127) * (VELOCITY_BINS - 1))
@@ -39,6 +46,23 @@ def velocity_bin(v):
 def quantize_time(delta):
     steps = int(round(delta / TIME_SHIFT_RESOLUTION))
     return max(1, steps)
+
+
+def detect_key_token(score):
+    try:
+        k = score.analyze("Krumhansl")
+        tonic = k.tonic.name.replace("-", "b")
+        mode = "MAJ" if (k.mode or "major").lower().startswith("maj") else "MIN"
+
+        # Normalize to sharp note names for compact vocab.
+        pc = m21.pitch.Pitch(tonic).pitchClass
+        root = NOTE_NAMES[int(pc) % 12]
+        tok = f"<KEY_{root}_{mode}>"
+        if tok in KEY_TOKENS:
+            return tok
+    except Exception:
+        pass
+    return "<KEY_UNKNOWN>"
 
 
 def extract_events(part):
@@ -147,6 +171,7 @@ def tokenize_dataset():
 
         try:
             score = m21.converter.parse(midi_path, forceSource=True)
+            key_token = detect_key_token(score)
         except KeyboardInterrupt:
             raise
         except Exception as e:
@@ -175,7 +200,8 @@ def tokenize_dataset():
 
                     tokens = [
                         f"<ROLE_{role.upper()}>",
-                        f"<GENRE_{genre.upper()}>"
+                        f"<GENRE_{genre.upper()}>",
+                        key_token,
                     ]
                     tokens += events_to_tokens(events)
 
@@ -207,6 +233,7 @@ def tokenize_dataset():
         "<ROLE_BASS>",
         "<ROLE_CHORDS>",
         "<GENRE_TRAP>",
+        *KEY_TOKENS,
     ]
 
     vocab_clean = [t for t in vocab if t not in SPECIAL_TOKENS]

@@ -36,7 +36,10 @@ def build_conditioning_maps(token2id):
     if not genre_tokens:
         genre_tokens = ["<GENRE_NONE>"]
     genre_to_index = {tok[7:-1]: i for i, tok in enumerate(genre_tokens) if tok.startswith("<GENRE_")}
-    return role_to_index, genre_to_index, len(genre_tokens)
+
+    key_tokens = sorted([t for t in token2id.keys() if t.startswith("<KEY_")])
+    key_to_index = {tok[5:-1]: i for i, tok in enumerate(key_tokens)}
+    return role_to_index, genre_to_index, len(genre_tokens), key_tokens, key_to_index
 
 
 def build_token_groups(token2id):
@@ -72,6 +75,7 @@ def build_token_groups(token2id):
             token in {"<PAD>", "<BOS>", "<UNK>"}
             or token.startswith("<ROLE_")
             or token.startswith("<GENRE_")
+            or token.startswith("<KEY_")
         ):
             groups["special_body_banned_ids"].append(token_id)
 
@@ -149,7 +153,7 @@ def collect_active_pitches(generated, id2token):
     return active
 
 
-def body_elapsed_seconds(generated, id2token, prefix_len=3):
+def body_elapsed_seconds(generated, id2token, prefix_len=4):
     elapsed = 0.0
     for token_id in generated[prefix_len:]:
         token_name = id2token[token_id]
@@ -161,7 +165,7 @@ def body_elapsed_seconds(generated, id2token, prefix_len=3):
     return elapsed
 
 
-def last_note_on_pitch(generated, id2token, prefix_len=3):
+def last_note_on_pitch(generated, id2token, prefix_len=4):
     for token_id in reversed(generated[prefix_len:]):
         token_name = id2token[token_id]
         if token_name.startswith("NOTE_ON_"):
@@ -172,13 +176,13 @@ def last_note_on_pitch(generated, id2token, prefix_len=3):
     return None
 
 
-def apply_generation_constraints(logits, generated, id2token, token_groups, role=None, eos_id=None, min_body_tokens=24, max_melody_leap=12):
+def apply_generation_constraints(logits, generated, id2token, token_groups, role=None, eos_id=None, min_body_tokens=24, max_melody_leap=12, harmony_pitch_classes=None, harmony_bias=0.35):
     constrained = logits.clone()
 
     if token_groups["special_body_banned_ids"].numel() > 0:
         constrained.index_fill_(0, token_groups["special_body_banned_ids"], float("-inf"))
 
-    prefix_len = 3
+    prefix_len = 4
     body_len = max(0, len(generated) - prefix_len)
     if eos_id is not None and body_len < min_body_tokens:
         constrained[eos_id] = float("-inf")
@@ -223,6 +227,11 @@ def apply_generation_constraints(logits, generated, id2token, token_groups, role
         if token_groups["note_on_ids"].numel() > 0:
             constrained.index_fill_(0, token_groups["note_on_ids"], float("-inf"))
 
+    if harmony_pitch_classes and role in {"MELODY", "BASS"}:
+        for pitch, note_on_id in token_groups["note_on_pitch_to_id"].items():
+            if pitch % 12 in harmony_pitch_classes:
+                constrained[note_on_id] += float(harmony_bias)
+
     if torch.isinf(constrained).all():
         return logits
     return constrained
@@ -242,6 +251,8 @@ def sample_next_token(
     eos_id=None,
     min_body_tokens=24,
     max_melody_leap=12,
+    harmony_pitch_classes=None,
+    harmony_bias=0.35,
 ):
     temperature = max(1e-5, float(temperature))
     adjusted = logits / temperature
@@ -255,6 +266,8 @@ def sample_next_token(
         eos_id=eos_id,
         min_body_tokens=min_body_tokens,
         max_melody_leap=max_melody_leap,
+        harmony_pitch_classes=harmony_pitch_classes,
+        harmony_bias=harmony_bias,
     )
 
     banned = get_banned_next_tokens(generated, no_repeat_ngram_size)
@@ -276,7 +289,7 @@ def load_role_token_sequences(role):
     return np.load(role_path, allow_pickle=True).tolist()
 
 
-def choose_primer_tokens(role, genre, primer_mode, primer_len, role_sequences_cache):
+def choose_primer_tokens(role, genre, key_token, primer_mode, primer_len, role_sequences_cache):
     if primer_mode == "none" or primer_len <= 0:
         return []
 
@@ -285,14 +298,14 @@ def choose_primer_tokens(role, genre, primer_mode, primer_len, role_sequences_ca
 
     role_sequences = role_sequences_cache[role]
     genre_token = f"<GENRE_{genre}>"
-    filtered = [seq for seq in role_sequences if len(seq) > 2 and seq[0] == f"<ROLE_{role}>" and seq[1] == genre_token]
+    filtered = [seq for seq in role_sequences if len(seq) > 3 and seq[0] == f"<ROLE_{role}>" and seq[1] == genre_token and seq[2] == key_token]
     if not filtered:
-        filtered = [seq for seq in role_sequences if len(seq) > 2]
+        filtered = [seq for seq in role_sequences if len(seq) > 3]
     if not filtered:
         return []
 
     sequence = random.choice(filtered)
-    return list(sequence[2:2 + primer_len])
+    return list(sequence[3:3 + primer_len])
 
 
 def generate_tokens(
@@ -315,15 +328,29 @@ def generate_tokens(
     min_body_tokens=24,
     target_seconds=2.5,
     max_melody_leap=12,
+    key_name="AUTO",
+    harmony_pitch_classes=None,
+    harmony_bias=0.35,
 ):
     role_token = f"<ROLE_{role}>"
     genre_token = f"<GENRE_{genre}>"
-    for token in ["<BOS>", role_token, genre_token]:
+
+    if role_to_index is None or genre_to_index is None:
+        role_to_index, genre_to_index, _, key_tokens, _ = build_conditioning_maps(token2id)
+    else:
+        _, _, _, key_tokens, _ = build_conditioning_maps(token2id)
+
+    key_token = None
+    if key_name is None or str(key_name).upper() == "AUTO":
+        key_token = key_tokens[0] if key_tokens else "<KEY_UNKNOWN>"
+    else:
+        cand = f"<KEY_{str(key_name).upper()}>"
+        key_token = cand if cand in token2id else (key_tokens[0] if key_tokens else "<KEY_UNKNOWN>")
+
+    for token in ["<BOS>", role_token, genre_token, key_token]:
         if token not in token2id:
             raise ValueError(f"Token {token} not found in vocab")
 
-    if role_to_index is None or genre_to_index is None:
-        role_to_index, genre_to_index, _ = build_conditioning_maps(token2id)
     if role_sequences_cache is None:
         role_sequences_cache = {}
 
@@ -333,14 +360,14 @@ def generate_tokens(
     genre_id = torch.tensor([genre_idx], dtype=torch.long, device=DEVICE)
     token_groups = build_token_groups(token2id)
 
-    generated = [token2id["<BOS>"], token2id[role_token], token2id[genre_token]]
+    generated = [token2id["<BOS>"], token2id[role_token], token2id[genre_token], token2id[key_token]]
     generated.extend(
         token2id.get(tok, token2id.get("<UNK>"))
-        for tok in choose_primer_tokens(role, genre, primer_mode, primer_len, role_sequences_cache)
+        for tok in choose_primer_tokens(role, genre, key_token, primer_mode, primer_len, role_sequences_cache)
         if tok in token2id
     )
     eos_id = token2id.get("<EOS>")
-    elapsed = body_elapsed_seconds(generated, id2token, prefix_len=3)
+    elapsed = body_elapsed_seconds(generated, id2token, prefix_len=4)
 
     model.eval()
     with torch.no_grad():
@@ -362,6 +389,8 @@ def generate_tokens(
                 eos_id=eos_id,
                 min_body_tokens=min_body_tokens,
                 max_melody_leap=max_melody_leap,
+                harmony_pitch_classes=harmony_pitch_classes,
+                harmony_bias=harmony_bias,
             )
             generated.append(next_token_id)
 
@@ -375,7 +404,7 @@ def generate_tokens(
             if eos_id is not None and next_token_id == eos_id:
                 break
 
-            if target_seconds is not None and elapsed >= float(target_seconds) and len(generated) >= (3 + min_body_tokens):
+            if target_seconds is not None and elapsed >= float(target_seconds) and len(generated) >= (4 + min_body_tokens):
                 if eos_id is not None:
                     generated.append(eos_id)
                 break
@@ -387,7 +416,7 @@ def generate_tokens(
 def _body_tokens(tokens):
     return [
         t for t in tokens
-        if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_"))
+        if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_") or t.startswith("<KEY_"))
     ]
 
 
@@ -458,6 +487,9 @@ def generate_best_candidate(
     min_body_tokens,
     target_seconds,
     max_melody_leap,
+    key_name="AUTO",
+    harmony_pitch_classes=None,
+    harmony_bias=0.35,
     candidates_per_sample=4,
     diversity_jitter=0.08,
 ):
@@ -491,6 +523,9 @@ def generate_best_candidate(
             min_body_tokens=min_body_tokens,
             target_seconds=target_seconds,
             max_melody_leap=max_melody_leap,
+            key_name=key_name,
+            harmony_pitch_classes=harmony_pitch_classes,
+            harmony_bias=harmony_bias,
         )
 
         sig = tuple(_body_tokens(tokens))
@@ -524,6 +559,9 @@ def generate_best_candidate(
             min_body_tokens=min_body_tokens,
             target_seconds=target_seconds,
             max_melody_leap=max_melody_leap,
+            key_name=key_name,
+            harmony_pitch_classes=harmony_pitch_classes,
+            harmony_bias=harmony_bias,
         )
 
     return best
@@ -599,7 +637,7 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     token2id = vocab["token2id"]
     id2token = {int(k): v for k, v in vocab["id2token"].items()}
 
-    role_to_index, genre_to_index, num_genres = build_conditioning_maps(token2id)
+    role_to_index, genre_to_index, num_genres, _key_tokens, _key_to_index = build_conditioning_maps(token2id)
     num_roles = 3
 
     checkpoint = torch.load(checkpoint_path, map_location=DEVICE)
@@ -636,6 +674,45 @@ def load_model_and_vocab(checkpoint_path, vocab_path):
     return model, token2id, id2token, role_to_index, genre_to_index
 
 
+
+
+def extract_pitch_classes(tokens):
+    pcs = set()
+    for t in _body_tokens(tokens):
+        if t.startswith("NOTE_ON_"):
+            try:
+                pcs.add(int(t.split("_")[2], 16) % 12)
+            except Exception:
+                pass
+    return pcs
+
+
+def _concat_sections(section_tokens_list, bridge_shift="TIME_SHIFT_0001"):
+    out = []
+    for i, toks in enumerate(section_tokens_list):
+        body = _body_tokens(toks)
+        if i > 0:
+            out.append(bridge_shift)
+        out.extend(body)
+    return ["<BOS>"] + out + ["<EOS>"]
+
+
+def generate_role_sections(**kwargs):
+    sections = max(1, int(kwargs.pop("sections", 1)))
+    if sections == 1:
+        return generate_best_candidate(**kwargs)
+
+    collected = []
+    ended = True
+    for _ in range(sections):
+        toks, e = generate_best_candidate(**kwargs)
+        collected.append(toks)
+        ended = ended and e
+
+    merged = _concat_sections(collected)
+    return merged, ended
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate MIDI samples")
     parser.add_argument("--checkpoint", type=str, default="checkpoints/model_best.pth")
@@ -653,6 +730,9 @@ def parse_args():
     parser.add_argument("--min-body-tokens", type=int, default=24)
     parser.add_argument("--target-seconds", type=float, default=2.5)
     parser.add_argument("--max-melody-leap", type=int, default=12)
+    parser.add_argument("--key", type=str, default="AUTO", help="AUTO or e.g. C_MAJ, A_MIN")
+    parser.add_argument("--harmony-bias", type=float, default=0.35)
+    parser.add_argument("--sections", type=int, default=1)
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--candidates-per-sample", type=int, default=4)
     parser.add_argument("--diversity-jitter", type=float, default=0.08)
@@ -665,7 +745,7 @@ def save_metadata(out_dir, sample_name, args, tokens_by_role):
     body_lengths = {}
     eos_flags = {}
     for role, tokens in tokens_by_role.items():
-        body = [t for t in tokens if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_"))]
+        body = [t for t in tokens if not (t in {"<BOS>", "<EOS>"} or t.startswith("<ROLE_") or t.startswith("<GENRE_") or t.startswith("<KEY_"))]
         body_lengths[role] = len(body)
         eos_flags[role] = bool(tokens and tokens[-1] == "<EOS>")
 
@@ -700,7 +780,8 @@ def main():
         f"Generation config: role={args.role}, genre={args.genre.upper()}, temp={args.temperature}, "
         f"top_k={args.top_k}, top_p={args.top_p}, primer={args.primer_mode}:{args.primer_len}, "
         f"target_seconds={args.target_seconds}, max_melody_leap={args.max_melody_leap}, "
-        f"candidates={args.candidates_per_sample}, jitter={args.diversity_jitter}"
+        f"candidates={args.candidates_per_sample}, jitter={args.diversity_jitter}, "
+        f"key={args.key}, harmony_bias={args.harmony_bias}, sections={args.sections}"
     )
 
     eos_count = 0
@@ -708,8 +789,41 @@ def main():
         if args.role == "ALL":
             tokens_by_role = {}
             all_eos = True
-            for role in ROLES:
-                tokens, ended_by_eos = generate_best_candidate(
+            # Generate harmony first, then condition bass/melody on harmony pitch classes.
+            chords_tokens, chords_eos = generate_role_sections(
+                model=model,
+                token2id=token2id,
+                id2token=id2token,
+                role="CHORDS",
+                genre=args.genre.upper(),
+                max_len=args.max_len,
+                temperature=args.temperature,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                no_repeat_ngram_size=args.no_repeat_ngram_size,
+                role_to_index=role_to_index,
+                genre_to_index=genre_to_index,
+                primer_mode=args.primer_mode,
+                primer_len=args.primer_len,
+                role_sequences_cache=role_sequences_cache,
+                min_body_tokens=args.min_body_tokens,
+                target_seconds=args.target_seconds,
+                max_melody_leap=args.max_melody_leap,
+                key_name=args.key,
+                harmony_pitch_classes=None,
+                harmony_bias=args.harmony_bias,
+                candidates_per_sample=args.candidates_per_sample,
+                diversity_jitter=args.diversity_jitter,
+                sections=args.sections,
+            )
+            tokens_by_role["CHORDS"] = chords_tokens
+            all_eos = all_eos and chords_eos
+
+            harmony_pcs = extract_pitch_classes(chords_tokens)
+
+            for role in ["BASS", "MELODY"]:
+                tokens, ended_by_eos = generate_role_sections(
                     model=model,
                     token2id=token2id,
                     id2token=id2token,
@@ -729,8 +843,12 @@ def main():
                     min_body_tokens=args.min_body_tokens,
                     target_seconds=args.target_seconds,
                     max_melody_leap=args.max_melody_leap,
+                    key_name=args.key,
+                    harmony_pitch_classes=harmony_pcs,
+                    harmony_bias=args.harmony_bias,
                     candidates_per_sample=args.candidates_per_sample,
                     diversity_jitter=args.diversity_jitter,
+                    sections=args.sections,
                 )
                 tokens_by_role[role] = tokens
                 all_eos = all_eos and ended_by_eos
@@ -741,7 +859,7 @@ def main():
             if all_eos:
                 eos_count += 1
         else:
-            tokens, ended_by_eos = generate_best_candidate(
+            tokens, ended_by_eos = generate_role_sections(
                 model=model,
                 token2id=token2id,
                 id2token=id2token,
@@ -761,8 +879,12 @@ def main():
                 min_body_tokens=args.min_body_tokens,
                 target_seconds=args.target_seconds,
                 max_melody_leap=args.max_melody_leap,
+                key_name=args.key,
+                harmony_pitch_classes=None,
+                harmony_bias=args.harmony_bias,
                 candidates_per_sample=args.candidates_per_sample,
                 diversity_jitter=args.diversity_jitter,
+                sections=args.sections,
             )
             sample_name = f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}"
             out_path = out_dir / f"{sample_name}.mid"
