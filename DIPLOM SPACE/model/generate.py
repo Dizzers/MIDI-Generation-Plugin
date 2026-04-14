@@ -342,7 +342,8 @@ def generate_tokens(
 
     key_token = None
     if key_name is None or str(key_name).upper() == "AUTO":
-        key_token = random.choice(key_tokens) if key_tokens else "<KEY_UNKNOWN>"
+        preferred = "<KEY_A_MIN>"
+        key_token = preferred if preferred in token2id else (key_tokens[0] if key_tokens else "<KEY_UNKNOWN>")
     else:
         cand = f"<KEY_{str(key_name).upper()}>"
         key_token = cand if cand in token2id else (key_tokens[0] if key_tokens else "<KEY_UNKNOWN>")
@@ -875,7 +876,7 @@ def generate_role_sections(**kwargs):
         body = list(base_body)
 
         cnt = usage.get(label, 0)
-        if cnt > 0:
+        if cnt > 0 and variation_prob > 0.0:
             body = _mutate_body_tokens(body, role=role, variation_prob=variation_prob)
             body = _normalize_section_length(body, section_steps)
         usage[label] = cnt + 1
@@ -905,13 +906,13 @@ def parse_args():
     parser.add_argument("--target-seconds", type=float, default=2.5)
     parser.add_argument("--max-melody-leap", type=int, default=12)
     parser.add_argument("--key", type=str, default="AUTO", help="AUTO or e.g. C_MAJ, A_MIN")
-    parser.add_argument("--harmony-bias", type=float, default=0.35)
+    parser.add_argument("--harmony-bias", type=float, default=0.25)
     parser.add_argument("--sections", type=int, default=1)
-    parser.add_argument("--form", type=str, default="AABA", help="e.g. AABA, ABAB, ABC")
-    parser.add_argument("--ending-cadence", type=int, default=1, help="1 enable final cadence, 0 disable")
+    parser.add_argument("--form", type=str, default="", help="e.g. AABA, ABAB, ABC")
+    parser.add_argument("--ending-cadence", type=int, default=0, help="1 enable final cadence, 0 disable")
     parser.add_argument("--section-bars", type=int, default=2)
     parser.add_argument("--beats-per-bar", type=int, default=4)
-    parser.add_argument("--variation-prob", type=float, default=0.30)
+    parser.add_argument("--variation-prob", type=float, default=0.0)
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--candidates-per-sample", type=int, default=4)
     parser.add_argument("--diversity-jitter", type=float, default=0.08)
