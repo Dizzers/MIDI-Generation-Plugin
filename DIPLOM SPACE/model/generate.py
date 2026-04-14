@@ -342,7 +342,7 @@ def generate_tokens(
 
     key_token = None
     if key_name is None or str(key_name).upper() == "AUTO":
-        key_token = key_tokens[0] if key_tokens else "<KEY_UNKNOWN>"
+        key_token = random.choice(key_tokens) if key_tokens else "<KEY_UNKNOWN>"
     else:
         cand = f"<KEY_{str(key_name).upper()}>"
         key_token = cand if cand in token2id else (key_tokens[0] if key_tokens else "<KEY_UNKNOWN>")
@@ -687,29 +687,203 @@ def extract_pitch_classes(tokens):
     return pcs
 
 
-def _concat_sections(section_tokens_list, bridge_shift="TIME_SHIFT_0001"):
+
+
+
+
+def _parse_time_shift_steps(tok):
+    if not tok.startswith("TIME_SHIFT_"):
+        return None
+    try:
+        return int(tok.split("_")[2], 16)
+    except Exception:
+        return None
+
+
+def _format_time_shift_steps(steps):
+    steps = max(1, int(steps))
+    return f"TIME_SHIFT_0x{steps:04x}"
+
+
+def _normalize_section_length(body_tokens, target_steps):
+    out = []
+    acc = 0
+    target_steps = max(1, int(target_steps))
+
+    for tok in body_tokens:
+        st = _parse_time_shift_steps(tok)
+        if st is None:
+            out.append(tok)
+            continue
+
+        if acc + st <= target_steps:
+            out.append(tok)
+            acc += st
+        else:
+            rem = target_steps - acc
+            if rem > 0:
+                out.append(_format_time_shift_steps(rem))
+                acc += rem
+            break
+
+    if acc < target_steps:
+        out.append(_format_time_shift_steps(target_steps - acc))
+    return out
+
+
+def _clamp_pitch_for_role(pitch, role):
+    lo, hi = ROLE_PITCH_RANGE.get(role, (0, 127))
+    return max(lo, min(hi, int(pitch)))
+
+
+def _mutate_body_tokens(body_tokens, role, variation_prob=0.30):
+    out = []
+    for tok in body_tokens:
+        if tok.startswith("NOTE_ON_") or tok.startswith("NOTE_OFF_"):
+            if random.random() < (variation_prob * 0.25):
+                try:
+                    p = int(tok.split("_")[2], 16)
+                    delta = random.choice([-2, -1, 1, 2])
+                    p2 = _clamp_pitch_for_role(p + delta, role)
+                    prefix = tok.split("_")[0]
+                    mid = tok.split("_")[1]
+                    tok = f"{prefix}_{mid}_{p2:02x}"
+                except Exception:
+                    pass
+        elif tok.startswith("TIME_SHIFT_"):
+            if random.random() < (variation_prob * 0.10):
+                st = _parse_time_shift_steps(tok)
+                if st is not None:
+                    st2 = max(1, st + random.choice([-1, 1]))
+                    tok = _format_time_shift_steps(st2)
+        out.append(tok)
+    return out
+
+
+def _resolve_form_labels(form, sections):
+    if form:
+        labels = [ch for ch in str(form).upper() if ch.isalpha()]
+        if labels:
+            return labels
+    n = max(1, int(sections))
+    return [chr(ord("A") + i) for i in range(n)]
+
+
+def _key_to_tonic_pc(key_name):
+    if not key_name or str(key_name).upper() == "AUTO":
+        return None
+    try:
+        root = str(key_name).upper().split("_")[0]
+        mapping = {
+            "C": 0, "C#": 1, "DB": 1, "D": 2, "D#": 3, "EB": 3,
+            "E": 4, "F": 5, "F#": 6, "GB": 6, "G": 7, "G#": 8,
+            "AB": 8, "A": 9, "A#": 10, "BB": 10, "B": 11,
+        }
+        return mapping.get(root)
+    except Exception:
+        return None
+
+
+def _pick_tonic_pitch(role, tonic_pc):
+    if tonic_pc is None:
+        return None
+    if role == "BASS":
+        base = 36
+    elif role == "CHORDS":
+        base = 48
+    else:
+        base = 60
+    for p in range(base, base + 24):
+        if p % 12 == tonic_pc:
+            return p
+    return base
+
+
+def _append_simple_cadence(body_tokens, role, key_name):
+    tonic_pc = _key_to_tonic_pc(key_name)
+    tonic = _pick_tonic_pitch(role, tonic_pc)
+    if tonic is None:
+        return body_tokens
+
+    out = list(body_tokens)
+    out.append("TIME_SHIFT_0002")
+
+    if role == "CHORDS":
+        triad = [tonic, tonic + 4, tonic + 7]
+        out.append("VELOCITY_0x5")
+        for p in triad:
+            out.append(f"NOTE_ON_{p:#04x}")
+        out.append("TIME_SHIFT_0004")
+        for p in triad:
+            out.append(f"NOTE_OFF_{p:#04x}")
+    elif role == "BASS":
+        out.append("VELOCITY_0x5")
+        out.append(f"NOTE_ON_{tonic:#04x}")
+        out.append("TIME_SHIFT_0006")
+        out.append(f"NOTE_OFF_{tonic:#04x}")
+    else:
+        lead = max(0, tonic - 2)
+        out.append("VELOCITY_0x5")
+        out.append(f"NOTE_ON_{lead:#04x}")
+        out.append("TIME_SHIFT_0002")
+        out.append(f"NOTE_OFF_{lead:#04x}")
+        out.append("VELOCITY_0x6")
+        out.append(f"NOTE_ON_{tonic:#04x}")
+        out.append("TIME_SHIFT_0004")
+        out.append(f"NOTE_OFF_{tonic:#04x}")
+
+    return out
+
+
+def _concat_sections(section_tokens_list, role=None, key_name="AUTO", ending_cadence=True, bridge_shift="TIME_SHIFT_0001"):
     out = []
     for i, toks in enumerate(section_tokens_list):
         body = _body_tokens(toks)
         if i > 0:
             out.append(bridge_shift)
         out.extend(body)
+
+    if ending_cadence:
+        out = _append_simple_cadence(out, role=role, key_name=key_name)
+
     return ["<BOS>"] + out + ["<EOS>"]
 
 
 def generate_role_sections(**kwargs):
-    sections = max(1, int(kwargs.pop("sections", 1)))
-    if sections == 1:
-        return generate_best_candidate(**kwargs)
+    form = kwargs.pop("form", "")
+    sections = kwargs.pop("sections", 1)
+    ending_cadence = bool(kwargs.pop("ending_cadence", True))
+    section_steps = int(kwargs.pop("section_steps", 160))
+    variation_prob = float(kwargs.pop("variation_prob", 0.30))
+    role = kwargs.get("role")
+    key_name = kwargs.get("key_name", "AUTO")
 
-    collected = []
+    labels = _resolve_form_labels(form, sections)
+
+    cache = {}
+    usage = {}
+    ordered = []
     ended = True
-    for _ in range(sections):
-        toks, e = generate_best_candidate(**kwargs)
-        collected.append(toks)
+
+    for label in labels:
+        if label not in cache:
+            toks, e = generate_best_candidate(**kwargs)
+            body = _normalize_section_length(_body_tokens(toks), section_steps)
+            cache[label] = (body, e)
+
+        base_body, e = cache[label]
+        body = list(base_body)
+
+        cnt = usage.get(label, 0)
+        if cnt > 0:
+            body = _mutate_body_tokens(body, role=role, variation_prob=variation_prob)
+            body = _normalize_section_length(body, section_steps)
+        usage[label] = cnt + 1
+
+        ordered.append(["<BOS>"] + body + ["<EOS>"])
         ended = ended and e
 
-    merged = _concat_sections(collected)
+    merged = _concat_sections(ordered, role=role, key_name=key_name, ending_cadence=ending_cadence)
     return merged, ended
 
 
@@ -733,6 +907,11 @@ def parse_args():
     parser.add_argument("--key", type=str, default="AUTO", help="AUTO or e.g. C_MAJ, A_MIN")
     parser.add_argument("--harmony-bias", type=float, default=0.35)
     parser.add_argument("--sections", type=int, default=1)
+    parser.add_argument("--form", type=str, default="AABA", help="e.g. AABA, ABAB, ABC")
+    parser.add_argument("--ending-cadence", type=int, default=1, help="1 enable final cadence, 0 disable")
+    parser.add_argument("--section-bars", type=int, default=2)
+    parser.add_argument("--beats-per-bar", type=int, default=4)
+    parser.add_argument("--variation-prob", type=float, default=0.30)
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--candidates-per-sample", type=int, default=4)
     parser.add_argument("--diversity-jitter", type=float, default=0.08)
@@ -775,13 +954,15 @@ def main():
 
     model, token2id, id2token, role_to_index, genre_to_index = load_model_and_vocab(checkpoint_path, vocab_path)
     role_sequences_cache = {}
+    section_steps = max(8, int((args.section_bars * args.beats_per_bar) / TIME_SHIFT_RESOLUTION))
     print(f"Device: {DEVICE}")
     print(
         f"Generation config: role={args.role}, genre={args.genre.upper()}, temp={args.temperature}, "
         f"top_k={args.top_k}, top_p={args.top_p}, primer={args.primer_mode}:{args.primer_len}, "
         f"target_seconds={args.target_seconds}, max_melody_leap={args.max_melody_leap}, "
         f"candidates={args.candidates_per_sample}, jitter={args.diversity_jitter}, "
-        f"key={args.key}, harmony_bias={args.harmony_bias}, sections={args.sections}"
+        f"key={args.key}, harmony_bias={args.harmony_bias}, sections={args.sections}, form={args.form}, ending_cadence={args.ending_cadence}, "
+        f"section_bars={args.section_bars}, beats_per_bar={args.beats_per_bar}, variation_prob={args.variation_prob}"
     )
 
     eos_count = 0
@@ -816,6 +997,10 @@ def main():
                 candidates_per_sample=args.candidates_per_sample,
                 diversity_jitter=args.diversity_jitter,
                 sections=args.sections,
+                form=args.form,
+                ending_cadence=bool(args.ending_cadence),
+                section_steps=section_steps,
+                variation_prob=args.variation_prob,
             )
             tokens_by_role["CHORDS"] = chords_tokens
             all_eos = all_eos and chords_eos
@@ -849,6 +1034,10 @@ def main():
                     candidates_per_sample=args.candidates_per_sample,
                     diversity_jitter=args.diversity_jitter,
                     sections=args.sections,
+                    form=args.form,
+                    ending_cadence=bool(args.ending_cadence),
+                    section_steps=section_steps,
+                    variation_prob=args.variation_prob,
                 )
                 tokens_by_role[role] = tokens
                 all_eos = all_eos and ended_by_eos
@@ -885,6 +1074,10 @@ def main():
                 candidates_per_sample=args.candidates_per_sample,
                 diversity_jitter=args.diversity_jitter,
                 sections=args.sections,
+                form=args.form,
+                ending_cadence=bool(args.ending_cadence),
+                section_steps=section_steps,
+                variation_prob=args.variation_prob,
             )
             sample_name = f"sample_{i:02d}_{args.role.lower()}_{args.genre.lower()}"
             out_path = out_dir / f"{sample_name}.mid"
