@@ -45,16 +45,16 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
 
-NUM_EPOCHS = 80
-BATCH_SIZE = 16
-LEARNING_RATE = 2e-4
-WEIGHT_DECAY = 0.01
+NUM_EPOCHS = 120  # Увеличено с 80 для лучшего обучения на малых данных
+BATCH_SIZE = 8    # Уменьшено с 16 для лучшей генерализации
+LEARNING_RATE = 1e-4  # Уменьшено с 2e-4 для стабильности
+WEIGHT_DECAY = 0.02   # Увеличено с 0.01 для regularization
 
-SAMPLES_PER_EPOCH = 8000
-GRAD_ACCUM_STEPS = 1
-LABEL_SMOOTHING = 0.05
+SAMPLES_PER_EPOCH = 4000  # Уменьшено с 8000 (данных мало)
+GRAD_ACCUM_STEPS = 2     # Увеличено с 1 для эффективного batch size
+LABEL_SMOOTHING = 0.1    # Увеличено с 0.05 для лучшей генерализации
 
-EARLY_STOPPING_PATIENCE = 8
+EARLY_STOPPING_PATIENCE = 12  # Увеличено с 8
 VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
 SAMPLING_STRATEGY = "role_cap"
@@ -68,36 +68,52 @@ ROLE_WEIGHT_ALPHA = 0.8
 MAX_ROLE_WEIGHT = 10.0
 
 AUGMENT_CONFIG = {
-    "transpose_prob": 0.20,
-    "transpose_range": 2,
-    "time_stretch_prob": 0.20,
-    "time_stretch_range": (0.95, 1.05),
-    "velocity_jitter_prob": 0.20,
-    "velocity_jitter": 1,
+    "transpose_prob": 0.40,  # Увеличено с 0.20
+    "transpose_range": 6,    # Увеличено с 2
+    "time_stretch_prob": 0.35,  # Увеличено с 0.20
+    "time_stretch_range": (0.85, 1.15),  # Расширено с (0.95, 1.05)
+    "velocity_jitter_prob": 0.30,  # Увеличено с 0.20
+    "velocity_jitter": 2,    # Увеличено с 1
+    "pitch_shift_prob": 0.25,  # НОВОЕ: сдвиг по высоте
+    "pitch_shift_range": (-2, 2),
+    "tempo_change_prob": 0.20,  # НОВОЕ: изменение темпа
+    "tempo_change_range": (0.8, 1.2),
     "role_overrides": {
         "melody": {
-            "transpose_prob": 0.55,
-            "transpose_range": 5,
-            "time_stretch_prob": 0.40,
-            "time_stretch_range": (0.90, 1.10),
-            "velocity_jitter_prob": 0.45,
-            "velocity_jitter": 2,
+            "transpose_prob": 0.75,  # Увеличено с 0.55
+            "transpose_range": 7,    # Увеличено с 5
+            "time_stretch_prob": 0.60,  # Увеличено с 0.40
+            "time_stretch_range": (0.80, 1.20),  # Расширено с (0.90, 1.10)
+            "velocity_jitter_prob": 0.65,  # Увеличено с 0.45
+            "velocity_jitter": 3,    # Увеличено с 2
+            "pitch_shift_prob": 0.40,
+            "pitch_shift_range": (-3, 3),
+            "tempo_change_prob": 0.30,
+            "tempo_change_range": (0.75, 1.25),
         },
         "bass": {
-            "transpose_prob": 0.65,
-            "transpose_range": 4,
-            "time_stretch_prob": 0.35,
-            "time_stretch_range": (0.92, 1.08),
-            "velocity_jitter_prob": 0.35,
-            "velocity_jitter": 1,
+            "transpose_prob": 0.80,  # Увеличено с 0.65
+            "transpose_range": 5,    # Увеличено с 4
+            "time_stretch_prob": 0.50,  # Увеличено с 0.35
+            "time_stretch_range": (0.85, 1.15),  # Расширено с (0.92, 1.08)
+            "velocity_jitter_prob": 0.50,  # Увеличено с 0.35
+            "velocity_jitter": 2,    # Увеличено с 1
+            "pitch_shift_prob": 0.35,
+            "pitch_shift_range": (-1, 1),
+            "tempo_change_prob": 0.25,
+            "tempo_change_range": (0.85, 1.15),
         },
         "chords": {
-            "transpose_prob": 0.10,
-            "transpose_range": 2,
-            "time_stretch_prob": 0.10,
-            "time_stretch_range": (0.97, 1.03),
-            "velocity_jitter_prob": 0.10,
-            "velocity_jitter": 1,
+            "transpose_prob": 0.25,  # Увеличено с 0.10
+            "transpose_range": 4,    # Увеличено с 2
+            "time_stretch_prob": 0.20,  # Увеличено с 0.10
+            "time_stretch_range": (0.90, 1.10),  # Расширено с (0.97, 1.03)
+            "velocity_jitter_prob": 0.20,  # Увеличено с 0.10
+            "velocity_jitter": 1,    # Без изменений
+            "pitch_shift_prob": 0.15,
+            "pitch_shift_range": (-1, 1),
+            "tempo_change_prob": 0.15,
+            "tempo_change_range": (0.90, 1.10),
         },
     },
 }
@@ -114,11 +130,11 @@ ALLOW_OLD_CHECKPOINT_RESUME = False
 
 MAX_LEN = 256
 
-D_MODEL = 256
-N_HEADS = 8
-N_LAYERS = 6
-D_FF = 1024
-DROPOUT = 0.20
+D_MODEL = 192  # Уменьшено с 256 для меньшего переобучения
+N_HEADS = 6    # Уменьшено с 8
+N_LAYERS = 4   # Уменьшено с 6
+D_FF = 768     # Уменьшено с 1024
+DROPOUT = 0.30 # Увеличено с 0.20 для regularization
 
 USE_DDP = False  
 DDP_BACKEND = "nccl"

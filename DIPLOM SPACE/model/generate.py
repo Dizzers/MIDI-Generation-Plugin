@@ -894,11 +894,11 @@ def parse_args():
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
     parser.add_argument("--role", type=str, default="ALL", choices=ROLES + ["ALL"])
     parser.add_argument("--genre", type=str, default="TRAP")
-    parser.add_argument("--max-len", type=int, default=128)
-    parser.add_argument("--temperature", type=float, default=1.00)
-    parser.add_argument("--top-k", type=int, default=16)
-    parser.add_argument("--top-p", type=float, default=0.93)
-    parser.add_argument("--repetition-penalty", type=float, default=1.20)
+    parser.add_argument("--max-len", type=int, default=256)  # Увеличено с 128 для более длинных композиций
+    parser.add_argument("--temperature", type=float, default=1.20)  # Увеличено с 1.00 для большей креативности
+    parser.add_argument("--top-k", type=int, default=24)  # Увеличено с 16 для большего разнообразия
+    parser.add_argument("--top-p", type=float, default=0.95)  # Увеличено с 0.93 для более богатой генерации
+    parser.add_argument("--repetition-penalty", type=float, default=1.25)  # Увеличено с 1.20 для меньшего повторения
     parser.add_argument("--no-repeat-ngram-size", type=int, default=4)
     parser.add_argument("--primer-mode", type=str, default="dataset", choices=["dataset", "none"])
     parser.add_argument("--primer-len", type=int, default=24)

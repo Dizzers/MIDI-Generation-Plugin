@@ -219,6 +219,12 @@ class MIDIDataset(Dataset):
         velocity_jitter_prob = role_cfg.get("velocity_jitter_prob", self.augment_config.get("velocity_jitter_prob", 0.0))
         velocity_jitter = role_cfg.get("velocity_jitter", self.augment_config.get("velocity_jitter", 0))
 
+        pitch_shift_prob = role_cfg.get("pitch_shift_prob", self.augment_config.get("pitch_shift_prob", 0.0))
+        pitch_shift_range = role_cfg.get("pitch_shift_range", self.augment_config.get("pitch_shift_range", (0, 0)))
+
+        tempo_change_prob = role_cfg.get("tempo_change_prob", self.augment_config.get("tempo_change_prob", 0.0))
+        tempo_change_range = role_cfg.get("tempo_change_range", self.augment_config.get("tempo_change_range", (1.0, 1.0)))
+
         if self.rng.random() < transpose_prob:
             tr = int(transpose_range)
             if tr > 0:
@@ -238,6 +244,19 @@ class MIDIDataset(Dataset):
                 j = self.rng.randint(-jitter, jitter)
                 if j != 0:
                     tokens_out = [self._jitter_velocity_token(t, j) for t in tokens_out]
+
+        if self.rng.random() < pitch_shift_prob:
+            low, high = pitch_shift_range
+            if low != 0 or high != 0:
+                shift = self.rng.randint(low, high)
+                if shift != 0:
+                    tokens_out = [self._shift_note_token(t, shift) for t in tokens_out]
+
+        if self.rng.random() < tempo_change_prob:
+            low, high = tempo_change_range
+            if low != 1.0 or high != 1.0:
+                factor = self.rng.uniform(low, high)
+                tokens_out = [self._stretch_time_token(t, factor) for t in tokens_out]
 
         return tokens_out
 
