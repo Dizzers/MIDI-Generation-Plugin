@@ -176,10 +176,10 @@ def classify_role(stats):
         if not (poly_mean >= 1.30 and poly_peak >= 2 and chord_ratio >= 0.24):
             return None
     elif best_role == "bass":
-        if not (low_ratio >= 0.36 and poly_mean <= 1.40):
+        if not (low_ratio >= 0.20 and poly_mean <= 1.40):  # LOWERED: 0.36 → 0.20 (Solution 1)
             return None
     elif best_role == "melody":
-        if not (high_ratio >= 0.22 and poly_mean <= 1.40):
+        if not (high_ratio >= 0.12 and poly_mean <= 1.40):  # LOWERED: 0.22 → 0.12 (Solution 1)
             return None
 
     # Reject ambiguous tracks.

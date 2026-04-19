@@ -45,12 +45,12 @@ elif torch.backends.mps.is_available():
 else:
     DEVICE = "cpu"
 
-NUM_EPOCHS = 120  # Увеличено с 80 для лучшего обучения на малых данных
-BATCH_SIZE = 8    # Уменьшено с 16 для лучшей генерализации
-LEARNING_RATE = 1e-4  # Уменьшено с 2e-4 для стабильности
-WEIGHT_DECAY = 0.02   # Увеличено с 0.01 для regularization
+NUM_EPOCHS = 40  # REDUCED from 120: Resume from best.pth, need ~30-40 epochs to re-adjust weights
+BATCH_SIZE = 8    
+LEARNING_RATE = 5e-5  # LOWERED from 1e-4: Slower learning for fine-tuning with weighted loss
+WEIGHT_DECAY = 0.02   
 
-SAMPLES_PER_EPOCH = 4000  # Уменьшено с 8000 (данных мало)
+SAMPLES_PER_EPOCH = 5000  # INCREASED from 4000: More samples with improved dataset
 GRAD_ACCUM_STEPS = 2     # Увеличено с 1 для эффективного batch size
 LABEL_SMOOTHING = 0.1    # Увеличено с 0.05 для лучшей генерализации
 
@@ -64,8 +64,8 @@ ROLE_SAMPLING_MAX_FRACTION = {
     "bass": 0.26,
 }
 
-ROLE_WEIGHT_ALPHA = 0.8
-MAX_ROLE_WEIGHT = 10.0
+ROLE_WEIGHT_ALPHA = 1.2  # INCREASED from 0.8: Give MORE weight to rare roles (melody/bass)
+MAX_ROLE_WEIGHT = 15.0   # INCREASED from 10.0: Allow higher weight multipliers
 
 AUGMENT_CONFIG = {
     "transpose_prob": 0.40,  # Увеличено с 0.20

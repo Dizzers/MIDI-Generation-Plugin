@@ -1,0 +1,36 @@
+# Large data files - not needed for code context
+classical/
+dataset/processed/
+dataset/*.mid
+.cache/
+
+# Python virtual environment & deps
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+
+# IDE & OS files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.~*
+
+# Generated checkpoints (too large for token budget)
+checkpoints/*.pt
+checkpoints/*.pth
+checkpoints/random_*.json
+
+# Generated outputs (keep only source scripts)
+generated/*.mid
+
+# Large artifacts
+*.npy
+*.pkl
+*.pickle
