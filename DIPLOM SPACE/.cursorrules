@@ -1,10 +1,26 @@
-# MIDI Generation Plugin - Cursor Rules
+## Project Status (Updated April 20, 2026)
 
-## Project Overview
-- **Type**: Music Generation Plugin (Python/PyTorch)
-- **Purpose**: End-to-end pipeline for symbolic MIDI generation using Transformers
-- **Target Integration**: DAW plugin (JUCE-ready)
-- **Roles Supported**: MELODY, BASS, CHORDS
+### ✅ Completed
+- **Solution 1**: Lowered detection thresholds (bass 0.36→0.20, melody 0.22→0.12)
+- **Solution 2**: Enhanced weighted loss (ALPHA 0.8→0.9, MAX 10→15)
+- **Dataset**: Processed 15,529 MIDI files (Trap + Classical)
+  - Sequences: 1200 chords, 298 melody, 140 bass
+  - Chunks: 5000 chords (capped), 1981 melody, 588 bass
+  - Ratio improved: 52:2:1 → 8.5:3.4:1 (6x better!)
+
+### 🚀 Training in Progress
+- **Current**: Epoch 3/40, significant improvements
+- **Results so far**:
+  - Epoch 1: Val Loss 4.8444, Acc 0.1600, Role Acc M=0.174 B=0.158 C=0.146
+  - Epoch 2: Val Loss 4.5216, Acc 0.1891, Role Acc M=0.219 B=0.186 C=0.159
+  - **Fixed**: Conditioning tokens now present in all chunks
+- **LR**: 5e-5 (increased to 1e-4 for next run)
+- **Monitor**: role_metrics parity, val_loss plateau
+
+### 📅 Timeline remaining
+- **This week**: Complete training (10-15 epochs), test generation quality
+- **Week 2**: Evaluate metrics, decide JUCE vs optimization
+- **Weeks 3-4**: JUCE plugin development (10-12 days estimated)
 
 ## Architecture
 

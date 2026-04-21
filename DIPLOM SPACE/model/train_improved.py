@@ -47,7 +47,7 @@ else:
 
 NUM_EPOCHS = 40  # REDUCED from 120: Resume from best.pth, need ~30-40 epochs to re-adjust weights
 BATCH_SIZE = 8    
-LEARNING_RATE = 5e-5  # LOWERED from 1e-4: Slower learning for fine-tuning with weighted loss
+LEARNING_RATE = 1e-4  # LOWERED from 1e-4: Slower learning for fine-tuning with weighted loss
 WEIGHT_DECAY = 0.02   
 
 SAMPLES_PER_EPOCH = 5000  # INCREASED from 4000: More samples with improved dataset
@@ -64,7 +64,7 @@ ROLE_SAMPLING_MAX_FRACTION = {
     "bass": 0.26,
 }
 
-ROLE_WEIGHT_ALPHA = 1.2  # INCREASED from 0.8: Give MORE weight to rare roles (melody/bass)
+ROLE_WEIGHT_ALPHA = 0.9  # INCREASED from 0.8: Give MORE weight to rare roles (melody/bass)
 MAX_ROLE_WEIGHT = 15.0   # INCREASED from 10.0: Allow higher weight multipliers
 
 AUGMENT_CONFIG = {

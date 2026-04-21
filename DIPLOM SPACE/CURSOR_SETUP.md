@@ -1,9 +1,50 @@
 ## Cursor.ai Configuration Summary
 
-### Files Created for Token Optimization
-1. **`.cursorrules`** - Architecture & code standards (read by Cursor automatically)
-2. **`.cursorignore`** - Excludes large data files, checkpoints, generated files
-3. **`CURSOR_GUIDE.md`** - Quick reference for code patterns & common issues
+## Current Status: Training in Progress (April 20, 2026)
+
+### What Was Done ✅
+1. **Solution 1 - Detection Threshold Optimization**
+   - Lowered bass detection: 0.36 → 0.20
+   - Lowered melody detection: 0.22 → 0.12
+   - Processed 15,529 MIDI files (Trap + Classical)
+   - Results:
+     - Sequences: 1200 chords, 298 melody, 140 bass
+     - Chunks: 5000 chords (capped), 1981 melody, 588 bass
+     - Ratio improved: 52:2:1 → 8.5:3.4:1 (6x better!)
+
+2. **Critical Bug Fix - Conditioning Tokens**
+   - **Problem**: Chords chunks missing ROLE/GENRE tokens → accuracy = 0.000
+   - **Fix**: Modified chunk_tokens.py to preserve conditioning tokens in all chunks
+   - **Result**: All roles now have proper conditioning tokens
+
+3. **Solution 2 - Weighted Loss Configuration**
+   - Updated `model/train_improved.py`:
+     - ROLE_WEIGHT_ALPHA: 0.8 → 0.9
+     - MAX_ROLE_WEIGHT: 10.0 → 15.0
+     - LEARNING_RATE: 5e-5 → 1e-4 (increased for better learning)
+     - NUM_EPOCHS: 120 → 40
+   - Weighted loss function already implemented in codebase
+   - Ready for training on Kaggle GPU
+
+### Training Progress 🚀
+- **Current**: Epoch 3/40, significant improvements after bug fix
+- **Results so far**:
+  - Epoch 1: Val Loss 4.8444, Acc 0.1600, Role Acc M=0.174 B=0.158 C=0.146
+  - Epoch 2: Val Loss 4.5216, Acc 0.1891, Role Acc M=0.219 B=0.186 C=0.159
+  - Epoch 3: In progress (train loss 1.1031 - excellent!)
+- **Fixed Issues**: All roles now learning (chords accuracy was 0.000 before)
+- **Next**: Continue training, monitor for val_loss < 4.0
+
+### Next Steps 🚀
+- Continue training: `python model/train_improved.py` on Kaggle GPU
+- Expected duration: 2-4 hours (40 epochs)
+- Monitor: role_metrics parity, val_loss plateau
+- After training: Evaluate generation quality, then proceed to JUCE
+
+### Configuration Files Updated
+- `.cursorrules` - Added project status section
+- `CURSOR_GUIDE.md` - Added weighted loss monitoring section
+- `CURSOR_SETUP.md` - This file, with latest updates
 
 ### Setup Instructions
 

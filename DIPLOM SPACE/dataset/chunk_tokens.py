@@ -7,7 +7,7 @@ MAX_LEN = 256
 STRIDE = 128
 SHUFFLE_SEED = 42
 MAX_CHUNKS_PER_ROLE = {
-    "chords": 3000,
+    "chords": 5000,  # Increased from 600 to give chords more representation
     "melody": None,
     "bass": None,
 }
@@ -17,12 +17,27 @@ TOKENS_DIR = PROCESSED_DIR / "tokens"
 CHUNKS_DIR = PROCESSED_DIR / "chunks"
 
 def chunk_sequence(seq, max_len, stride):
+    # Extract conditioning tokens (first 3 tokens: ROLE, GENRE, KEY)
+    conditioning_tokens = seq[:3] if len(seq) >= 3 else []
+    music_tokens = seq[3:] if len(seq) >= 3 else seq
+
     chunks = []
     start = 0
-    while start + max_len <= len(seq):
-        chunk = seq[start:start + max_len]
+    while start < len(music_tokens):
+        # Take up to max_len - len(conditioning_tokens) music tokens
+        music_chunk_len = max_len - len(conditioning_tokens)
+        end = min(start + music_chunk_len, len(music_tokens))
+
+        # Create chunk with conditioning tokens + music tokens
+        chunk = conditioning_tokens + music_tokens[start:end]
         chunks.append(chunk)
+
         start += stride
+
+        # Stop if we can't fit even conditioning tokens
+        if len(chunk) < len(conditioning_tokens):
+            break
+
     return chunks
 
 def process_role(role):

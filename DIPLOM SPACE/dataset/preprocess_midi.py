@@ -16,7 +16,7 @@ TIMEOUT_SECONDS = 10
 MIN_TOTAL_NOTES = 5
 MIN_DURATION_SEC = 1
 MIN_TRACK_NOTES = 8
-TARGET_GENRES = {"trap"}
+TARGET_GENRES = {"trap", "classical"}
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent

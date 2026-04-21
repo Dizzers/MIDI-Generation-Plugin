@@ -15,7 +15,7 @@ os.makedirs(TOKENS_DIR, exist_ok=True)
 
 TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
-TARGET_GENRES = {"trap"}
+TARGET_GENRES = {"trap", "classical"}
 
 TRACK_LIMIT_PER_FILE = {
     "chords": 1,
