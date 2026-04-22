@@ -3,6 +3,7 @@ import signal
 from pathlib import Path
 
 import music21 as m21
+import numpy as np
 from tqdm import tqdm
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -18,6 +19,9 @@ TARGET_GENRES = {"trap", "classical"}
 MIN_TOTAL_NOTES = 16
 MAX_FILES_PER_GENRE = None
 PARSE_TIMEOUT_SECONDS = 15
+SEED = 42
+VAL_SPLIT = 0.1
+TEST_SPLIT = 0.1
 
 KEY_TOKENS = [
     *(f"<KEY_{pc}_MAJ>" for pc in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]),
@@ -135,6 +139,7 @@ def events_to_tokens(events):
 
 def tokenize_dataset():
     full_sequences = []
+    full_sequences_with_meta = []
     vocab = set()
     errors = []
     timeout_files = []
@@ -160,6 +165,7 @@ def tokenize_dataset():
             tokens = [f"<GENRE_{genre}>", key_token]
             tokens.extend(events_to_tokens(events))
             full_sequences.append(tokens)
+            full_sequences_with_meta.append({"genre": genre, "path": str(midi_path), "tokens": tokens})
             vocab.update(tokens)
             sequences_per_genre[genre] = sequences_per_genre.get(genre, 0) + 1
             tokens_per_genre[genre] = tokens_per_genre.get(genre, 0) + len(tokens)
@@ -170,8 +176,38 @@ def tokenize_dataset():
             if "timeout_after_" in str(exc):
                 timeout_files.append(str(midi_path))
 
-    np_payload = __import__("numpy").array(full_sequences, dtype=object)
-    (__import__("numpy")).save(TOKENS_DIR / "full.npy", np_payload)
+    # Save full set for generation primers / analysis
+    np_payload = np.array(full_sequences, dtype=object)
+    np.save(TOKENS_DIR / "full.npy", np_payload)
+
+    # Split by FILE (not chunks) to prevent leakage across train/val/test.
+    # Stratify by genre to keep both genres represented in each split.
+    by_genre = {}
+    for row in full_sequences_with_meta:
+        by_genre.setdefault(row["genre"], []).append(row)
+
+    rng = __import__("random").Random(SEED)
+    splits = {"train": [], "val": [], "test": []}
+    for genre, rows in sorted(by_genre.items()):
+        rng.shuffle(rows)
+        n = len(rows)
+        n_val = max(1, int(round(n * VAL_SPLIT))) if n >= 10 else max(0, int(round(n * VAL_SPLIT)))
+        n_test = max(1, int(round(n * TEST_SPLIT))) if n >= 10 else max(0, int(round(n * TEST_SPLIT)))
+        n_train = max(1, n - n_val - n_test) if n > 0 else 0
+        splits["train"].extend(rows[:n_train])
+        splits["val"].extend(rows[n_train:n_train + n_val])
+        splits["test"].extend(rows[n_train + n_val:n_train + n_val + n_test])
+
+    for split_name in ["train", "val", "test"]:
+        split_tokens = [row["tokens"] for row in splits[split_name]]
+        np.save(TOKENS_DIR / f"full_{split_name}.npy", np.array(split_tokens, dtype=object))
+        with open(PROCESSED_DIR / f"full_{split_name}_files.json", "w") as handle:
+            json.dump(
+                [{"genre": row["genre"], "path": row["path"]} for row in splits[split_name]],
+                handle,
+                indent=2,
+                ensure_ascii=False,
+            )
 
     special_tokens = [
         "<PAD>",
@@ -198,6 +234,10 @@ def tokenize_dataset():
         "errors": len(errors),
         "vocab_size": len(token2id),
         "genres": sorted({seq[0] for seq in full_sequences}) if full_sequences else [],
+        "split_seed": SEED,
+        "train_sequences": len(splits["train"]) if full_sequences else 0,
+        "val_sequences": len(splits["val"]) if full_sequences else 0,
+        "test_sequences": len(splits["test"]) if full_sequences else 0,
         "files_per_genre": files_per_genre,
         "sequences_per_genre": sequences_per_genre,
         "avg_tokens_per_genre": {

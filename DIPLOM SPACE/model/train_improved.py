@@ -55,7 +55,9 @@ AUGMENT_CONFIG = {
 }
 
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
-CHUNKS_PATH = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks.npy"
+TRAIN_CHUNKS_PATH = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_train.npy"
+VAL_CHUNKS_PATH = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_val.npy"
+TEST_CHUNKS_PATH = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_test.npy"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
@@ -117,31 +119,33 @@ def build_scheduler(optimizer):
 
 
 def build_loaders():
-    base_dataset = MIDIDataset(
-        chunks_path=str(CHUNKS_PATH),
+    train_dataset = MIDIDataset(
+        chunks_path=str(TRAIN_CHUNKS_PATH),
         vocab_path=str(VOCAB_PATH),
         max_len=MAX_LEN,
         samples_per_epoch=None,
-        seed=SEED,
+        seed=SEED + 11,
         augment_config=AUGMENT_CONFIG,
         apply_augmentation=True,
     )
-
-    indices = list(range(len(base_dataset.data)))
-    split_rng = random.Random(SEED)
-    split_rng.shuffle(indices)
-
-    val_size = max(1, int(len(indices) * VAL_SPLIT))
-    test_size = max(1, int(len(indices) * TEST_SPLIT))
-    train_size = max(1, len(indices) - val_size - test_size)
-
-    train_idx = indices[:train_size]
-    val_idx = indices[train_size:train_size + val_size]
-    test_idx = indices[train_size + val_size:]
-
-    train_dataset = base_dataset.clone_with_data(base_dataset.data[train_idx], samples_per_epoch=None, apply_augmentation=True, seed_offset=11)
-    val_dataset = base_dataset.clone_with_data(base_dataset.data[val_idx], samples_per_epoch=None, apply_augmentation=False, seed_offset=22)
-    test_dataset = base_dataset.clone_with_data(base_dataset.data[test_idx], samples_per_epoch=None, apply_augmentation=False, seed_offset=33)
+    val_dataset = MIDIDataset(
+        chunks_path=str(VAL_CHUNKS_PATH),
+        vocab_path=str(VOCAB_PATH),
+        max_len=MAX_LEN,
+        samples_per_epoch=None,
+        seed=SEED + 22,
+        augment_config=AUGMENT_CONFIG,
+        apply_augmentation=False,
+    )
+    test_dataset = MIDIDataset(
+        chunks_path=str(TEST_CHUNKS_PATH),
+        vocab_path=str(VOCAB_PATH),
+        max_len=MAX_LEN,
+        samples_per_epoch=None,
+        seed=SEED + 33,
+        augment_config=AUGMENT_CONFIG,
+        apply_augmentation=False,
+    )
 
     loader_kwargs = {
         "batch_size": BATCH_SIZE,
@@ -166,7 +170,8 @@ def compute_sample_losses(logits, targets, pad_id):
     ).view(batch_size, seq_len)
 
     valid_mask = targets != pad_id
-    prefix_len = min(2, seq_len)
+    # Prefix structure is: <BOS>, <GENRE_*>, <KEY_*>
+    prefix_len = min(3, seq_len)
     valid_mask[:, :prefix_len] = False
     valid_mask_f = valid_mask.float()
     token_count = valid_mask_f.sum(dim=1).clamp_min(1.0)
