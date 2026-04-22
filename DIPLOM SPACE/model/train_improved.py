@@ -3,30 +3,17 @@ import math
 import os
 import random
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributed as dist
-from torch.nn.parallel import DistributedDataParallel as DDP
+from torch import nn
 from torch.utils.data import DataLoader
-from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
-
-# Matplotlib cache (Kaggle input dirs are read-only)
-try:
-    mpl_cache_dir = PROJECT_ROOT / ".cache" / "matplotlib"
-    mpl_cache_dir.mkdir(parents=True, exist_ok=True)
-    os.environ.setdefault("MPLCONFIGDIR", str(mpl_cache_dir))
-except OSError:
-    tmp_root = Path(os.environ.get("TMPDIR", "/tmp"))
-    mpl_cache_dir = tmp_root / "matplotlib"
-    mpl_cache_dir.mkdir(parents=True, exist_ok=True)
-    os.environ["MPLCONFIGDIR"] = str(mpl_cache_dir)
 
 from model.dataset import MIDIDataset
 from model.transformer import TransformerLM
@@ -36,113 +23,52 @@ try:
 except Exception:
     plt = None
 
-
 SEED = 42
-if torch.cuda.is_available():
-    DEVICE = "cuda"
-elif torch.backends.mps.is_available():
-    DEVICE = "mps"
-else:
-    DEVICE = "cpu"
+DEVICE = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
-NUM_EPOCHS = 40  # REDUCED from 120: Resume from best.pth, need ~30-40 epochs to re-adjust weights
-BATCH_SIZE = 8    
-LEARNING_RATE = 1e-4  # LOWERED from 1e-4: Slower learning for fine-tuning with weighted loss
-WEIGHT_DECAY = 0.02   
-
-SAMPLES_PER_EPOCH = 5000  # INCREASED from 4000: More samples with improved dataset
-GRAD_ACCUM_STEPS = 2     # Увеличено с 1 для эффективного batch size
-LABEL_SMOOTHING = 0.1    # Увеличено с 0.05 для лучшей генерализации
-
-EARLY_STOPPING_PATIENCE = 12  # Увеличено с 8
+NUM_EPOCHS = 50
+BATCH_SIZE = 12
+LEARNING_RATE = 5e-5
+WEIGHT_DECAY = 0.02
+GRAD_ACCUM_STEPS = 2
+LABEL_SMOOTHING = 0.08
+EARLY_STOPPING_PATIENCE = 10
 VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
-SAMPLING_STRATEGY = "role_cap"
-ROLE_SAMPLING_MAX_FRACTION = {
-    "chords": 0.34,
-    "melody": 0.40,
-    "bass": 0.26,
-}
 
-ROLE_WEIGHT_ALPHA = 0.9  # INCREASED from 0.8: Give MORE weight to rare roles (melody/bass)
-MAX_ROLE_WEIGHT = 15.0   # INCREASED from 10.0: Allow higher weight multipliers
+MAX_LEN = 256
+D_MODEL = 384
+N_HEADS = 8
+N_LAYERS = 8
+D_FF = 2048
+DROPOUT = 0.15
+WARMUP_EPOCHS = 5
+MIN_LR_SCALE = 0.10
 
 AUGMENT_CONFIG = {
-    "transpose_prob": 0.40,  # Увеличено с 0.20
-    "transpose_range": 6,    # Увеличено с 2
-    "time_stretch_prob": 0.35,  # Увеличено с 0.20
-    "time_stretch_range": (0.85, 1.15),  # Расширено с (0.95, 1.05)
-    "velocity_jitter_prob": 0.30,  # Увеличено с 0.20
-    "velocity_jitter": 2,    # Увеличено с 1
-    "pitch_shift_prob": 0.25,  # НОВОЕ: сдвиг по высоте
-    "pitch_shift_range": (-2, 2),
-    "tempo_change_prob": 0.20,  # НОВОЕ: изменение темпа
-    "tempo_change_range": (0.8, 1.2),
-    "role_overrides": {
-        "melody": {
-            "transpose_prob": 0.75,  # Увеличено с 0.55
-            "transpose_range": 7,    # Увеличено с 5
-            "time_stretch_prob": 0.60,  # Увеличено с 0.40
-            "time_stretch_range": (0.80, 1.20),  # Расширено с (0.90, 1.10)
-            "velocity_jitter_prob": 0.65,  # Увеличено с 0.45
-            "velocity_jitter": 3,    # Увеличено с 2
-            "pitch_shift_prob": 0.40,
-            "pitch_shift_range": (-3, 3),
-            "tempo_change_prob": 0.30,
-            "tempo_change_range": (0.75, 1.25),
-        },
-        "bass": {
-            "transpose_prob": 0.80,  # Увеличено с 0.65
-            "transpose_range": 5,    # Увеличено с 4
-            "time_stretch_prob": 0.50,  # Увеличено с 0.35
-            "time_stretch_range": (0.85, 1.15),  # Расширено с (0.92, 1.08)
-            "velocity_jitter_prob": 0.50,  # Увеличено с 0.35
-            "velocity_jitter": 2,    # Увеличено с 1
-            "pitch_shift_prob": 0.35,
-            "pitch_shift_range": (-1, 1),
-            "tempo_change_prob": 0.25,
-            "tempo_change_range": (0.85, 1.15),
-        },
-        "chords": {
-            "transpose_prob": 0.25,  # Увеличено с 0.10
-            "transpose_range": 4,    # Увеличено с 2
-            "time_stretch_prob": 0.20,  # Увеличено с 0.10
-            "time_stretch_range": (0.90, 1.10),  # Расширено с (0.97, 1.03)
-            "velocity_jitter_prob": 0.20,  # Увеличено с 0.10
-            "velocity_jitter": 1,    # Без изменений
-            "pitch_shift_prob": 0.15,
-            "pitch_shift_range": (-1, 1),
-            "tempo_change_prob": 0.15,
-            "tempo_change_range": (0.90, 1.10),
-        },
-    },
+    "transpose_prob": 0.30,
+    "transpose_range": 5,
+    "time_stretch_prob": 0.25,
+    "time_stretch_range": (0.93, 1.07),
+    "velocity_jitter_prob": 0.15,
+    "velocity_jitter": 2,
 }
 
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
-CHUNKS_DIR = PROJECT_ROOT / "dataset" / "processed" / "chunks"
+CHUNKS_PATH = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks.npy"
 CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
-RESUME_FROM_CHECKPOINT = False
-RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
-LOAD_OPTIMIZER_STATE = False
-ALLOW_OLD_CHECKPOINT_RESUME = False
-
-MAX_LEN = 256
-
-D_MODEL = 192  # Уменьшено с 256 для меньшего переобучения
-N_HEADS = 6    # Уменьшено с 8
-N_LAYERS = 4   # Уменьшено с 6
-D_FF = 768     # Уменьшено с 1024
-DROPOUT = 0.30 # Увеличено с 0.20 для regularization
-
-USE_DDP = False  
-DDP_BACKEND = "nccl"
-ENABLE_DATA_PARALLEL = True 
 USE_AMP = True
 NUM_WORKERS = 4
 PIN_MEMORY = DEVICE == "cuda"
 PERSISTENT_WORKERS = True
+RESUME_FROM_CHECKPOINT = False
+RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
+
+
+def autocast_context(enabled):
+    return torch.amp.autocast(device_type="cuda") if enabled else nullcontext()
 
 
 def set_seed(seed):
@@ -157,31 +83,6 @@ def set_seed(seed):
             torch.set_float32_matmul_precision("high")
         except Exception:
             pass
-    if DEVICE == "mps":
-        torch.mps.manual_seed(seed)
-
-
-def setup_distributed():
-    if not USE_DDP:
-        return False, 0, 1, 0
-    if DEVICE != "cuda":
-        return False, 0, 1, 0
-    if "LOCAL_RANK" not in os.environ:
-        return False, 0, 1, 0
-    local_rank = int(os.environ["LOCAL_RANK"])
-    torch.cuda.set_device(local_rank)
-    dist.init_process_group(backend=DDP_BACKEND)
-    rank = dist.get_rank()
-    world_size = dist.get_world_size()
-    return True, local_rank, world_size, rank
-
-
-def is_main_process(use_ddp, rank):
-    return (not use_ddp) or rank == 0
-
-
-def unwrap_model(model):
-    return model.module if isinstance(model, (nn.DataParallel, DDP)) else model
 
 
 def clean_state_dict(state_dict):
@@ -193,92 +94,54 @@ def clean_state_dict(state_dict):
     return state_dict
 
 
-def is_compatible_checkpoint(checkpoint, model_config, vocab_size):
-    if not isinstance(checkpoint, dict):
-        return False, "checkpoint is not a dict"
-    if "model_config" not in checkpoint:
-        return False, "checkpoint has no model_config"
-    ckpt_cfg = checkpoint["model_config"]
-    for key in ["d_model", "n_heads", "n_layers", "d_ff", "dropout", "max_len", "num_roles", "num_genres"]:
-        if ckpt_cfg.get(key) != model_config.get(key):
-            return False, f"model_config mismatch on {key}"
-    if ckpt_cfg.get("pad_id") != model_config.get("pad_id"):
-        return False, "model_config mismatch on pad_id"
-    if ckpt_cfg.get("vocab_size") is not None and ckpt_cfg.get("vocab_size") != vocab_size:
-        return False, "model_config mismatch on vocab_size"
-    return True, "compatible"
+def build_scheduler(optimizer):
+    if NUM_EPOCHS <= 1:
+        return torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1.0, total_iters=1)
+
+    warmup = torch.optim.lr_scheduler.LinearLR(
+        optimizer,
+        start_factor=max(1e-3, 1.0 / float(max(1, WARMUP_EPOCHS))),
+        end_factor=1.0,
+        total_iters=max(1, WARMUP_EPOCHS),
+    )
+    cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=max(1, NUM_EPOCHS - max(1, WARMUP_EPOCHS)),
+        eta_min=LEARNING_RATE * MIN_LR_SCALE,
+    )
+    return torch.optim.lr_scheduler.SequentialLR(
+        optimizer,
+        schedulers=[warmup, cosine],
+        milestones=[max(1, WARMUP_EPOCHS)],
+    )
 
 
-def build_loaders(use_ddp=False, rank=0, world_size=1):
+def build_loaders():
     base_dataset = MIDIDataset(
-        chunks_dir=str(CHUNKS_DIR),
+        chunks_path=str(CHUNKS_PATH),
         vocab_path=str(VOCAB_PATH),
         max_len=MAX_LEN,
-        samples_per_epoch=SAMPLES_PER_EPOCH,
-        sampling_strategy=SAMPLING_STRATEGY,
-        seed=SEED + rank,
+        samples_per_epoch=None,
+        seed=SEED,
         augment_config=AUGMENT_CONFIG,
-        role_sampling_max_fraction=ROLE_SAMPLING_MAX_FRACTION,
-    )
-
-    if VAL_SPLIT + TEST_SPLIT >= 1.0:
-        raise ValueError("VAL_SPLIT + TEST_SPLIT must be < 1.0")
-
-    split_rng = random.Random(SEED)
-    split_data = {"train": {}, "val": {}, "test": {}}
-    role_counts = {}
-
-    for role in ["melody", "bass", "chords"]:
-        role_items = list(base_dataset.data[role])
-        role_counts[role.upper()] = len(role_items)
-        role_indices = list(range(len(role_items)))
-        split_rng.shuffle(role_indices)
-
-        val_size = max(1, int(len(role_indices) * VAL_SPLIT)) if len(role_indices) > 2 else 0
-        test_size = max(1, int(len(role_indices) * TEST_SPLIT)) if len(role_indices) - val_size > 1 else 0
-        train_size = len(role_indices) - val_size - test_size
-
-        if train_size <= 0:
-            train_size = max(1, len(role_indices) - 2)
-            remaining = len(role_indices) - train_size
-            val_size = 1 if remaining > 0 else 0
-            test_size = 1 if remaining > 1 else 0
-
-        train_idx = role_indices[:train_size]
-        val_idx = role_indices[train_size:train_size + val_size]
-        test_idx = role_indices[train_size + val_size:train_size + val_size + test_size]
-
-        split_data["train"][role] = [role_items[i] for i in train_idx]
-        split_data["val"][role] = [role_items[i] for i in val_idx]
-        split_data["test"][role] = [role_items[i] for i in test_idx]
-
-    train_dataset = base_dataset.clone_with_data(
-        split_data["train"],
-        samples_per_epoch=SAMPLES_PER_EPOCH,
         apply_augmentation=True,
-        seed_offset=11,
-    )
-    val_dataset = base_dataset.clone_with_data(
-        split_data["val"],
-        samples_per_epoch=None,
-        apply_augmentation=False,
-        seed_offset=22,
-    )
-    test_dataset = base_dataset.clone_with_data(
-        split_data["test"],
-        samples_per_epoch=None,
-        apply_augmentation=False,
-        seed_offset=33,
     )
 
-    train_sampler = None
-    if use_ddp:
-        train_sampler = DistributedSampler(
-            train_dataset,
-            num_replicas=world_size,
-            rank=rank,
-            shuffle=True,
-        )
+    indices = list(range(len(base_dataset.data)))
+    split_rng = random.Random(SEED)
+    split_rng.shuffle(indices)
+
+    val_size = max(1, int(len(indices) * VAL_SPLIT))
+    test_size = max(1, int(len(indices) * TEST_SPLIT))
+    train_size = max(1, len(indices) - val_size - test_size)
+
+    train_idx = indices[:train_size]
+    val_idx = indices[train_size:train_size + val_size]
+    test_idx = indices[train_size + val_size:]
+
+    train_dataset = base_dataset.clone_with_data(base_dataset.data[train_idx], samples_per_epoch=None, apply_augmentation=True, seed_offset=11)
+    val_dataset = base_dataset.clone_with_data(base_dataset.data[val_idx], samples_per_epoch=None, apply_augmentation=False, seed_offset=22)
+    test_dataset = base_dataset.clone_with_data(base_dataset.data[test_idx], samples_per_epoch=None, apply_augmentation=False, seed_offset=33)
 
     loader_kwargs = {
         "batch_size": BATCH_SIZE,
@@ -286,31 +149,15 @@ def build_loaders(use_ddp=False, rank=0, world_size=1):
         "pin_memory": PIN_MEMORY,
         "persistent_workers": PERSISTENT_WORKERS and NUM_WORKERS > 0,
     }
-    train_loader = DataLoader(
-        train_dataset,
-        shuffle=(train_sampler is None),
-        sampler=train_sampler,
-        **loader_kwargs,
-    )
+    train_loader = DataLoader(train_dataset, shuffle=True, **loader_kwargs)
     val_loader = DataLoader(val_dataset, shuffle=False, **loader_kwargs)
     test_loader = DataLoader(test_dataset, shuffle=False, **loader_kwargs)
-
-    return train_dataset, role_counts, train_loader, val_loader, test_loader, train_sampler
-
-
-def build_role_weights(role_counts):
-    max_count = max(role_counts.values())
-    raw = {
-        role: min((max_count / max(1, count)) ** ROLE_WEIGHT_ALPHA, MAX_ROLE_WEIGHT)
-        for role, count in role_counts.items()
-    }
-    mean_w = sum(raw.values()) / len(raw)
-    return {k: v / mean_w for k, v in raw.items()}
+    return train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader
 
 
-def weighted_loss(logits, targets, role_token_ids, role_weights, pad_id):
+def compute_sample_losses(logits, targets, pad_id):
     batch_size, seq_len, vocab_size = logits.shape
-    token_loss = F.cross_entropy(
+    token_losses = F.cross_entropy(
         logits.view(-1, vocab_size),
         targets.view(-1),
         reduction="none",
@@ -318,36 +165,28 @@ def weighted_loss(logits, targets, role_token_ids, role_weights, pad_id):
         label_smoothing=LABEL_SMOOTHING,
     ).view(batch_size, seq_len)
 
-    valid_mask = (targets != pad_id)
-    # Ignore the first three predicted tokens (<ROLE_...>, <GENRE_...>, <KEY_...>) in loss/metrics.
-    prefix_len = min(3, seq_len)
+    valid_mask = targets != pad_id
+    prefix_len = min(2, seq_len)
     valid_mask[:, :prefix_len] = False
     valid_mask_f = valid_mask.float()
     token_count = valid_mask_f.sum(dim=1).clamp_min(1.0)
-    sample_loss = (token_loss * valid_mask_f).sum(dim=1) / token_count
-
-    role_ids = targets[:, 0]
-    loss_weights = torch.ones(batch_size, device=logits.device)
-    for role_name, role_token_id in role_token_ids.items():
-        mask = role_ids == role_token_id
-        loss_weights = torch.where(mask, torch.full_like(loss_weights, role_weights[role_name]), loss_weights)
-
-    return (sample_loss * loss_weights).mean()
+    sample_loss = (token_losses * valid_mask_f).sum(dim=1) / token_count
+    return sample_loss, valid_mask
 
 
 def best_scale_coverage(note_pitches):
     if not note_pitches:
         return 0.0
-    pitch_classes = [p % 12 for p in note_pitches]
+    pitch_classes = [pitch % 12 for pitch in note_pitches]
     major = {0, 2, 4, 5, 7, 9, 11}
     minor = {0, 2, 3, 5, 7, 8, 10}
     best = 0.0
     for root in range(12):
-        maj_set = {(n + root) % 12 for n in major}
-        min_set = {(n + root) % 12 for n in minor}
-        maj_cov = sum(pc in maj_set for pc in pitch_classes) / len(pitch_classes)
-        min_cov = sum(pc in min_set for pc in pitch_classes) / len(pitch_classes)
-        best = max(best, maj_cov, min_cov)
+        major_set = {(n + root) % 12 for n in major}
+        minor_set = {(n + root) % 12 for n in minor}
+        major_cov = sum(pc in major_set for pc in pitch_classes) / len(pitch_classes)
+        minor_cov = sum(pc in minor_set for pc in pitch_classes) / len(pitch_classes)
+        best = max(best, major_cov, minor_cov)
     return best
 
 
@@ -355,144 +194,77 @@ def sequence_music_metrics(token_ids, id2token, pad_id):
     ids = [int(i) for i in token_ids if int(i) != pad_id]
     tokens = [id2token.get(i, "<UNK>") for i in ids]
     if len(tokens) < 2:
-        return {
-            "repeat_rate": 0.0,
-            "unique_token_ratio": 0.0,
-            "note_density": 0.0,
-            "pitch_range": 0.0,
-            "rhythm_diversity": 0.0,
-            "scale_coverage": 0.0,
-        }
+        return {"repeat_rate": 0.0, "unique_token_ratio": 0.0, "rhythm_diversity": 0.0, "scale_coverage": 0.0}
 
-    repeats = sum(1 for i in range(1, len(tokens)) if tokens[i] == tokens[i - 1])
-    repeat_rate = repeats / (len(tokens) - 1)
+    repeat_rate = sum(1 for idx in range(1, len(tokens)) if tokens[idx] == tokens[idx - 1]) / (len(tokens) - 1)
     unique_token_ratio = len(set(tokens)) / len(tokens)
-
     note_pitches = []
     time_shifts = []
-    for tok in tokens:
-        if tok.startswith("NOTE_ON_"):
+    for token in tokens:
+        if token.startswith("NOTE_ON_"):
             try:
-                note_pitches.append(int(tok.split("_")[2], 16))
+                note_pitches.append(int(token.split("_")[2], 16))
             except Exception:
                 pass
-        elif tok.startswith("TIME_SHIFT_"):
+        elif token.startswith("TIME_SHIFT_"):
             try:
-                time_shifts.append(int(tok.split("_")[2], 16))
+                time_shifts.append(int(token.split("_")[2], 16))
             except Exception:
                 pass
-
-    total_time = max(1.0, sum(time_shifts) * 0.05)
-    note_density = len(note_pitches) / total_time
-    pitch_range = (max(note_pitches) - min(note_pitches)) / 127.0 if note_pitches else 0.0
     rhythm_diversity = len(set(time_shifts)) / max(1, len(time_shifts))
     scale_coverage = best_scale_coverage(note_pitches)
-
     return {
         "repeat_rate": repeat_rate,
         "unique_token_ratio": unique_token_ratio,
-        "note_density": note_density,
-        "pitch_range": pitch_range,
         "rhythm_diversity": rhythm_diversity,
         "scale_coverage": scale_coverage,
     }
 
 
-def evaluate(model, loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled):
+def evaluate(model, loader, pad_id, id2token, amp_enabled):
     model.eval()
     total_loss = 0.0
     total_samples = 0
     total_correct = 0
     total_tokens = 0
-
-    role_stats = {
-        "MELODY": {"loss_sum": 0.0, "samples": 0, "correct": 0, "tokens": 0},
-        "BASS": {"loss_sum": 0.0, "samples": 0, "correct": 0, "tokens": 0},
-        "CHORDS": {"loss_sum": 0.0, "samples": 0, "correct": 0, "tokens": 0},
-    }
-    music_agg = {
-        "repeat_rate": 0.0,
-        "unique_token_ratio": 0.0,
-        "note_density": 0.0,
-        "pitch_range": 0.0,
-        "rhythm_diversity": 0.0,
-        "scale_coverage": 0.0,
-    }
+    music_agg = {"repeat_rate": 0.0, "unique_token_ratio": 0.0, "rhythm_diversity": 0.0, "scale_coverage": 0.0}
     music_count = 0
 
     with torch.no_grad():
-        for x, y, role_idx, genre_idx in loader:
+        for x, y, genre_idx in loader:
             x = x.to(DEVICE, non_blocking=PIN_MEMORY)
             y = y.to(DEVICE, non_blocking=PIN_MEMORY)
-            role_idx = role_idx.to(DEVICE, non_blocking=PIN_MEMORY)
             genre_idx = genre_idx.to(DEVICE, non_blocking=PIN_MEMORY)
 
-            with torch.cuda.amp.autocast(enabled=amp_enabled):
-                logits = model(x, role_id=role_idx, genre_id=genre_idx)
+            with autocast_context(amp_enabled):
+                logits = model(x, genre_id=genre_idx)
 
-            batch_size, seq_len, _ = logits.shape
-            token_losses = F.cross_entropy(
-                logits.view(-1, vocab_size),
-                y.view(-1),
-                reduction="none",
-                ignore_index=pad_id,
-                label_smoothing=LABEL_SMOOTHING,
-            ).view(batch_size, seq_len)
-
-            valid_mask = (y != pad_id)
-            prefix_len = min(3, seq_len)
-            valid_mask[:, :prefix_len] = False
-            token_count = valid_mask.sum(dim=1).clamp_min(1)
-            sample_losses = (token_losses * valid_mask.float()).sum(dim=1) / token_count.float()
-
+            sample_losses, valid_mask = compute_sample_losses(logits, y, pad_id)
             total_loss += sample_losses.sum().item()
-            total_samples += batch_size
+            total_samples += logits.size(0)
 
             preds = logits.argmax(dim=-1)
             total_correct += ((preds == y) & valid_mask).sum().item()
             total_tokens += valid_mask.sum().item()
 
-            role_ids = y[:, 0]
-            for role_name, role_token_id in role_token_ids.items():
-                mask = role_ids == role_token_id
-                if mask.any():
-                    role_stats[role_name]["loss_sum"] += sample_losses[mask].sum().item()
-                    role_stats[role_name]["samples"] += mask.sum().item()
-                    role_valid = valid_mask[mask]
-                    role_preds = preds[mask]
-                    role_targets = y[mask]
-                    role_stats[role_name]["correct"] += ((role_preds == role_targets) & role_valid).sum().item()
-                    role_stats[role_name]["tokens"] += role_valid.sum().item()
-
-            for i in range(batch_size):
-                pred_ids = preds[i][valid_mask[i]].detach().cpu().tolist()
-                mm = sequence_music_metrics(pred_ids, id2token, pad_id)
-                for k in music_agg:
-                    music_agg[k] += mm[k]
+            for idx in range(logits.size(0)):
+                pred_ids = preds[idx][valid_mask[idx]].detach().cpu().tolist()
+                metrics = sequence_music_metrics(pred_ids, id2token, pad_id)
+                for key in music_agg:
+                    music_agg[key] += metrics[key]
                 music_count += 1
 
     model.train()
     avg_loss = total_loss / max(1, total_samples)
-    val_acc = total_correct / max(1, total_tokens)
-    val_ppl = math.exp(min(avg_loss, 20.0))
-
-    role_metrics = {}
-    for role_name, stats in role_stats.items():
-        role_metrics[role_name] = {
-            "loss": stats["loss_sum"] / max(1, stats["samples"]),
-            "acc": stats["correct"] / max(1, stats["tokens"]),
-            "samples": stats["samples"],
-        }
-
-    music_metrics = {k: v / max(1, music_count) for k, v in music_agg.items()}
-    return avg_loss, val_acc, val_ppl, role_metrics, music_metrics
+    avg_acc = total_correct / max(1, total_tokens)
+    avg_ppl = math.exp(min(avg_loss, 20.0))
+    music_metrics = {key: value / max(1, music_count) for key, value in music_agg.items()}
+    return avg_loss, avg_acc, avg_ppl, music_metrics
 
 
 def save_plots(history):
     if plt is None:
-        print(" matplotlib не установлен, графики пропущены")
         return
-
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
     epochs = list(range(1, len(history["train_loss"]) + 1))
 
@@ -501,7 +273,6 @@ def save_plots(history):
     plt.plot(epochs, history["val_loss"], label="val_loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
-    plt.title("Training/Validation Loss")
     plt.legend()
     plt.grid(alpha=0.3)
     plt.tight_layout()
@@ -512,78 +283,31 @@ def save_plots(history):
     plt.plot(epochs, history["val_acc"], label="val_acc")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
-    plt.title("Validation Accuracy")
-    plt.grid(alpha=0.3)
     plt.legend()
+    plt.grid(alpha=0.3)
     plt.tight_layout()
     plt.savefig(PLOTS_DIR / "val_acc_curve.png", dpi=140)
     plt.close()
 
-    plt.figure(figsize=(8, 5))
-    plt.plot(epochs, history["val_ppl"], label="val_ppl")
-    plt.xlabel("Epoch")
-    plt.ylabel("Perplexity")
-    plt.title("Validation Perplexity")
-    plt.grid(alpha=0.3)
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(PLOTS_DIR / "val_ppl_curve.png", dpi=140)
-    plt.close()
-
-    for metric_name in ["repeat_rate", "unique_token_ratio", "note_density", "pitch_range", "rhythm_diversity", "scale_coverage"]:
-        plt.figure(figsize=(8, 5))
-        values = [m[metric_name] for m in history["music_metrics"]]
-        plt.plot(epochs, values, label=metric_name)
-        plt.xlabel("Epoch")
-        plt.ylabel(metric_name)
-        plt.title(f"Music Metric: {metric_name}")
-        plt.grid(alpha=0.3)
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(PLOTS_DIR / f"{metric_name}_curve.png", dpi=140)
-        plt.close()
-
 
 def main():
-    print("📦 Загружаем компоненты...")
+    print("Loading full-MIDI training pipeline...")
     set_seed(SEED)
-    CHECKPOINT_DIR.mkdir(exist_ok=True)
+    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
-    use_ddp, local_rank, world_size, rank = setup_distributed()
-    if use_ddp:
-        global DEVICE
-        DEVICE = f"cuda:{local_rank}"
-    is_main = is_main_process(use_ddp, rank)
-    if is_main:
-        print(f"🖥️  Device: {DEVICE}")
+    train_dataset, val_dataset, test_dataset, train_loader, val_loader, test_loader = build_loaders()
+    print(f"Device: {DEVICE}")
+    print(f"Dataset sizes: train={len(train_dataset)}, val={len(val_dataset)}, test={len(test_dataset)}")
+    print(f"Steps/epoch: train={len(train_loader)}, val={len(val_loader)}, test={len(test_loader)}")
 
-    dataset, role_counts, train_loader, val_loader, test_loader, train_sampler = build_loaders(
-        use_ddp=use_ddp,
-        rank=rank,
-        world_size=world_size,
-    )
-
-    if is_main:
-        print("✓ Датасет загружен:")
-        print(f"  - Train: {len(train_loader.dataset)}")
-        print(f"  - Val: {len(val_loader.dataset)}")
-        print(f"  - Test: {len(test_loader.dataset)}")
-        print(
-            f"  - Role chunks: MELODY={role_counts['MELODY']}, "
-            f"BASS={role_counts['BASS']}, CHORDS={role_counts['CHORDS']}"
-        )
-
-    with open(VOCAB_PATH) as f:
-        vocab = json.load(f)
+    with open(VOCAB_PATH) as handle:
+        vocab = json.load(handle)
     token2id = vocab["token2id"]
-    id2token = {int(k): v for k, v in vocab["id2token"].items()}
+    id2token = {int(idx): token for idx, token in vocab["id2token"].items()}
     vocab_size = len(token2id)
     pad_id = token2id["<PAD>"]
 
-    num_roles = 3
-    num_genres = dataset.num_genres
-
-    model_init_config = {
+    model_config = {
         "d_model": D_MODEL,
         "n_heads": N_HEADS,
         "n_layers": N_LAYERS,
@@ -591,253 +315,123 @@ def main():
         "dropout": DROPOUT,
         "max_len": MAX_LEN,
         "pad_id": pad_id,
-        "num_roles": num_roles,
-        "num_genres": num_genres,
+        "num_roles": 0,
+        "num_genres": train_dataset.num_genres,
     }
-    model_config = {**model_init_config, "vocab_size": vocab_size}
+    model = TransformerLM(vocab_size, **model_config).to(DEVICE)
 
-    model = TransformerLM(vocab_size, **model_init_config).to(DEVICE)
-    if use_ddp:
-        model = DDP(model, device_ids=[local_rank])
-    elif DEVICE == "cuda" and ENABLE_DATA_PARALLEL and torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        if is_main:
-            print(f"DataParallel enabled: {torch.cuda.device_count()} GPUs")
-
-    optimizer = torch.optim.AdamW(
-        unwrap_model(model).parameters(),
-        lr=LEARNING_RATE,
-        weight_decay=WEIGHT_DECAY,
-    )
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
-
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    scheduler = build_scheduler(optimizer)
     amp_enabled = USE_AMP and DEVICE.startswith("cuda")
-    scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
+    scaler = torch.amp.GradScaler("cuda", enabled=amp_enabled)
 
-    role_token_ids = {
-        "MELODY": token2id["<ROLE_MELODY>"],
-        "BASS": token2id["<ROLE_BASS>"],
-        "CHORDS": token2id["<ROLE_CHORDS>"]
-    }
-    role_weights = build_role_weights(role_counts)
-    if is_main:
-        print(
-            f"⚖️  Role weights: MELODY={role_weights['MELODY']:.2f}, "
-            f"BASS={role_weights['BASS']:.2f}, CHORDS={role_weights['CHORDS']:.2f}"
-        )
-
-    history = {
-        "train_loss": [],
-        "val_loss": [],
-        "val_acc": [],
-        "val_ppl": [],
-        "learning_rates": [],
-        "role_metrics": [],
-        "music_metrics": [],
-    }
-
+    history = {"train_loss": [], "val_loss": [], "val_acc": [], "val_ppl": [], "learning_rates": [], "music_metrics": []}
     best_val_loss = float("inf")
     early_stop_counter = 0
-    start_epoch = 0
 
     if RESUME_FROM_CHECKPOINT and RESUME_CHECKPOINT_PATH.exists():
         checkpoint = torch.load(RESUME_CHECKPOINT_PATH, map_location=DEVICE)
-        ok, reason = is_compatible_checkpoint(checkpoint, model_config, vocab_size)
-        if ok:
-            unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
-            if LOAD_OPTIMIZER_STATE and "optimizer_state_dict" in checkpoint:
-                optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            start_epoch = int(checkpoint.get("epoch", 0))
-            best_val_loss = float(checkpoint.get("val_loss", best_val_loss))
-            if is_main:
-                print(f"🔄 Resume from checkpoint: {RESUME_CHECKPOINT_PATH} (start_epoch={start_epoch})")
-        elif ALLOW_OLD_CHECKPOINT_RESUME:
-            try:
-                state_dict = checkpoint["model_state_dict"] if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint else checkpoint
-                unwrap_model(model).load_state_dict(clean_state_dict(state_dict))
-                if is_main:
-                    print("⚠️ Loaded old checkpoint without model_config. Use with caution.")
-            except Exception as exc:
-                if is_main:
-                    print(f"⚠️ Skipping resume: incompatible checkpoint ({exc})")
-        else:
-            if is_main:
-                print(f"⚠️ Skipping resume: incompatible checkpoint ({reason})")
+        model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
 
-    history_path = CHECKPOINT_DIR / "history.json"
-    if RESUME_FROM_CHECKPOINT and history_path.exists() and is_main:
-        try:
-            with open(history_path) as f:
-                loaded_history = json.load(f)
-            for key in history:
-                if key in loaded_history and isinstance(loaded_history[key], list):
-                    history[key] = loaded_history[key]
-            print(f"📚 История подгружена: {history_path}")
-        except Exception:
-            print(" Не удалось загрузить history.json, создаю новую историю")
+    for epoch in range(NUM_EPOCHS):
+        model.train()
+        total_train_loss = 0.0
+        optimizer.zero_grad(set_to_none=True)
+        progress = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS}")
 
-    if is_main:
-        print("\n Начинаем обучение...\n")
+        for step, (x, y, genre_idx) in enumerate(progress, start=1):
+            x = x.to(DEVICE, non_blocking=PIN_MEMORY)
+            y = y.to(DEVICE, non_blocking=PIN_MEMORY)
+            genre_idx = genre_idx.to(DEVICE, non_blocking=PIN_MEMORY)
 
-    try:
-        for epoch in range(start_epoch, NUM_EPOCHS):
-            model.train()
-            total_train_loss = 0.0
+            with autocast_context(amp_enabled):
+                logits = model(x, genre_id=genre_idx)
+                batch_loss, _ = compute_sample_losses(logits, y, pad_id)
+                loss = batch_loss.mean() / max(1, GRAD_ACCUM_STEPS)
 
-            if train_sampler is not None:
-                train_sampler.set_epoch(epoch)
+            scaler.scale(loss).backward()
+            total_train_loss += loss.item() * max(1, GRAD_ACCUM_STEPS)
 
-            pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{NUM_EPOCHS} [TRAIN]") if is_main else train_loader
-
-            optimizer.zero_grad(set_to_none=True)
-            step_in_epoch = 0
-
-            for x, y, role_idx, genre_idx in pbar:
-                x = x.to(DEVICE, non_blocking=PIN_MEMORY)
-                y = y.to(DEVICE, non_blocking=PIN_MEMORY)
-                role_idx = role_idx.to(DEVICE, non_blocking=PIN_MEMORY)
-                genre_idx = genre_idx.to(DEVICE, non_blocking=PIN_MEMORY)
-
-                with torch.cuda.amp.autocast(enabled=amp_enabled):
-                    logits = model(x, role_id=role_idx, genre_id=genre_idx)
-                    loss = weighted_loss(logits, y, role_token_ids, role_weights, pad_id)
-                    loss = loss / max(1, GRAD_ACCUM_STEPS)
-
-                scaler.scale(loss).backward()
-                step_in_epoch += 1
-
-                if step_in_epoch % GRAD_ACCUM_STEPS == 0:
-                    scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(unwrap_model(model).parameters(), max_norm=1.0)
-                    scaler.step(optimizer)
-                    scaler.update()
-                    optimizer.zero_grad(set_to_none=True)
-
-                total_train_loss += loss.item() * max(1, GRAD_ACCUM_STEPS)
-                if is_main:
-                    pbar.set_postfix({"loss": f"{loss.item() * max(1, GRAD_ACCUM_STEPS):.4f}"})
-
-            if step_in_epoch % GRAD_ACCUM_STEPS != 0:
+            if step % GRAD_ACCUM_STEPS == 0:
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(unwrap_model(model).parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad(set_to_none=True)
 
-            avg_train_loss = total_train_loss / max(1, len(train_loader))
+            progress.set_postfix({"loss": f"{loss.item() * max(1, GRAD_ACCUM_STEPS):.4f}"})
 
-            if is_main:
-                avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = evaluate(
-                    model, val_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
-                )
-            else:
-                avg_val_loss, val_acc, val_ppl, role_metrics, music_metrics = 0.0, 0.0, 0.0, {}, {}
+        if len(train_loader) % GRAD_ACCUM_STEPS != 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad(set_to_none=True)
 
-            if use_ddp:
-                loss_tensor = torch.tensor([avg_val_loss], device=DEVICE, dtype=torch.float32)
-                dist.broadcast(loss_tensor, src=0)
-                avg_val_loss = float(loss_tensor.item())
+        avg_train_loss = total_train_loss / max(1, len(train_loader))
+        val_loss, val_acc, val_ppl, music_metrics = evaluate(model, val_loader, pad_id, id2token, amp_enabled)
+        scheduler.step()
 
-            scheduler.step(avg_val_loss)
+        history["train_loss"].append(avg_train_loss)
+        history["val_loss"].append(val_loss)
+        history["val_acc"].append(val_acc)
+        history["val_ppl"].append(val_ppl)
+        history["learning_rates"].append(optimizer.param_groups[0]["lr"])
+        history["music_metrics"].append(music_metrics)
 
-            if is_main:
-                history["train_loss"].append(avg_train_loss)
-                history["val_loss"].append(avg_val_loss)
-                history["val_acc"].append(val_acc)
-                history["val_ppl"].append(val_ppl)
-                history["learning_rates"].append(optimizer.param_groups[0]["lr"])
-                history["role_metrics"].append(role_metrics)
-                history["music_metrics"].append(music_metrics)
+        print(f"Epoch {epoch + 1}")
+        print(f"  Train Loss: {avg_train_loss:.4f}")
+        print(f"  Val Loss: {val_loss:.4f}")
+        print(f"  Val Acc: {val_acc:.4f}")
+        print(f"  Val PPL: {val_ppl:.2f}")
+        print(
+            f"  Music: repeat={music_metrics['repeat_rate']:.3f}, "
+            f"diversity={music_metrics['unique_token_ratio']:.3f}, "
+            f"rhythm_div={music_metrics['rhythm_diversity']:.3f}, "
+            f"scale_cov={music_metrics['scale_coverage']:.3f}"
+        )
+        print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}\n")
 
-                print(f"✓ Epoch {epoch + 1}")
-                print(f"  Train Loss: {avg_train_loss:.4f}")
-                print(f"  Val Loss: {avg_val_loss:.4f}")
-                print(f"  Val Acc: {val_acc:.4f}")
-                print(f"  Val PPL: {val_ppl:.2f}")
-                print(
-                    f"  Role Val Acc: M={role_metrics['MELODY']['acc']:.3f}, "
-                    f"B={role_metrics['BASS']['acc']:.3f}, C={role_metrics['CHORDS']['acc']:.3f}"
-                )
-                print(
-                    f"  Music: repeat={music_metrics['repeat_rate']:.3f}, "
-                    f"diversity={music_metrics['unique_token_ratio']:.3f}, "
-                    f"scale_cov={music_metrics['scale_coverage']:.3f}"
-                )
-                print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}\n")
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            early_stop_counter = 0
+            torch.save(
+                {
+                    "epoch": epoch + 1,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "val_loss": val_loss,
+                    "model_config": {**model_config, "vocab_size": vocab_size},
+                },
+                CHECKPOINT_DIR / "model_best.pth",
+            )
+        else:
+            early_stop_counter += 1
+            if early_stop_counter >= EARLY_STOPPING_PATIENCE:
+                print("Early stopping activated.")
+                break
 
-                if avg_val_loss < best_val_loss:
-                    best_val_loss = avg_val_loss
-                    early_stop_counter = 0
-                    torch.save(
-                        {
-                            "epoch": epoch + 1,
-                            "model_state_dict": unwrap_model(model).state_dict(),
-                            "optimizer_state_dict": optimizer.state_dict(),
-                            "val_loss": avg_val_loss,
-                            "model_config": model_config,
-                        },
-                        str(CHECKPOINT_DIR / "model_best.pth"),
-                    )
-                    print(f"💾 Лучшая модель сохранена (Val Loss: {avg_val_loss:.4f})\n")
-                else:
-                    early_stop_counter += 1
-                    print(f"⚠️  Val Loss не улучшилась ({early_stop_counter}/{EARLY_STOPPING_PATIENCE})\n")
+    torch.save(model.state_dict(), CHECKPOINT_DIR / "model_final.pth")
+    with open(CHECKPOINT_DIR / "history.json", "w") as handle:
+        json.dump(history, handle, indent=2)
 
-            if use_ddp:
-                stop_tensor = torch.tensor([1 if early_stop_counter >= EARLY_STOPPING_PATIENCE else 0], device=DEVICE)
-                dist.broadcast(stop_tensor, src=0)
-                if stop_tensor.item() == 1:
-                    if is_main:
-                        print(" Early stopping активирован!")
-                    break
-            else:
-                if early_stop_counter >= EARLY_STOPPING_PATIENCE:
-                    if is_main:
-                        print(" Early stopping активирован!")
-                    break
+    best_cp = CHECKPOINT_DIR / "model_best.pth"
+    if best_cp.exists():
+        checkpoint = torch.load(best_cp, map_location=DEVICE)
+        model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
+        test_loss, test_acc, test_ppl, test_music_metrics = evaluate(model, test_loader, pad_id, id2token, amp_enabled)
+        print("Test metrics (best checkpoint):")
+        print(f"  Test Loss: {test_loss:.4f}")
+        print(f"  Test Acc: {test_acc:.4f}")
+        print(f"  Test PPL: {test_ppl:.2f}")
+        print(
+            f"  Music Test: repeat={test_music_metrics['repeat_rate']:.3f}, "
+            f"diversity={test_music_metrics['unique_token_ratio']:.3f}, "
+            f"rhythm_div={test_music_metrics['rhythm_diversity']:.3f}, "
+            f"scale_cov={test_music_metrics['scale_coverage']:.3f}"
+        )
 
-        if is_main:
-            print("\n Обучение завершено!")
-            torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_final.pth"))
-            print(" Финальная модель сохранена")
-
-            with open(CHECKPOINT_DIR / "history.json", "w") as f:
-                json.dump(history, f, indent=2)
-            print(" История обучения сохранена")
-
-            best_cp = CHECKPOINT_DIR / "model_best.pth"
-            if best_cp.exists():
-                checkpoint = torch.load(best_cp, map_location=DEVICE)
-                unwrap_model(model).load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
-                test_loss, test_acc, test_ppl, test_role_metrics, test_music_metrics = evaluate(
-                    model, test_loader, vocab_size, pad_id, role_token_ids, id2token, amp_enabled
-                )
-                print("\n🧪 Test метрики (best checkpoint):")
-                print(f"  Test Loss: {test_loss:.4f}")
-                print(f"  Test Acc: {test_acc:.4f}")
-                print(f"  Test PPL: {test_ppl:.2f}")
-                print(
-                    f"  Role Test Acc: M={test_role_metrics['MELODY']['acc']:.3f}, "
-                    f"B={test_role_metrics['BASS']['acc']:.3f}, "
-                    f"C={test_role_metrics['CHORDS']['acc']:.3f}"
-                )
-                print(
-                    f"  Music Test: repeat={test_music_metrics['repeat_rate']:.3f}, "
-                    f"diversity={test_music_metrics['unique_token_ratio']:.3f}, "
-                    f"scale_cov={test_music_metrics['scale_coverage']:.3f}"
-                )
-
-            save_plots(history)
-            print(f"Графики сохранены в {PLOTS_DIR}")
-
-    except KeyboardInterrupt:
-        if is_main:
-            print("\n Обучение прервано пользователем")
-            torch.save(unwrap_model(model).state_dict(), str(CHECKPOINT_DIR / "model_interrupted.pth"))
-            print("Модель сохранена как model_interrupted.pth")
-
-    if use_ddp:
-        dist.destroy_process_group()
+    save_plots(history)
 
 
 if __name__ == "__main__":

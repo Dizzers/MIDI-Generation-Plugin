@@ -1,264 +1,221 @@
-import os
 import json
-from collections import defaultdict
+import signal
+from pathlib import Path
 
 import music21 as m21
-import numpy as np
 from tqdm import tqdm
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RAW_DIR = os.path.join(BASE_DIR, "midi_raw")
-META_DIR = os.path.join(BASE_DIR, "processed", "meta")
-TOKENS_DIR = os.path.join(BASE_DIR, "processed", "tokens")
+BASE_DIR = Path(__file__).resolve().parent
+RAW_DIR = BASE_DIR / "midi_raw"
+PROCESSED_DIR = BASE_DIR / "processed"
+TOKENS_DIR = PROCESSED_DIR / "tokens"
 
-os.makedirs(TOKENS_DIR, exist_ok=True)
+TOKENS_DIR.mkdir(parents=True, exist_ok=True)
 
 TIME_SHIFT_RESOLUTION = 0.05
 VELOCITY_BINS = 8
 TARGET_GENRES = {"trap", "classical"}
-
-TRACK_LIMIT_PER_FILE = {
-    "chords": 1,
-    "melody": 3,
-    "bass": 2,
-}
-ROLE_SEQUENCE_CAP = {
-    "chords": 1200,
-    "melody": None,
-    "bass": None,
-}
-RNG_SEED = 42
+MIN_TOTAL_NOTES = 16
+MAX_FILES_PER_GENRE = None
+PARSE_TIMEOUT_SECONDS = 15
 
 KEY_TOKENS = [
     *(f"<KEY_{pc}_MAJ>" for pc in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]),
     *(f"<KEY_{pc}_MIN>" for pc in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]),
     "<KEY_UNKNOWN>",
 ]
-
 NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
-def velocity_bin(v):
-    b = int((v / 127) * (VELOCITY_BINS - 1))
-    return max(0, min(VELOCITY_BINS - 1, b))
+class MidiParseTimeoutError(TimeoutError):
+    pass
+
+
+def velocity_bin(value):
+    bucket = int((float(value) / 127.0) * (VELOCITY_BINS - 1))
+    return max(0, min(VELOCITY_BINS - 1, bucket))
 
 
 def quantize_time(delta):
-    steps = int(round(delta / TIME_SHIFT_RESOLUTION))
+    steps = int(round(float(delta) / TIME_SHIFT_RESOLUTION))
     return max(1, steps)
 
 
 def detect_key_token(score):
     try:
-        k = score.analyze("Krumhansl")
-        tonic = k.tonic.name.replace("-", "b")
-        mode = "MAJ" if (k.mode or "major").lower().startswith("maj") else "MIN"
-
-        # Normalize to sharp note names for compact vocab.
-        pc = m21.pitch.Pitch(tonic).pitchClass
-        root = NOTE_NAMES[int(pc) % 12]
-        tok = f"<KEY_{root}_{mode}>"
-        if tok in KEY_TOKENS:
-            return tok
+        key = score.analyze("Krumhansl")
+        tonic = key.tonic.name.replace("-", "b")
+        mode = "MAJ" if (key.mode or "major").lower().startswith("maj") else "MIN"
+        pitch_class = m21.pitch.Pitch(tonic).pitchClass
+        root = NOTE_NAMES[int(pitch_class) % 12]
+        token = f"<KEY_{root}_{mode}>"
+        if token in KEY_TOKENS:
+            return token
     except Exception:
         pass
     return "<KEY_UNKNOWN>"
 
 
-def extract_events(part):
+def iter_midi_files():
+    for genre_dir in sorted(RAW_DIR.iterdir()):
+        if not genre_dir.is_dir():
+            continue
+        genre = genre_dir.name.strip().lower()
+        if TARGET_GENRES and genre not in TARGET_GENRES:
+            continue
+
+        files = sorted(
+            p for p in genre_dir.rglob("*")
+            if p.is_file() and p.suffix.lower() in {".mid", ".midi"}
+        )
+        if MAX_FILES_PER_GENRE is not None:
+            files = files[:MAX_FILES_PER_GENRE]
+
+        for midi_path in files:
+            yield genre.upper(), midi_path
+
+
+def _timeout_handler(signum, frame):
+    raise MidiParseTimeoutError(f"timeout_after_{PARSE_TIMEOUT_SECONDS}s")
+
+
+def parse_score_with_timeout(midi_path):
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(PARSE_TIMEOUT_SECONDS)
+    try:
+        return m21.converter.parse(str(midi_path), forceSource=True)
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, previous_handler)
+
+
+def extract_full_events(score):
     events = []
+    for item in score.flatten().notes:
+        start = float(item.offset)
+        duration = max(1e-3, float(item.quarterLength))
 
-    for n in part.flatten().notes:
-        start = float(n.offset)
-        dur = float(n.quarterLength)
-
-        if n.isNote:
-            pitches = [n.pitch.midi]
-            vel = n.volume.velocity
-        elif n.isChord:
-            pitches = [p.midi for p in n.pitches]
-            vel = n.volume.velocity
+        if item.isNote:
+            pitches = [int(item.pitch.midi)]
+            velocity = int(item.volume.velocity or 64)
+        elif item.isChord:
+            pitches = [int(p.midi) for p in item.pitches]
+            velocity = int(item.volume.velocity or 64)
         else:
             continue
 
         for pitch in pitches:
-            events.append((start, 1, "NOTE_ON", pitch, vel))
-            events.append((start + dur, 0, "NOTE_OFF", pitch, None))
+            events.append((start, 1, "NOTE_ON", pitch, velocity))
+            events.append((start + duration, 0, "NOTE_OFF", pitch, None))
 
-    events.sort(key=lambda x: (x[0], x[1], x[3]))
+    events.sort(key=lambda row: (row[0], row[1], row[3]))
     return events
-
-
-def role_quality_pass(role, events):
-    note_on = [e for e in events if e[2] == "NOTE_ON"]
-    if len(note_on) < 8:
-        return False
-
-    pitches = [e[3] for e in note_on]
-    avg_pitch = float(np.mean(pitches)) if pitches else 0.0
-
-    onset_counts = defaultdict(int)
-    for t, _, etype, _, _ in note_on:
-        onset_counts[round(float(t), 3)] += 1
-    chord_onset_ratio = (
-        sum(1 for c in onset_counts.values() if c >= 2) / max(1, len(onset_counts))
-    )
-
-    if role == "chords":
-        return chord_onset_ratio >= 0.22
-
-    if role == "melody":
-        return chord_onset_ratio <= 0.30 and avg_pitch >= 50
-
-    if role == "bass":
-        low_ratio = sum(1 for p in pitches if p <= 55) / max(1, len(pitches))
-        return chord_onset_ratio <= 0.32 and low_ratio >= 0.28
-
-    return True
 
 
 def events_to_tokens(events):
     tokens = []
     last_time = 0.0
 
-    for time, _, etype, pitch, vel in events:
+    for time, _, event_type, pitch, velocity in events:
         delta = time - last_time
         if delta > 0:
             tokens.append(f"TIME_SHIFT_{quantize_time(delta):#06x}")
 
-        if etype == "NOTE_ON":
-            tokens.extend([f"VELOCITY_{velocity_bin(vel or 64):#02x}", f"NOTE_ON_{pitch:#04x}"])
+        if event_type == "NOTE_ON":
+            tokens.append(f"VELOCITY_{velocity_bin(velocity or 64):#02x}")
+            tokens.append(f"NOTE_ON_{int(pitch):#04x}")
         else:
-            tokens.append(f"NOTE_OFF_{pitch:#04x}")
+            tokens.append(f"NOTE_OFF_{int(pitch):#04x}")
 
         last_time = time
 
     return tokens
 
 
-def cap_role_sequences(role_tokens):
-    rng = np.random.default_rng(RNG_SEED)
-    for role in ["chords", "melody", "bass"]:
-        cap = ROLE_SEQUENCE_CAP.get(role)
-        seqs = role_tokens.get(role, [])
-        if cap is None or len(seqs) <= cap:
-            continue
-        idx = rng.choice(len(seqs), size=cap, replace=False)
-        role_tokens[role] = [seqs[i] for i in idx]
-        print(f"{role:10s}: capped to {len(role_tokens[role])}")
-
-
 def tokenize_dataset():
-    print(f"tokenize_midi.py path: {os.path.abspath(__file__)}")
-    print(f"TARGET_GENRES={TARGET_GENRES}, TRACK_LIMIT_PER_FILE={TRACK_LIMIT_PER_FILE}, ROLE_SEQUENCE_CAP={ROLE_SEQUENCE_CAP}")
-
-    with open(os.path.join(META_DIR, "files.json")) as f:
-        files = json.load(f)
-
-    role_tokens = defaultdict(list)
+    full_sequences = []
     vocab = set()
     errors = []
+    timeout_files = []
+    files_per_genre = {}
+    sequences_per_genre = {}
+    tokens_per_genre = {}
 
-    valid_entries = [
-        e for e in files
-        if e["status"] == "ok" and ((not TARGET_GENRES) or e.get("genre", "").strip().lower() in TARGET_GENRES)
-    ]
-    print(f" Токенизация {len(valid_entries)} валидных MIDI файлов...\n")
+    midi_files = list(iter_midi_files())
+    print(f"Tokenizing {len(midi_files)} full MIDI files...")
 
-    for entry in tqdm(valid_entries, desc="Токенизация", unit="файл"):
-        genre = entry["genre"]
-        midi_path = os.path.join(RAW_DIR, genre, entry["file"])
-
+    progress = tqdm(midi_files, desc="Full MIDI tokenization", unit="file")
+    for genre, midi_path in progress:
+        files_per_genre[genre] = files_per_genre.get(genre, 0) + 1
+        progress.set_postfix_str(midi_path.name[:48])
         try:
-            score = m21.converter.parse(midi_path, forceSource=True)
+            score = parse_score_with_timeout(midi_path)
             key_token = detect_key_token(score)
+            events = extract_full_events(score)
+            note_on_count = sum(1 for row in events if row[2] == "NOTE_ON")
+            if note_on_count < MIN_TOTAL_NOTES:
+                continue
+
+            tokens = [f"<GENRE_{genre}>", key_token]
+            tokens.extend(events_to_tokens(events))
+            full_sequences.append(tokens)
+            vocab.update(tokens)
+            sequences_per_genre[genre] = sequences_per_genre.get(genre, 0) + 1
+            tokens_per_genre[genre] = tokens_per_genre.get(genre, 0) + len(tokens)
         except KeyboardInterrupt:
             raise
-        except Exception as e:
-            errors.append({"file": entry["file"], "error": str(e)[:100]})
-            continue
+        except Exception as exc:
+            errors.append({"file": str(midi_path), "error": str(exc)[:200]})
+            if "timeout_after_" in str(exc):
+                timeout_files.append(str(midi_path))
 
-        try:
-            for role in ["melody", "bass", "chords"]:
-                tracks = entry[f"{role}_tracks"]
-                if not tracks:
-                    continue
+    np_payload = __import__("numpy").array(full_sequences, dtype=object)
+    (__import__("numpy")).save(TOKENS_DIR / "full.npy", np_payload)
 
-                lim = TRACK_LIMIT_PER_FILE.get(role)
-                if lim is not None and len(tracks) > lim:
-                    tracks = tracks[:lim]
-
-                for tid in tracks:
-                    part = score.parts[tid]
-
-                    events = extract_events(part)
-                    if not events:
-                        continue
-
-                    if not role_quality_pass(role, events):
-                        continue
-
-                    tokens = [
-                        f"<ROLE_{role.upper()}>",
-                        f"<GENRE_{genre.upper()}>",
-                        key_token,
-                    ]
-                    tokens += events_to_tokens(events)
-
-                    role_tokens[role].append(tokens)
-                    vocab.update(tokens)
-        except KeyboardInterrupt:
-            raise
-        except Exception as e:
-            errors.append({"file": entry["file"], "error": f"token_error: {str(e)[:100]}"})
-            continue
-
-    cap_role_sequences(role_tokens)
-
-    print("\n" + "=" * 50)
-    print("ТОКЕНИЗАЦИЯ ЗАВЕРШЕНА")
-    print("=" * 50)
-
-    for role in ["chords", "melody", "bass"]:
-        seqs = role_tokens.get(role, [])
-        np.save(os.path.join(TOKENS_DIR, f"{role}.npy"), np.array(seqs, dtype=object))
-        print(f"{role:10s}: {len(seqs):6d} sequences")
-
-    SPECIAL_TOKENS = [
+    special_tokens = [
         "<PAD>",
         "<BOS>",
         "<EOS>",
         "<UNK>",
-        "<ROLE_MELODY>",
-        "<ROLE_BASS>",
-        "<ROLE_CHORDS>",
         "<GENRE_TRAP>",
+        "<GENRE_CLASSICAL>",
         *KEY_TOKENS,
     ]
+    vocab_clean = [token for token in vocab if token not in special_tokens]
+    vocab_list = special_tokens + sorted(vocab_clean)
 
-    vocab_clean = [t for t in vocab if t not in SPECIAL_TOKENS]
-    vocab_list = SPECIAL_TOKENS + sorted(vocab_clean)
+    token2id = {token: idx for idx, token in enumerate(vocab_list)}
+    id2token = {idx: token for token, idx in token2id.items()}
 
-    token2id = {t: i for i, t in enumerate(vocab_list)}
-    id2token = {i: t for t, i in token2id.items()}
+    with open(PROCESSED_DIR / "vocab.json", "w") as handle:
+        json.dump({"token2id": token2id, "id2token": id2token, "size": len(token2id)}, handle, indent=2)
 
-    vocab_dict = {
-        "token2id": token2id,
-        "id2token": id2token,
-        "size": len(token2id)
+    stats = {
+        "mode": "full_midi",
+        "files_seen": len(midi_files),
+        "sequences_kept": len(full_sequences),
+        "errors": len(errors),
+        "vocab_size": len(token2id),
+        "genres": sorted({seq[0] for seq in full_sequences}) if full_sequences else [],
+        "files_per_genre": files_per_genre,
+        "sequences_per_genre": sequences_per_genre,
+        "avg_tokens_per_genre": {
+            genre: round(tokens_per_genre[genre] / max(1, sequences_per_genre.get(genre, 0)), 2)
+            for genre in sorted(tokens_per_genre)
+        },
     }
-
-    with open(os.path.join(BASE_DIR, "processed", "vocab.json"), "w") as f:
-        json.dump(vocab_dict, f, indent=2)
-
-    print(f"\n📊 Vocab size: {len(vocab_list)} tokens")
+    with open(PROCESSED_DIR / "full_tokenize_stats.json", "w") as handle:
+        json.dump(stats, handle, indent=2)
 
     if errors:
-        print(f" Ошибок при токенизации: {len(errors)}")
-        with open(os.path.join(BASE_DIR, "processed", "tokenize_errors.json"), "w") as f:
-            json.dump(errors, f, indent=2)
+        with open(PROCESSED_DIR / "tokenize_errors.json", "w") as handle:
+            json.dump(errors, handle, indent=2)
+    if timeout_files:
+        with open(PROCESSED_DIR / "tokenize_timeout_files.txt", "w") as handle:
+            handle.write("\n".join(timeout_files) + "\n")
 
-    print("=" * 50)
+    print(json.dumps(stats, indent=2))
 
 
 if __name__ == "__main__":

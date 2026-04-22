@@ -1,133 +1,27 @@
-## Project Status (Updated April 20, 2026)
+## Project Rules
 
-### ✅ Completed
-- **Solution 1**: Lowered detection thresholds (bass 0.36→0.20, melody 0.22→0.12)
-- **Solution 2**: Enhanced weighted loss (ALPHA 0.8→0.9, MAX 10→15)
-- **Dataset**: Processed 15,529 MIDI files (Trap + Classical)
-  - Sequences: 1200 chords, 298 melody, 140 bass
-  - Chunks: 5000 chords (capped), 1981 melody, 588 bass
-  - Ratio improved: 52:2:1 → 8.5:3.4:1 (6x better!)
+### Main Goal
+Prioritize a stable full-MIDI generation pipeline that can produce defensible diploma results within one month.
 
-### 🚀 Training in Progress
-- **Current**: Epoch 3/40, significant improvements
-- **Results so far**:
-  - Epoch 1: Val Loss 4.8444, Acc 0.1600, Role Acc M=0.174 B=0.158 C=0.146
-  - Epoch 2: Val Loss 4.5216, Acc 0.1891, Role Acc M=0.219 B=0.186 C=0.159
-  - **Fixed**: Conditioning tokens now present in all chunks
-- **LR**: 5e-5 (increased to 1e-4 for next run)
-- **Monitor**: role_metrics parity, val_loss plateau
+### Current Architecture
+- symbolic MIDI generation
+- single-stream full MIDI
+- conditioning tokens: `<GENRE_...>`, `<KEY_...>`
+- Transformer LM with genre conditioning
 
-### 📅 Timeline remaining
-- **This week**: Complete training (10-15 epochs), test generation quality
-- **Week 2**: Evaluate metrics, decide JUCE vs optimization
-- **Weeks 3-4**: JUCE plugin development (10-12 days estimated)
+### Ground Truth
+- `dataset/tokenize_midi.py` defines token format
+- `dataset/chunk_tokens.py` defines training chunk layout
+- `model/train_improved.py` defines active training behavior
+- `model/generate.py` defines active generation behavior
 
-## Architecture
+### Important Constraints
+1. Do not reintroduce the old role-based pipeline as the default architecture.
+2. Keep training and generation compatible with the same `vocab.json`.
+3. Keep the prefix structure stable unless all dependent files are updated.
+4. Update docs whenever the pipeline changes.
 
-### Core Modules
-1. **dataset/** - Data processing pipeline
-   - `preprocess_midi.py` / `preprocess_full.py`: MIDI parsing & role detection
-   - `tokenize_midi.py` / `tokenize_midi_full.py`: Event→token conversion + vocab
-   - `chunk_tokens.py` / `chunk_tokens_full.py`: Sequence chunking with stride
-   - Output: vocab.json, chunks/*.npy, stats.json
-
-2. **model/** - ML pipeline
-   - `transformer.py`: TransformerLM architecture (d_model=256, n_heads=8, n_layers=6)
-   - `dataset.py`: PyTorch Dataset & DataLoader
-   - `train_improved.py`: Training/validation with checkpointing & plots
-   - `generate.py`: Controllable generation (role/genre conditioning, top-k/p sampling)
-   - `evaluate_generation.py`: Generation quality metrics
-
-3. **checkpoints/** - Model artifacts
-   - Saved model states, training history, best checkpoints
-
-### Key Constants
-- TIME_SHIFT_RESOLUTION = 0.05
-- MAX_LEN = 256 (chunk size), STRIDE = 128
-- Model defaults: d_model=256, n_heads=8, d_ff=1024, dropout=0.2
-
-## Code Standards
-
-### Python Style
-- PEP 8 compliance (black formatter compatible)
-- Type hints for function parameters & returns
-- Docstrings for all modules, classes, and public functions
-- Use pathlib.Path for file operations
-
-### PyTorch Best Practices
-- Use CPU/CUDA device with context managers: `device = torch.device("cuda" if torch.cuda.is_available() else "cpu")`
-- Checkpoint models every epoch during training
-- Validate on separate dataset
-- Log metrics using standard Python logging
-
-### MIDI Processing
-- Event tokens include: NOTE_ON, NOTE_OFF, TIME_SHIFT, CONTROL_CHANGE
-- Role classification: Analyze pitch ranges, density, and note durations
-- Vocabularies: vocab.json maps token strings to IDs
-
-## Dataset Patterns
-
-### Regular vs Full Processing
-- **Regular versions**: Filter by TARGET_GENRES, apply TRACK_LIMIT_PER_FILE (5 tracks max per role)
-- **_full versions**: Process ALL files and tracks without filtering or limits
-- Both produce similar output structure with "_full" suffix for full variants
-
-### Configuration
-- MIN_TOTAL_NOTES = 5
-- MIN_DURATION_SEC = 1.0
-- MIN_TRACK_NOTES = 8
-- Roles detected from pitch patterns and note characteristics
-
-## File Structure to Know
-```
-dataset/
-  processed/
-    vocab.json            # Token vocabulary {token_str: id}
-    chunks_mel/*.npy      # Melody chunks (if role-based)
-    chunks_bas/*.npy      # Bass chunks
-    chunks_chr/*.npy      # Chords chunks
-    chunks/*.npy          # All chunks (if full processing)
-    stats.json            # Processing statistics
-    files.json            # Input files metadata
-
-model/
-  checkpoints/            # Model states & optimizer states
-  training_*.png          # Training/validation plots
-  vocab.json              # Copy from dataset/processed/
-
-generated/                # Output MIDI files from generation
-```
-
-## Common Commands
-```bash
-# Process MIDI dataset
-python dataset/preprocess_midi.py
-python dataset/tokenize_midi.py
-python dataset/chunk_tokens.py
-
-# Train model
-python model/train_improved.py --epochs 100 --batch_size 32
-
-# Generate MIDI
-python model/generate.py --length 256 --role melody --genre trap
-
-# Evaluate generation
-python model/evaluate_generation.py --checkpoint_path path/to/checkpoint
-```
-
-## Development Guidelines
-1. **Data Processing**: Always validate output stats.json after each pipeline step
-2. **Model Training**: Resume from best checkpoint if interrupted
-3. **Generation**: Use temperature parameter for diversity control
-4. **Testing**: Keep test MIDI files in separate directory for validation
-
-## Performance Optimization Notes
-- Chunk size (256) balances context length vs. training efficiency
-- Use gradient checkpointing for larger batches: `use_checkpoint=True`
-- Position embeddings support sequences up to max_len=512
-- Role/genre embeddings are optional for flexible conditioning
-
-## Integration Points (Future)
-- JUCE plugin wrapper receives generation parameters
-- Real-time generation requires streaming token prediction
-- Latency target: &lt;500ms for short sequences
+### Editing Strategy
+- prefer practical, reproducible improvements
+- avoid speculative large-scale complexity
+- optimize for coherent generated MIDI, not for preserving old abstractions
