@@ -3,7 +3,6 @@ import json
 import random
 import sys
 from pathlib import Path
-from typing import Any
 
 import music21 as m21
 import numpy as np
@@ -423,7 +422,7 @@ def generate_best_candidate(
             target_seconds=target_seconds,
             key_name=key_name,
         )
-        signature = tuple[Any, ...](_body_tokens(tokens))
+        signature = tuple(_body_tokens(tokens))
         if signature in seen:
             continue
         seen.add(signature)
@@ -529,19 +528,19 @@ def parse_args():
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
     parser.add_argument("--genre", type=str, default="TRAP")
     parser.add_argument("--max-len", type=int, default=384)
-    parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--temperature", type=float, default=0.95)
     parser.add_argument("--top-k", type=int, default=18)
     parser.add_argument("--top-p", type=float, default=0.92)
     parser.add_argument("--repetition-penalty", type=float, default=1.18)
     parser.add_argument("--no-repeat-ngram-size", type=int, default=4)
     parser.add_argument("--primer-mode", type=str, default="dataset", choices=["dataset", "none"])
-    parser.add_argument("--primer-len", type=int, default=16)
+    parser.add_argument("--primer-len", type=int, default=64)
     parser.add_argument("--min-body-tokens", type=int, default=48)
-    parser.add_argument("--target-seconds", type=float, default=2.0)
-    parser.add_argument("--key", type=str, default="A_MINOR")
+    parser.add_argument("--target-seconds", type=float, default=8.0)
+    parser.add_argument("--key", type=str, default="AUTO")
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--candidates-per-sample", type=int, default=8)
-    parser.add_argument("--diversity-jitter", type=float, default=0.1)
+    parser.add_argument("--diversity-jitter", type=float, default=0.05)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--out-dir", type=str, default="generated_full")
     return parser.parse_args()
