@@ -2,6 +2,12 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <juce_core/juce_core.h>
+
+#if MIDI_GEN_USE_TORCH
+    #include <torch/script.h>
+#endif
 
 class PluginProcessor;
 
@@ -38,6 +44,7 @@ public:
     GenerationResult generateTokens(
         const std::string& role,
         const std::string& key,
+        int seed,
         float temperature,
         int topK,
         float topP,
@@ -54,4 +61,21 @@ private:
     bool modelLoaded = false;
     void loadCheckpoint();
     void loadVocabulary();
+
+    bool loadVocabJsonFile(const juce::File& vocabPath, std::string& errorOut);
+    juce::File findModelFile() const;
+    juce::File findVocabFile() const;
+
+    // Vocab / conditioning
+    std::unordered_map<std::string, int> token2id;
+    std::unordered_map<int, std::string> id2token;
+    std::unordered_map<std::string, int> genreTokenToIndex;
+    std::vector<int> bannedIds;
+    int bosId = -1;
+    int eosId = -1;
+    int unkId = -1;
+
+#if MIDI_GEN_USE_TORCH
+    torch::jit::Module module;
+#endif
 };

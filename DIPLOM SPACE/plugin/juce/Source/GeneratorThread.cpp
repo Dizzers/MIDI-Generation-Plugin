@@ -34,6 +34,7 @@ void GeneratorThread::run()
         auto result = modelInference.generateTokens(
             currentParams.role.toStdString(),
             currentParams.key.toStdString(),
+            currentParams.seed,
             currentParams.temperature,
             currentParams.topK,
             currentParams.topP,

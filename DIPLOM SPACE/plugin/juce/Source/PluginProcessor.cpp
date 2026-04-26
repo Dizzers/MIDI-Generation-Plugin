@@ -59,6 +59,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "targetSeconds", "Target Duration", 1.0f, 5.0f, 2.5f));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "seed", "Seed", 0, 999999, 42));
     
     // === SAMPLING CONTROL ===
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -129,15 +132,29 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    // Process MIDI output
+    // Stream scheduled MIDI clip into current block
     {
         juce::ScopedLock lock(midiQueueLock);
-        if (!midiOutputQueue.empty()) {
-            for (auto& msg : midiOutputQueue) {
-                midi.addEvent(msg, 0);
+        const int blockSamples = buffer.getNumSamples();
+        const int64_t blockStart = clipPlayheadSamples;
+        const int64_t blockEnd = blockStart + (int64_t)blockSamples;
+
+        while (scheduledReadIndex < scheduledClip.size())
+        {
+            const auto& ev = scheduledClip[scheduledReadIndex];
+            if (ev.samplePos >= blockEnd)
+                break;
+
+            if (ev.samplePos >= blockStart)
+            {
+                const int offset = (int)juce::jlimit<int64_t>(0, (int64_t)blockSamples - 1, ev.samplePos - blockStart);
+                midi.addEvent(ev.message, offset);
             }
-            midiOutputQueue.clear();
+
+            ++scheduledReadIndex;
         }
+
+        clipPlayheadSamples += (int64_t)blockSamples;
     }
 }
 
@@ -169,10 +186,30 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes)
 void PluginProcessor::startGeneration(const GenerationParams& params)
 {
     if (generatorThread && modelInference) {
+        {
+            juce::ScopedLock lock(lastParamsLock);
+            lastParams = params;
+            hasLastParams = true;
+        }
         generatorThread->startGeneration(params);
         DBG("Generation started: " << params.role << " in " << params.key
             << " (temp=" << params.temperature << ")");
     }
+}
+
+void PluginProcessor::regenerateLast()
+{
+    GenerationParams paramsCopy;
+    {
+        juce::ScopedLock lock(lastParamsLock);
+        if (!hasLastParams)
+            return;
+        paramsCopy = lastParams;
+    }
+
+    // Nudge seed so regen actually differs by default.
+    paramsCopy.seed = (paramsCopy.seed + 1) % 1000000;
+    startGeneration(paramsCopy);
 }
 
 void PluginProcessor::cancelGeneration()
@@ -191,7 +228,26 @@ bool PluginProcessor::isGenerating() const
 void PluginProcessor::queueMidiOutput(const std::vector<juce::MidiMessage>& midiMessages)
 {
     juce::ScopedLock lock(midiQueueLock);
-    midiOutputQueue = midiMessages;
+
+    scheduledClip.clear();
+    scheduledClip.reserve(midiMessages.size());
+
+    for (const auto& msg : midiMessages)
+    {
+        const double t = msg.getTimeStamp(); // seconds
+        const int64_t samplePos = (int64_t)juce::jmax<int64_t>(0, (int64_t)std::llround(t * currentSampleRate));
+        scheduledClip.push_back(ScheduledMidiEvent{ msg, samplePos });
+    }
+
+    std::sort(scheduledClip.begin(), scheduledClip.end(),
+              [](const ScheduledMidiEvent& a, const ScheduledMidiEvent& b) { return a.samplePos < b.samplePos; });
+
+    scheduledReadIndex = 0;
+    clipPlayheadSamples = 0;
+
+    // Update piano-roll view (if open)
+    if (outputWindow)
+        outputWindow->updateMidiDisplay(midiMessages);
 }
 
 void PluginProcessor::showOutputWindow()

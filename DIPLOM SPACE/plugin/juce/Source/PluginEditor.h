@@ -40,6 +40,7 @@ private:
     std::unique_ptr<juce::ComboBox> keyBox;
     std::unique_ptr<juce::Slider> maxLenSlider;
     std::unique_ptr<juce::Slider> targetDurationSlider;
+    std::unique_ptr<juce::Slider> seedSlider;
 
     // Rotary Knobs (Main Parameters)
     std::unique_ptr<juce::Slider> temperatureKnob;

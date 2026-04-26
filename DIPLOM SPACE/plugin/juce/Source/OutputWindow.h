@@ -20,4 +20,12 @@ public:
 private:
     PluginProcessor& processor;
     std::unique_ptr<MidiVisualizer> midiVisualizer;
+
+    std::unique_ptr<juce::Component> content;
+    std::unique_ptr<juce::TextButton> regenButton;
+    std::unique_ptr<juce::TextButton> exportButton;
+    std::unique_ptr<juce::TextButton> dragDropButton;
+    std::unique_ptr<juce::Label> infoLabel;
+
+    std::vector<juce::MidiMessage> lastMessages;
 };

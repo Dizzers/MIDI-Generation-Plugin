@@ -4,6 +4,9 @@ project(MIDIGenerationPlugin VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# === Options ===
+option(USE_TORCH "Build with LibTorch inference enabled" ON)
+
 # === JUCE Configuration ===
 add_subdirectory(JUCE)  # Ensure JUCE is available
 
@@ -53,19 +56,26 @@ target_link_libraries(MIDIGenerationPlugin PRIVATE
 # Then set TORCH_INSTALL_PREFIX to the extracted directory
 # Example: -DTORCH_INSTALL_PREFIX=/path/to/libtorch
 
-set(TORCH_INSTALL_PREFIX "" CACHE STRING "Path to LibTorch installation (required)")
+if (USE_TORCH)
+    set(TORCH_INSTALL_PREFIX "" CACHE STRING "Path to LibTorch installation (required when USE_TORCH=ON)")
 
-if(NOT TORCH_INSTALL_PREFIX)
-    message(FATAL_ERROR "TORCH_INSTALL_PREFIX not set. Please provide path to LibTorch binary.")
+    if(NOT TORCH_INSTALL_PREFIX)
+        message(FATAL_ERROR "USE_TORCH=ON but TORCH_INSTALL_PREFIX is empty. Re-run cmake with -DTORCH_INSTALL_PREFIX=/path/to/libtorch")
+    endif()
+
+    if (NOT EXISTS "${TORCH_INSTALL_PREFIX}")
+        message(FATAL_ERROR "TORCH_INSTALL_PREFIX path does not exist: ${TORCH_INSTALL_PREFIX}")
+    endif()
+
+    set(CMAKE_PREFIX_PATH ${TORCH_INSTALL_PREFIX} ${CMAKE_PREFIX_PATH})
+    find_package(Torch REQUIRED)
+
+    target_compile_definitions(MIDIGenerationPlugin PRIVATE MIDI_GEN_USE_TORCH=1)
+    target_link_libraries(MIDIGenerationPlugin PRIVATE ${TORCH_LIBRARIES})
+    target_include_directories(MIDIGenerationPlugin PRIVATE ${TORCH_INCLUDE_DIRS})
+else()
+    target_compile_definitions(MIDIGenerationPlugin PRIVATE MIDI_GEN_USE_TORCH=0)
 endif()
-
-set(CMAKE_PREFIX_PATH ${TORCH_INSTALL_PREFIX} ${CMAKE_PREFIX_PATH})
-
-find_package(Torch REQUIRED)
-
-target_link_libraries(MIDIGenerationPlugin PRIVATE
-    ${TORCH_LIBRARIES}
-)
 
 # === Compiler Flags ===
 if(MSVC)
@@ -77,7 +87,6 @@ endif()
 # === Include Directories ===
 target_include_directories(MIDIGenerationPlugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source
-    ${TORCH_INCLUDE_DIRS}
 )
 
 # === RPATH Configuration (macOS dylib loading) ===
@@ -88,7 +97,10 @@ set_target_properties(MIDIGenerationPlugin PROPERTIES
 
 # === Build Output ===
 message(STATUS "Building MIDI Generation Plugin")
-message(STATUS "TORCH_INSTALL_PREFIX: ${TORCH_INSTALL_PREFIX}")
+message(STATUS "USE_TORCH: ${USE_TORCH}")
+if (USE_TORCH)
+    message(STATUS "TORCH_INSTALL_PREFIX: ${TORCH_INSTALL_PREFIX}")
+endif()
 message(STATUS "Output directory: ${CMAKE_BINARY_DIR}/MIDIGenerationPlugin_artefacts/")
 
 # Post-build: Display target plugin path

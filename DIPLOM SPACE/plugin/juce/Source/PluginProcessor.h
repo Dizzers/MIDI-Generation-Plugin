@@ -47,6 +47,7 @@ public:
     {
         juce::String role;          // MELODY, BASS, CHORDS
         juce::String key;           // A_MINOR, C_MAJOR, etc.
+        int seed = 42;              // deterministic generation
         float temperature = 0.95f;
         int topK = 12;
         float topP = 0.9f;
@@ -62,6 +63,7 @@ public:
     };
 
     void startGeneration(const GenerationParams& params);
+    void regenerateLast();
     void cancelGeneration();
     bool isGenerating() const;
     
@@ -88,9 +90,22 @@ private:
     std::unique_ptr<ModelInference> modelInference;
     std::unique_ptr<OutputWindow> outputWindow;
 
-    // === MIDI QUEUE ===
+    // Remember last generation request for regen
+    juce::CriticalSection lastParamsLock;
+    GenerationParams lastParams;
+    bool hasLastParams = false;
+
+    // === GENERATED CLIP SCHEDULER ===
+    struct ScheduledMidiEvent
+    {
+        juce::MidiMessage message;
+        int64_t samplePos = 0; // absolute sample position since clip start
+    };
+
     juce::CriticalSection midiQueueLock;
-    std::vector<juce::MidiMessage> midiOutputQueue;
+    std::vector<ScheduledMidiEvent> scheduledClip;
+    size_t scheduledReadIndex = 0;
+    int64_t clipPlayheadSamples = 0;
 
     double currentSampleRate = 44100.0;
     int currentBlockSize = 512;

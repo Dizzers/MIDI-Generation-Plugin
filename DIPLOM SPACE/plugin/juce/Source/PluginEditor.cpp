@@ -68,6 +68,13 @@ void PluginEditor::createControls()
     sliderAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         apvts, "targetSeconds", *targetDurationSlider));
 
+    seedSlider = std::make_unique<juce::Slider>(juce::Slider::LinearHorizontal, juce::Slider::TextBoxRight);
+    seedSlider->setRange(0.0, 999999.0, 1.0);
+    seedSlider->setTextValueSuffix("");
+    addAndMakeVisible(*seedSlider);
+    sliderAttachments.push_back(std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+        apvts, "seed", *seedSlider));
+
     // === ROTARY KNOBS (Main Parameters) ===
     temperatureKnob = std::make_unique<juce::Slider>(juce::Slider::RotaryVerticalDrag, juce::Slider::TextBoxBelow);
     temperatureKnob->setRange(0.1, 2.0, 0.01);
@@ -153,6 +160,7 @@ void PluginEditor::createControls()
             PluginProcessor::GenerationParams params;
             params.role = roleBox->getText().toStdString();
             params.key = keyBox->getText().toStdString();
+            params.seed = (int)*apvts.getRawParameterValue("seed");
             params.temperature = *apvts.getRawParameterValue("temperature");
             params.topK = static_cast<int>(*apvts.getRawParameterValue("topK"));
             params.topP = *apvts.getRawParameterValue("topP");
@@ -237,6 +245,9 @@ void PluginEditor::resized()
 
     targetDurationSlider->setBounds(20, yPos, w - 40, 50);
     yPos += 70;
+
+    seedSlider->setBounds(20, yPos, w - 40, 50);
+    yPos += 60;
 
     // ROTARY KNOBS (Temperature, Leap, Penalty)
     int knobSize = 80;

@@ -16,5 +16,16 @@ public:
     void setMidiMessages(const std::vector<juce::MidiMessage>& messages);
 
 private:
+    struct NoteRect
+    {
+        int pitch = 60;
+        double start = 0.0;
+        double end = 0.0;
+        int velocity = 100;
+    };
+
+    void rebuildNotes();
+
     std::vector<juce::MidiMessage> midiMessages;
+    std::vector<NoteRect> notes;
 };
