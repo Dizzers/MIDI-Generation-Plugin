@@ -1,13 +1,14 @@
 # ninja log v7
-1	33	1777233232838161696	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
-35	67	1777233232872878571	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_core/juce_core_CompilationTime.cpp.o	7ddf2162f17ca9a2
-34	151	1777233232871493686	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	eae6ead61b3ed12f
-37	923	1777233232874653626	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_data_structures/juce_data_structures.mm.o	9e5b4ca20a35d75c
-34	1348	1777233232871178434	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/juce_build_tools/juce_build_tools.cpp.o	301704ccfbe072d4
-33	1381	1777233232870963183	extras/Build/juceaide/CMakeFiles/juceaide.dir/Main.cpp.o	ea587721139272a7
-34	1467	1777233232872020857	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_events/juce_events.mm.o	d0597456f343cfc8
-36	2135	1777233232873410825	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_core/juce_core.mm.o	144e70be8a7005d5
-34	3612	1777233232871593646	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics.mm.o	13b3c3b8d187b1cc
-34	3672	1777233232871388603	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	9dfcf56d1d4b2236
-34	5547	1777233232871285268	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_gui_basics/juce_gui_basics.mm.o	62cc9b6cd255a49
-5547	5689	1777233238384582627	extras/Build/juceaide/juceaide_artefacts/Custom/juceaide	d7b42680ee61c1ab
+1	64	1777234101517393767	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
+84	127	1777234101600234948	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_core/juce_core_CompilationTime.cpp.o	7def60674bd40889
+84	243	1777234101599730236	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	fc373e6f24827c28
+85	1464	1777234101601223455	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_data_structures/juce_data_structures.mm.o	eb0f6d3d46ed3f0a
+83	2026	1777234101598955272	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/juce_build_tools/juce_build_tools.cpp.o	39fca5e0b5f93910
+83	2146	1777234101598501936	extras/Build/juceaide/CMakeFiles/juceaide.dir/Main.cpp.o	5a143dc3da2ff6cf
+84	2359	1777234101600070697	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_events/juce_events.mm.o	4c6e9edd66a5899f
+85	3594	1777234101600721160	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_core/juce_core.mm.o	ad426f41e9af4877
+84	6259	1777234101599901279	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics.mm.o	b05a8cbc476c4d11
+84	6462	1777234101599546027	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	d5fb72267efaed69
+83	8685	1777234101599258400	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_gui_basics/juce_gui_basics.mm.o	f99df139d343943d
+8685	8855	1777234110201183523	extras/Build/juceaide/juceaide_artefacts/Custom/juceaide	9c318acdfa32e90e
+2	72	1777234581541019433	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e

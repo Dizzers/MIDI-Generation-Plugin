@@ -76,8 +76,9 @@ OutputWindow::OutputWindow(PluginProcessor& proc)
                                  if (file == juce::File())
                                      return;
                                  file = file.withFileExtension(".mid");
-                                 const bool ok = MidiFileExporter::saveMidiFile(file, lastMessages, 120.0);
-                                 DBG(ok ? "MIDI exported OK" : "MIDI export failed");
+                                 DBG(MidiFileExporter::saveMidiFile(file, lastMessages, 120.0)
+                                         ? "MIDI exported OK"
+                                         : "MIDI export failed");
                              });
     };
 

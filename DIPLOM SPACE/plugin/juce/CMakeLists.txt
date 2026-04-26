@@ -16,10 +16,13 @@ juce_add_plugin(MIDIGenerationPlugin
     PLUGIN_MANUFACTURER_CODE "MIDI"
     PLUGIN_CODE "MIDI"
     IS_SYNTH FALSE
+    IS_MIDI_EFFECT TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
     NEEDS_TRANSPORT_AUDIO FALSE
-    AU_MAIN_TYPE "aumu"
+    FORMATS AU VST3 Standalone
+    # MIDI processor AU (generates/forwards MIDI)
+    AU_MAIN_TYPE kAudioUnitType_MIDIProcessor
     VST3_CATEGORIES "Instrument" "Synth"
     COPY_PLUGIN_AFTER_BUILD FALSE
     PLUGIN_AU_EXPORT_PREFIX "MIDIGenerationAU"
@@ -49,6 +52,11 @@ target_link_libraries(MIDIGenerationPlugin PRIVATE
     juce::juce_graphics
     juce::juce_gui_basics
     juce::juce_gui_extra
+)
+
+# We don't ship VST2, so disable JUCE's VST2/VST3 migration checks.
+target_compile_definitions(MIDIGenerationPlugin PRIVATE
+    JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
 # === LibTorch / PyTorch C++ ===

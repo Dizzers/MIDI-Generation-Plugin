@@ -1,5 +1,9 @@
 /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin.dir
 /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin_All.dir
+/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin_Standalone.dir
+/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin_AU.dir
+/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin_VST3.dir
+/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir
 /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/edit_cache.dir
 /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/rebuild_cache.dir
 /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/list_install_components.dir
