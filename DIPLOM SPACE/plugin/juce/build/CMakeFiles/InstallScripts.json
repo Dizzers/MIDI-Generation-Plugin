@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/cmake_install.cmake",
+		"/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/cmake_install.cmake",
+		"/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/modules/cmake_install.cmake",
+		"/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/extras/Build/cmake_install.cmake",
+		"/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/extras/Build/juceaide/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

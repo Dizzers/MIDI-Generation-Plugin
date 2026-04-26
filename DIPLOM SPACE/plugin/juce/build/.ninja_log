@@ -1,0 +1,12 @@
+# ninja log v7
+1	33	1777233239200230601	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
+33	1265	1777233239233002171	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o	5d5bee742234596a
+33	1325	1777233239232760753	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o	ec13fc67d1fbce6c
+1325	1348	1777233240524783083	CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o	2ed2ffaeb5b3b9db
+33	4393	1777233239232510459	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o	1c869eeb6bf12cf
+1267	5322	1777233240466642705	CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o	554bfb23a5d48711
+33	5417	1777233239232891212	CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o	dada8b63d07290c4
+3	36	1777233307375087876	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
+44	1092	1777233307416402674	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o	74c90240a9d04b27
+44	1235	1777233307416272548	CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o	8da49ec88ea5258e
+44	3984	1777233307415981671	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o	1c869eeb6bf12cf

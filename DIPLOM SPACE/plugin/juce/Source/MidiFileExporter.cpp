@@ -13,7 +13,6 @@ bool MidiFileExporter::saveMidiFile(
     const double ticksPerSecond = (bpm / 60.0) * (double)ppq;
 
     juce::MidiMessageSequence seq;
-    seq.ensureStorageAllocated((int)midiMessages.size());
 
     for (auto msg : midiMessages)
     {

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import math
+from typing import Optional
 
 class TransformerLM(nn.Module):
  
@@ -74,9 +75,10 @@ class TransformerLM(nn.Module):
             elif 'bias' in name:
                 nn.init.zeros_(param)
 
-    def _generate_causal_mask(self, T, device):
+    def _generate_causal_mask(self, T: int, device: torch.device) -> torch.Tensor:
+        # TorchScript needs explicit typing for `device` to avoid inferring Tensor.
         if self._causal_mask_cache.size(0) < T or self._causal_mask_cache.device != device:
-            mask = torch.triu(torch.ones(T, T, device=device), diagonal=1).bool()
+            mask = torch.triu(torch.ones((T, T), device=device), diagonal=1).to(dtype=torch.bool)
             self._causal_mask_cache = mask
         return self._causal_mask_cache[:T, :T]
 

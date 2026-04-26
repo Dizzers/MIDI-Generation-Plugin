@@ -83,11 +83,27 @@ def main():
         raise FileNotFoundError(f"Vocab not found: {vocab_path}")
 
     device = args.device
+    token2id, _, _ = load_vocab(vocab_path)
     model = load_model(checkpoint_path, vocab_path, device=device)
     wrapper = ScriptWrapper(model)
 
-    # Prefer scripting for control-flow safety; model forward is TorchScript-friendly.
-    scripted = torch.jit.script(wrapper)
+    # Prefer scripting, but fall back to tracing for TorchScript-incompatible ops.
+    try:
+        scripted = torch.jit.script(wrapper)
+    except Exception as exc:
+        print(f"[warn] torch.jit.script failed ({type(exc).__name__}: {exc}). Falling back to torch.jit.trace.")
+        T = int(min(32, getattr(model, "max_len", 256)))
+        # Use a simple valid input for tracing.
+        example_ids = torch.zeros((1, T), dtype=torch.long, device=device)
+        # Put some non-zero ids to avoid degenerate execution paths.
+        vocab_size = len(token2id)
+        if vocab_size > 10:
+            example_ids[0, 0] = int(token2id.get("<BOS>", 1))
+            example_ids[0, 1] = int(token2id.get("<GENRE_TRAP>", 2))
+            example_ids[0, 2] = int(token2id.get("<KEY_UNKNOWN>", 3))
+        example_genre = torch.zeros((1,), dtype=torch.long, device=device)
+        scripted = torch.jit.trace(wrapper, (example_ids, example_genre), strict=False, check_trace=False)
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     scripted.save(str(out_path))
     print(f"Saved TorchScript module: {out_path}")
