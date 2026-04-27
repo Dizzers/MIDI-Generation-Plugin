@@ -20,10 +20,10 @@ events:
     names:
       - "uname"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -40,10 +40,10 @@ events:
       - "/Applications/Little Snitch.app/Contents/Components/"
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/uname"
+      - "/Users/od/.local/bin/uname"
       - "/opt/homebrew/bin/uname"
       - "/opt/homebrew/sbin/uname"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/uname"
-      - "/Users/od/.local/bin/uname"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/uname"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/uname"
       - "/usr/local/bin/uname"
@@ -51,10 +51,10 @@ events:
     found: "/usr/bin/uname"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -69,6 +69,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -98,10 +99,10 @@ events:
     names:
       - "/usr/bin/cc"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -120,10 +121,10 @@ events:
     found: "/usr/bin/cc"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -138,6 +139,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -167,10 +169,10 @@ events:
     found: "/opt/homebrew/share/cmake/Modules/CMakeCCompilerId.c.in"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -185,6 +187,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -271,10 +274,10 @@ events:
       - "ar"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -292,10 +295,10 @@ events:
     found: "/usr/bin/ar"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -310,6 +313,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -333,10 +337,10 @@ events:
       - "ranlib"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -354,10 +358,10 @@ events:
     found: "/usr/bin/ranlib"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -372,6 +376,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -395,10 +400,10 @@ events:
       - "strip"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -416,10 +421,10 @@ events:
     found: "/usr/bin/strip"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -434,6 +439,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -457,10 +463,10 @@ events:
       - "ld"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -478,10 +484,10 @@ events:
     found: "/usr/bin/ld"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -496,6 +502,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -519,10 +526,10 @@ events:
       - "nm"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -540,10 +547,10 @@ events:
     found: "/usr/bin/nm"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -558,6 +565,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -581,10 +589,10 @@ events:
       - "objdump"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -602,10 +610,10 @@ events:
     found: "/usr/bin/objdump"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -620,6 +628,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -643,10 +652,10 @@ events:
       - "objcopy"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -663,10 +672,10 @@ events:
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
       - "/usr/bin/objcopy"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/objcopy"
+      - "/Users/od/.local/bin/objcopy"
       - "/opt/homebrew/bin/objcopy"
       - "/opt/homebrew/sbin/objcopy"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/objcopy"
-      - "/Users/od/.local/bin/objcopy"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/objcopy"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/objcopy"
       - "/usr/local/bin/objcopy"
@@ -684,10 +693,10 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -702,6 +711,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -725,10 +735,10 @@ events:
       - "readelf"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -745,10 +755,10 @@ events:
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
       - "/usr/bin/readelf"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/readelf"
+      - "/Users/od/.local/bin/readelf"
       - "/opt/homebrew/bin/readelf"
       - "/opt/homebrew/sbin/readelf"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/readelf"
-      - "/Users/od/.local/bin/readelf"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/readelf"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/readelf"
       - "/usr/local/bin/readelf"
@@ -766,10 +776,10 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -784,6 +794,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -807,10 +818,10 @@ events:
       - "dlltool"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -827,10 +838,10 @@ events:
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
       - "/usr/bin/dlltool"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/dlltool"
+      - "/Users/od/.local/bin/dlltool"
       - "/opt/homebrew/bin/dlltool"
       - "/opt/homebrew/sbin/dlltool"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/dlltool"
-      - "/Users/od/.local/bin/dlltool"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/dlltool"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/dlltool"
       - "/usr/local/bin/dlltool"
@@ -848,10 +859,10 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -866,6 +877,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -889,10 +901,10 @@ events:
       - "addr2line"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -909,10 +921,10 @@ events:
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
       - "/usr/bin/addr2line"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/addr2line"
+      - "/Users/od/.local/bin/addr2line"
       - "/opt/homebrew/bin/addr2line"
       - "/opt/homebrew/sbin/addr2line"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/addr2line"
-      - "/Users/od/.local/bin/addr2line"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/addr2line"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/addr2line"
       - "/usr/local/bin/addr2line"
@@ -930,10 +942,10 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -948,6 +960,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -971,10 +984,10 @@ events:
       - "tapi"
     candidate_directories:
       - "/usr/bin/"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -991,10 +1004,10 @@ events:
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
       - "/usr/bin/tapi"
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/tapi"
+      - "/Users/od/.local/bin/tapi"
       - "/opt/homebrew/bin/tapi"
       - "/opt/homebrew/sbin/tapi"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/tapi"
-      - "/Users/od/.local/bin/tapi"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/tapi"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/tapi"
       - "/usr/local/bin/tapi"
@@ -1012,10 +1025,10 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1030,6 +1043,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -1056,10 +1070,10 @@ events:
     found: "/usr/bin/c++"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1074,6 +1088,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -1103,10 +1118,10 @@ events:
     found: "/opt/homebrew/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1121,6 +1136,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -1206,10 +1222,10 @@ events:
     names:
       - "install_name_tool"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -1226,10 +1242,10 @@ events:
       - "/Applications/Little Snitch.app/Contents/Components/"
       - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts/"
     searched_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/install_name_tool"
+      - "/Users/od/.local/bin/install_name_tool"
       - "/opt/homebrew/bin/install_name_tool"
       - "/opt/homebrew/sbin/install_name_tool"
-      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin/install_name_tool"
-      - "/Users/od/.local/bin/install_name_tool"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/install_name_tool"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/install_name_tool"
       - "/usr/local/bin/install_name_tool"
@@ -1237,10 +1253,10 @@ events:
     found: "/usr/bin/install_name_tool"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1255,6 +1271,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
   -
@@ -1266,8 +1283,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS"
-      binary: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS"
+      source: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4"
+      binary: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: ""
@@ -1280,16 +1297,18 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS'
+        Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4'
         
-        Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_abb89
-        [1/2] /usr/bin/cc   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_dab63/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_dab63.dir/build.make CMakeFiles/cmTC_dab63.dir/build
+        Building C object CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o
+        /usr/bin/cc   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c
         Apple clang version 21.0.0 (clang-2100.0.123.102)
         Target: arm64-apple-darwin25.4.0
         Thread model: posix
         InstalledDir: /Library/Developer/CommandLineTools/usr/bin
         clang: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
-         "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c
+         "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c
         clang -cc1 version 21.0.0 (clang-2100.0.123.102) default target arm64-apple-darwin25.4.0
         ignoring nonexistent directory "/usr/local/include"
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include"
@@ -1302,12 +1321,13 @@ events:
          /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)
          /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks (framework directory)
         End of search list.
-        [2/2] : && /usr/bin/cc -arch arm64 -v -Wl,-v CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -o cmTC_abb89   && :
+        Linking C executable cmTC_dab63
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_dab63.dir/link.txt --verbose=1
         Apple clang version 21.0.0 (clang-2100.0.123.102)
         Target: arm64-apple-darwin25.4.0
         Thread model: posix
         InstalledDir: /Library/Developer/CommandLineTools/usr/bin
-         "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_abb89 -L/usr/local/lib -v CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a
+         "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_dab63 -L/usr/local/lib -v CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld PROJECT:ld-1266.8
         BUILD 01:30:17 Apr  9 2026
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em armv8m.main armv8.1m.main
@@ -1320,6 +1340,7 @@ events:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift
         Framework search paths:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks
+        /usr/bin/cc  -arch arm64  -v -Wl,-v CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -o cmTC_dab63
         
       exitCode: 0
   -
@@ -1361,16 +1382,18 @@ events:
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
-        ignore line: [Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS']
+        ignore line: [Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4']
         ignore line: []
-        ignore line: [Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_abb89]
-        ignore line: [[1/2] /usr/bin/cc   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_dab63/fast]
+        ignore line: [/Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_dab63.dir/build.make CMakeFiles/cmTC_dab63.dir/build]
+        ignore line: [Building C object CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/usr/bin/cc   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c]
         ignore line: [Apple clang version 21.0.0 (clang-2100.0.123.102)]
         ignore line: [Target: arm64-apple-darwin25.4.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Library/Developer/CommandLineTools/usr/bin]
         ignore line: [clang: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
-        ignore line: [ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-ilqqOS" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-9FGAq4" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -x c /opt/homebrew/share/cmake/Modules/CMakeCCompilerABI.c]
         ignore line: [clang -cc1 version 21.0.0 (clang-2100.0.123.102) default target arm64-apple-darwin25.4.0]
         ignore line: [ignoring nonexistent directory "/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include"]
@@ -1383,12 +1406,13 @@ events:
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [[2/2] : && /usr/bin/cc -arch arm64 -v -Wl -v CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -o cmTC_abb89   && :]
+        ignore line: [Linking C executable cmTC_dab63]
+        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_dab63.dir/link.txt --verbose=1]
         ignore line: [Apple clang version 21.0.0 (clang-2100.0.123.102)]
         ignore line: [Target: arm64-apple-darwin25.4.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Library/Developer/CommandLineTools/usr/bin]
-        link line: [ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_abb89 -L/usr/local/lib -v CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_dab63 -L/usr/local/lib -v CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
           arg [/Library/Developer/CommandLineTools/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -1405,10 +1429,10 @@ events:
           arg [-mllvm] ==> ignore
           arg [-enable-linkonceodr-outlining] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_abb89] ==> ignore
+          arg [cmTC_dab63] ==> ignore
           arg [-L/usr/local/lib] ==> dir [/usr/local/lib]
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_abb89.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [CMakeFiles/cmTC_dab63.dir/CMakeCCompilerABI.c.o] ==> ignore
           arg [-lSystem] ==> lib [System]
           arg [/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a] ==> lib [/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
         linker tool for 'C': /Library/Developer/CommandLineTools/usr/bin/ld
@@ -1451,8 +1475,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1"
-      binary: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1"
+      source: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ"
+      binary: "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -1466,17 +1490,19 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1'
+        Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ'
         
-        Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_3c0f4
-        [1/2] /usr/bin/c++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6ff08/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_6ff08.dir/build.make CMakeFiles/cmTC_6ff08.dir/build
+        Building CXX object CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o
+        /usr/bin/c++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         Apple clang version 21.0.0 (clang-2100.0.123.102)
         Target: arm64-apple-darwin25.4.0
         Thread model: posix
         InstalledDir: /Library/Developer/CommandLineTools/usr/bin
         clang++: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"
-         "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+         "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         clang -cc1 version 21.0.0 (clang-2100.0.123.102) default target arm64-apple-darwin25.4.0
         ignoring nonexistent directory "/usr/local/include"
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include"
@@ -1490,12 +1516,13 @@ events:
          /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)
          /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks (framework directory)
         End of search list.
-        [2/2] : && /usr/bin/c++ -arch arm64 -v -Wl,-v CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_3c0f4   && :
+        Linking CXX executable cmTC_6ff08
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6ff08.dir/link.txt --verbose=1
         Apple clang version 21.0.0 (clang-2100.0.123.102)
         Target: arm64-apple-darwin25.4.0
         Thread model: posix
         InstalledDir: /Library/Developer/CommandLineTools/usr/bin
-         "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_3c0f4 -L/usr/local/lib -v CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a
+         "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_6ff08 -L/usr/local/lib -v CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld PROJECT:ld-1266.8
         BUILD 01:30:17 Apr  9 2026
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em armv8m.main armv8.1m.main
@@ -1508,6 +1535,7 @@ events:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift
         Framework search paths:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks
+        /usr/bin/c++  -arch arm64  -v -Wl,-v CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_6ff08
         
       exitCode: 0
   -
@@ -1551,17 +1579,19 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
-        ignore line: [Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1']
+        ignore line: [Change Dir: '/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ']
         ignore line: []
-        ignore line: [Run Build Command(s): /opt/homebrew/bin/ninja -v cmTC_3c0f4]
-        ignore line: [[1/2] /usr/bin/c++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6ff08/fast]
+        ignore line: [/Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_6ff08.dir/build.make CMakeFiles/cmTC_6ff08.dir/build]
+        ignore line: [Building CXX object CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/usr/bin/c++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Apple clang version 21.0.0 (clang-2100.0.123.102)]
         ignore line: [Target: arm64-apple-darwin25.4.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Library/Developer/CommandLineTools/usr/bin]
         ignore line: [clang++: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/usr/bin/../include/c++/v1"]
-        ignore line: [ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-wH7zJ1" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple arm64-apple-macosx26.0.0 -Wundef-prefix=TARGET_OS_ -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -Werror=implicit-function-declaration -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -fno-strict-return -ffp-contract=on -fno-rounding-math -funwind-tables=1 -fobjc-msgsend-selector-stubs -fno-sized-deallocation -target-sdk-version=26.4 -fvisibility-inlines-hidden-static-local-var -fno-modulemap-allow-subdirectory-search -fdefine-target-os-macros -fno-assume-unique-vtables -fno-modulemap-allow-subdirectory-search -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb "-fdebug-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ" -target-linker-version 1266.8 -v "-fcoverage-compilation-dir=/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/CMakeScratch/TryCompile-15pQKQ" -resource-dir /Library/Developer/CommandLineTools/usr/lib/clang/21 -dependency-file CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o.d -skip-unused-modulemap-deps -MT CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -I/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include -internal-isystem /Library/Developer/CommandLineTools/usr/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -internal-externc-isystem /Library/Developer/CommandLineTools/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/Library/Frameworks -Wno-elaborated-enum-base -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fstack-check -mdarwin-stkchk-strong-link -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcommon -clang-vendor-feature=+disableNonDependentMemberExprInCurrentInstantiation -fno-odr-hash-protocols -clang-vendor-feature=+enableAggressiveVLAFolding -clang-vendor-feature=+revert09abecef7bbf -clang-vendor-feature=+thisNoAlignAttr -clang-vendor-feature=+thisNoNullAttr -clang-vendor-feature=+disableAtImportPrivateFrameworkInImplementationError -Wno-error=allocator-wrappers -fdwarf2-cfi-asm -o CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [clang -cc1 version 21.0.0 (clang-2100.0.123.102) default target arm64-apple-darwin25.4.0]
         ignore line: [ignoring nonexistent directory "/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/local/include"]
@@ -1575,12 +1605,13 @@ events:
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/SubFrameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [[2/2] : && /usr/bin/c++ -arch arm64 -v -Wl -v CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_3c0f4   && :]
+        ignore line: [Linking CXX executable cmTC_6ff08]
+        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6ff08.dir/link.txt --verbose=1]
         ignore line: [Apple clang version 21.0.0 (clang-2100.0.123.102)]
         ignore line: [Target: arm64-apple-darwin25.4.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /Library/Developer/CommandLineTools/usr/bin]
-        link line: [ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_3c0f4 -L/usr/local/lib -v CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -lto_library /Library/Developer/CommandLineTools/usr/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 26.0.0 26.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_6ff08 -L/usr/local/lib -v CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
           arg [/Library/Developer/CommandLineTools/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -1597,10 +1628,10 @@ events:
           arg [-mllvm] ==> ignore
           arg [-enable-linkonceodr-outlining] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_3c0f4] ==> ignore
+          arg [cmTC_6ff08] ==> ignore
           arg [-L/usr/local/lib] ==> dir [/usr/local/lib]
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_3c0f4.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_6ff08.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lc++] ==> lib [c++]
           arg [-lSystem] ==> lib [System]
           arg [/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a] ==> lib [/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.osx.a]
@@ -1656,9 +1687,10 @@ events:
     names:
       - "Accelerate"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -1685,10 +1717,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1703,6 +1735,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -1751,9 +1784,10 @@ events:
     names:
       - "CoreAudio"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -1780,10 +1814,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreAudio.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1798,6 +1832,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -1846,9 +1881,10 @@ events:
     names:
       - "CoreMIDI"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -1875,10 +1911,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreMIDI.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1893,6 +1929,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -1941,9 +1978,10 @@ events:
     names:
       - "AudioToolbox"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -1970,10 +2008,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/AudioToolbox.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -1988,6 +2026,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2036,9 +2075,10 @@ events:
     names:
       - "QuartzCore"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2065,10 +2105,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/QuartzCore.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2083,6 +2123,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2132,9 +2173,10 @@ events:
     names:
       - "AudioUnit"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2161,10 +2203,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/AudioUnit.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2179,6 +2221,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2228,9 +2271,10 @@ events:
     names:
       - "CoreAudioKit"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2257,10 +2301,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreAudioKit.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2275,6 +2319,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2323,9 +2368,10 @@ events:
     names:
       - "DiscRecording"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2352,10 +2398,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/DiscRecording.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2370,6 +2416,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2418,9 +2465,10 @@ events:
     names:
       - "Cocoa"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2447,10 +2495,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Cocoa.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2465,6 +2513,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2513,9 +2562,10 @@ events:
     names:
       - "Foundation"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2542,10 +2592,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2560,6 +2610,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2608,9 +2659,10 @@ events:
     names:
       - "IOKit"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2637,10 +2689,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/IOKit.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2655,6 +2707,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2703,9 +2756,10 @@ events:
     names:
       - "Security"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2732,10 +2786,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2750,6 +2804,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2798,9 +2853,10 @@ events:
     names:
       - "WebKit"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2827,10 +2883,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/WebKit.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2845,6 +2901,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2893,9 +2950,10 @@ events:
     names:
       - "OpenGL"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -2922,10 +2980,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -2940,6 +2998,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -2988,9 +3047,10 @@ events:
     names:
       - "AVKit"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -3017,10 +3077,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/AVKit.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -3035,6 +3095,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -3083,9 +3144,10 @@ events:
     names:
       - "AVFoundation"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -3112,10 +3174,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/AVFoundation.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -3130,6 +3192,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:
@@ -3178,9 +3241,10 @@ events:
     names:
       - "CoreMedia"
     candidate_directories:
+      - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin/"
+      - "/Users/od/.local/bin/"
       - "/opt/homebrew/bin/"
       - "/opt/homebrew/sbin/"
-      - "/Users/od/.local/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.11/bin/"
       - "/Library/Frameworks/Python.framework/Versions/3.13/bin/"
       - "/usr/local/bin/"
@@ -3207,10 +3271,10 @@ events:
     found: "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreMedia.framework"
     search_context:
       ENV{PATH}:
+        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/MIDI-Generation-Plugin/.venv/bin"
+        - "/Users/od/.local/bin"
         - "/opt/homebrew/bin"
         - "/opt/homebrew/sbin"
-        - "/Volumes/T7/\u0423\u043d\u0438\u0432\u0435\u0440\u0441\u0438\u0442\u0435\u0442/PythonProject/DIPLOM SPACE/venv/bin"
-        - "/Users/od/.local/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.11/bin"
         - "/Library/Frameworks/Python.framework/Versions/3.13/bin"
         - "/usr/local/bin"
@@ -3225,6 +3289,7 @@ events:
         - "/opt/pkg/env/active/bin"
         - "/opt/pmk/env/global/bin"
         - "/Applications/Little Snitch.app/Contents/Components"
+        - "/Users/od/.local/bin"
         - "/Users/od/.cursor/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts"
       CMAKE_INSTALL_PREFIX: "/usr/local"
       CMAKE_SYSTEM_PREFIX_PATH:

@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # === Options ===
-option(USE_TORCH "Build with LibTorch inference enabled" ON)
+# Default OFF so the plugin can build/run without a local LibTorch install.
+option(USE_TORCH "Build with LibTorch inference enabled" OFF)
 
 # === JUCE Configuration ===
 add_subdirectory(JUCE)  # Ensure JUCE is available
@@ -65,16 +66,15 @@ target_compile_definitions(MIDIGenerationPlugin PRIVATE
 # Example: -DTORCH_INSTALL_PREFIX=/path/to/libtorch
 
 if (USE_TORCH)
-    set(TORCH_INSTALL_PREFIX "" CACHE STRING "Path to LibTorch installation (required when USE_TORCH=ON)")
+    set(TORCH_INSTALL_PREFIX "" CACHE STRING "Path to LibTorch installation (optional; required only when USE_TORCH=ON)")
 
-    if(NOT TORCH_INSTALL_PREFIX)
-        message(FATAL_ERROR "USE_TORCH=ON but TORCH_INSTALL_PREFIX is empty. Re-run cmake with -DTORCH_INSTALL_PREFIX=/path/to/libtorch")
+    if(NOT TORCH_INSTALL_PREFIX OR NOT EXISTS "${TORCH_INSTALL_PREFIX}")
+        message(WARNING "USE_TORCH=ON but TORCH_INSTALL_PREFIX is missing/invalid. Building without LibTorch.")
+        set(USE_TORCH OFF)
     endif()
+endif()
 
-    if (NOT EXISTS "${TORCH_INSTALL_PREFIX}")
-        message(FATAL_ERROR "TORCH_INSTALL_PREFIX path does not exist: ${TORCH_INSTALL_PREFIX}")
-    endif()
-
+if (USE_TORCH)
     set(CMAKE_PREFIX_PATH ${TORCH_INSTALL_PREFIX} ${CMAKE_PREFIX_PATH})
     find_package(Torch REQUIRED)
 

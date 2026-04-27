@@ -5,11 +5,13 @@
 PluginEditor::PluginEditor(PluginProcessor& p)
     : AudioProcessorEditor(&p), processor(p), apvts(p.getValueTreeState())
 {
+    createControls();
+
+    // setSize triggers resized(); keep it after controls exist
     setSize(700, 900);
     setResizable(true, true);
     setResizeLimits(600, 800, 1000, 1200);
-    
-    createControls();
+
     startTimer(100);  // Update status every 100ms
     
     // Initial status
@@ -191,7 +193,7 @@ void PluginEditor::createControls()
     };
     addAndMakeVisible(*randomizeButton);
 
-    outputWindowButton = std::make_unique<juce::TextButton>("📤 OUTPUT");
+    outputWindowButton = std::make_unique<juce::TextButton>("OUTPUT");
     outputWindowButton->setColour(juce::TextButton::buttonColourId, juce::Colour(0x666666));
     outputWindowButton->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
     outputWindowButton->onClick = [this]() {
@@ -220,9 +222,9 @@ void PluginEditor::paint(juce::Graphics& g)
     g.setColour(juce::Colour(0x9d4edd));  // Purple accent
     g.setFont(juce::Font(14.0f).withExtraKerningFactor(0.1f).boldened());
     
-    g.drawText("⚙️  BASIC SETTINGS", 20, 10, getWidth() - 40, 20, juce::Justification::topLeft);
-    g.drawText("🎚️  SAMPLING", 20, 180, getWidth() - 40, 20, juce::Justification::topLeft);
-    g.drawText("🎼  CONSTRAINTS", 20, 420, getWidth() - 40, 20, juce::Justification::topLeft);
+    g.drawText("BASIC SETTINGS", 20, 10, getWidth() - 40, 20, juce::Justification::topLeft);
+    g.drawText("SAMPLING", 20, 180, getWidth() - 40, 20, juce::Justification::topLeft);
+    g.drawText("CONSTRAINTS", 20, 420, getWidth() - 40, 20, juce::Justification::topLeft);
 }
 
 void PluginEditor::resized()
@@ -299,8 +301,8 @@ void PluginEditor::timerCallback()
 void PluginEditor::updateStatusDisplay()
 {
     if (processor.isGenerating()) {
-        statusLabel->setText("Generating... ⏳", juce::dontSendNotification);
+        statusLabel->setText("Generating...", juce::dontSendNotification);
     } else {
-        statusLabel->setText("Ready ✓", juce::dontSendNotification);
+        statusLabel->setText("Ready", juce::dontSendNotification);
     }
 }

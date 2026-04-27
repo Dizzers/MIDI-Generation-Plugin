@@ -6,11 +6,7 @@
 
 //==============================================================================
 PluginProcessor::PluginProcessor()
-    : AudioProcessor(BusesProperties()
-        .withInput("Input", juce::AudioChannelSet::stereo(), true)
-        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-        .withInput("MIDI In", juce::AudioChannelSet::discreteChannels(16), true)
-        .withOutput("MIDI Out", juce::AudioChannelSet::discreteChannels(16), true))
+    : AudioProcessor(BusesProperties())
     , apvts(*this, nullptr, "PARAMETERS", createParameterLayout())
 {
     createParameters();
@@ -19,8 +15,6 @@ PluginProcessor::PluginProcessor()
     try {
         modelInference = std::make_unique<ModelInference>();
         generatorThread = std::make_unique<GeneratorThread>(*this, *modelInference);
-        generatorThread->startThread();
-        outputWindow = std::make_unique<OutputWindow>(*this);
     } catch (const std::exception& e) {
         DBG("Error initializing plugin components: " << e.what());
     }
@@ -117,11 +111,17 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     currentSampleRate = sampleRate;
     currentBlockSize = samplesPerBlock;
     DBG("Preparing to play: " << sampleRate << "Hz, block size: " << samplesPerBlock);
+
+    if (generatorThread && !generatorThread->isThreadRunning())
+        generatorThread->startThread();
 }
 
 void PluginProcessor::releaseResources()
 {
     DBG("Releasing resources");
+
+    if (generatorThread)
+        generatorThread->stopThread(2000);
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
@@ -227,6 +227,8 @@ bool PluginProcessor::isGenerating() const
 
 void PluginProcessor::queueMidiOutput(const std::vector<juce::MidiMessage>& midiMessages)
 {
+    std::vector<juce::MidiMessage> messagesCopy = midiMessages;
+
     juce::ScopedLock lock(midiQueueLock);
 
     scheduledClip.clear();
@@ -247,14 +249,25 @@ void PluginProcessor::queueMidiOutput(const std::vector<juce::MidiMessage>& midi
 
     // Update piano-roll view (if open)
     if (outputWindow)
-        outputWindow->updateMidiDisplay(midiMessages);
+    {
+        juce::MessageManager::callAsync([this, messages = std::move(messagesCopy)]() mutable
+        {
+            if (outputWindow)
+                outputWindow->updateMidiDisplay(messages);
+        });
+    }
 }
 
 void PluginProcessor::showOutputWindow()
 {
-    if (outputWindow) {
-        outputWindow->toFront(true);
-    }
+    if (! juce::MessageManager::getInstance()->isThisTheMessageThread())
+        return;
+
+    if (!outputWindow)
+        outputWindow = std::make_unique<OutputWindow>(*this);
+
+    outputWindow->setVisible(true);
+    outputWindow->toFront(true);
 }
 
 //==============================================================================
