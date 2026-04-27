@@ -34,10 +34,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
     
     // === BASIC SETTINGS ===
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
-        "role", "Role",
-        juce::StringArray{"MELODY", "BASS", "CHORDS"}, 0));
-    
-    params.push_back(std::make_unique<juce::AudioParameterChoice>(
         "key", "Key",
         juce::StringArray{
             "C_MAJOR", "G_MAJOR", "D_MAJOR", "A_MAJOR", "E_MAJOR", "B_MAJOR",
@@ -90,6 +86,45 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         "primerLen", "Primer Length", 8.0f, 32.0f, 24.0f));
+
+    // === FEEL / CONSTRAINTS (model-affecting) ===
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "velocityFeel", "Velocity Feel", -1.0f, 1.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "grooveFeel", "Groove Feel", -1.0f, 1.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "maxPolyphony", "Max Polyphony", 1, 16, 8));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "minBodyTokens", "Min Body Tokens", 0, 256, 48));
+
+    // === PERFORMANCE (post) ===
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "bpm", "BPM", 40.0f, 200.0f, 120.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(
+        "quantizeGrid", "Quantize Grid",
+        juce::StringArray{"Off", "1/4", "1/8", "1/16", "1/32"}, 0));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "quantizeAmount", "Quantize Amount", 0.0f, 1.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "swingAmount", "Swing", 0.0f, 1.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "humanizeTimeMs", "Humanize Time", 0.0f, 50.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "humanizeVelocity", "Humanize Vel", 0, 30, 0));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "velocityMin", "Velocity Min", 1, 127, 1));
+
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        "velocityMax", "Velocity Max", 1, 127, 127));
     
     return { params.begin(), params.end() };
 }
@@ -164,6 +199,18 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
     return new PluginEditor(*this);
 }
 
+bool PluginProcessor::isModelReady() const
+{
+    return modelInference && modelInference->isLoaded() && modelInference->isVocabularyLoaded();
+}
+
+juce::String PluginProcessor::getModelStatusText() const
+{
+    if (!modelInference)
+        return "ModelInference not initialized";
+    return modelInference->getStatusText();
+}
+
 //==============================================================================
 void PluginProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
@@ -192,7 +239,7 @@ void PluginProcessor::startGeneration(const GenerationParams& params)
             hasLastParams = true;
         }
         generatorThread->startGeneration(params);
-        DBG("Generation started: " << params.role << " in " << params.key
+        DBG("Generation started: key=" << params.key
             << " (temp=" << params.temperature << ")");
     }
 }
@@ -229,6 +276,12 @@ void PluginProcessor::queueMidiOutput(const std::vector<juce::MidiMessage>& midi
 {
     std::vector<juce::MidiMessage> messagesCopy = midiMessages;
 
+    {
+        juce::ScopedLock lock(lastMidiLock);
+        lastMidiMessages = midiMessages;
+        ++lastMidiVersion;
+    }
+
     juce::ScopedLock lock(midiQueueLock);
 
     scheduledClip.clear();
@@ -256,6 +309,18 @@ void PluginProcessor::queueMidiOutput(const std::vector<juce::MidiMessage>& midi
                 outputWindow->updateMidiDisplay(messages);
         });
     }
+}
+
+uint64_t PluginProcessor::getLastMidiVersion() const
+{
+    juce::ScopedLock lock(lastMidiLock);
+    return lastMidiVersion;
+}
+
+std::vector<juce::MidiMessage> PluginProcessor::getLastMidiMessagesCopy() const
+{
+    juce::ScopedLock lock(lastMidiLock);
+    return lastMidiMessages;
 }
 
 void PluginProcessor::showOutputWindow()

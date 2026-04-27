@@ -1,0 +1,48 @@
+{
+  "Name": "MIDI Generation",
+  "Version": "1.0.0",
+  "Factory Info": {
+    "Vendor": "DiplomaProject",
+    "URL": "",
+    "E-Mail": "",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "ABCDEF019182FAEB4D4944494D494449",
+      "Category": "Audio Module Class",
+      "Name": "MIDI Generation",
+      "Vendor": "DiplomaProject",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "ABCDEF011234ABCD4D4944494D494449",
+      "Category": "Component Controller Class",
+      "Name": "MIDI Generation",
+      "Vendor": "DiplomaProject",
+      "Version": "1.0.0",
+      "SDKVersion": "VST 3.8.0",
+      "Sub Categories": [
+        "Instrument",
+        "Synth",
+      ],
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

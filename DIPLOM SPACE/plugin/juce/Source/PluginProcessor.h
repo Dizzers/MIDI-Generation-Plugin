@@ -45,7 +45,6 @@ public:
     // === GENERATION CONTROL ===
     struct GenerationParams
     {
-        juce::String role;          // MELODY, BASS, CHORDS
         juce::String key;           // A_MINOR, C_MAJOR, etc.
         int seed = 42;              // deterministic generation
         float temperature = 0.95f;
@@ -60,6 +59,22 @@ public:
         float targetSeconds = 2.5f;
         juce::String primerMode;    // None, Dataset
         int primerLen = 24;
+
+        // Additional model-affecting controls (bias/constraints)
+        float velocityFeel = 0.0f;  // -1..+1 (softer -> harder)
+        float grooveFeel = 0.0f;    // -1..+1 (sparser -> denser)
+        int maxPolyphony = 8;       // active simultaneous pitches
+        int minBodyTokens = 48;     // prevent early EOS
+
+        // Performance (post) controls
+        float bpm = 120.0f;
+        int quantizeGrid = 0;       // 0=Off, 1=1/4, 2=1/8, 3=1/16, 4=1/32
+        float quantizeAmount = 0.0f;
+        float swingAmount = 0.0f;
+        float humanizeTimeMs = 0.0f;
+        int humanizeVelocity = 0;
+        int velocityMin = 1;
+        int velocityMax = 127;
     };
 
     void startGeneration(const GenerationParams& params);
@@ -69,10 +84,18 @@ public:
     
     // === MIDI OUTPUT ===
     void queueMidiOutput(const std::vector<juce::MidiMessage>& midiMessages);
+
+    // UI polling (editor) access to last clip
+    uint64_t getLastMidiVersion() const;
+    std::vector<juce::MidiMessage> getLastMidiMessagesCopy() const;
     
     // === OUTPUT WINDOW ===
     void showOutputWindow();
     OutputWindow* getOutputWindow() { return outputWindow.get(); }
+
+    // === MODEL STATUS ===
+    bool isModelReady() const;
+    juce::String getModelStatusText() const;
 
     // === PARAMETER ACCESS ===
     juce::AudioProcessorValueTreeState& getValueTreeState() { return apvts; }
@@ -109,6 +132,11 @@ private:
 
     double currentSampleRate = 44100.0;
     int currentBlockSize = 512;
+
+    // Last generated clip snapshot for UI.
+    juce::CriticalSection lastMidiLock;
+    std::vector<juce::MidiMessage> lastMidiMessages;
+    uint64_t lastMidiVersion = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

@@ -79,9 +79,12 @@ namespace
 
 ModelInference::ModelInference()
 {
+    statusText = "Initializing...";
     loadCheckpoint();
     loadVocabulary();
-    DBG("ModelInference initialized");
+    if (modelLoaded && isVocabularyLoaded())
+        statusText = "Model ready";
+    DBG("ModelInference initialized: " << statusText);
 }
 
 ModelInference::~ModelInference()
@@ -97,6 +100,7 @@ void ModelInference::loadCheckpoint()
     {
         DBG("ModelInference: model file not found");
         modelLoaded = false;
+        statusText = "Model file not found (bin/model_best.ts.pt)";
         return;
     }
 
@@ -105,16 +109,19 @@ void ModelInference::loadCheckpoint()
         module = torch::jit::load(modelPath.getFullPathName().toStdString());
         module.eval();
         modelLoaded = true;
+        statusText = "Model loaded";
         DBG("ModelInference: loaded model " << modelPath.getFullPathName());
     }
     catch (const c10::Error& e)
     {
         DBG("ModelInference: torch::jit::load failed: " << e.what());
         modelLoaded = false;
+        statusText = "Model load failed (TorchScript)";
     }
 #else
     DBG("ModelInference: built without LibTorch (USE_TORCH=OFF)");
     modelLoaded = false;
+    statusText = "Built without LibTorch (USE_TORCH=OFF)";
 #endif
 }
 
@@ -125,18 +132,22 @@ void ModelInference::loadVocabulary()
     if (!vocabPath.existsAsFile())
     {
         DBG("ModelInference: vocab.json not found");
+        if (statusText == "Model ready" || statusText == "Model loaded" || statusText == "Initializing...")
+            statusText = "vocab.json not found (bin/vocab.json)";
         return;
     }
     if (!loadVocabJsonFile(vocabPath, error))
     {
         DBG("ModelInference: failed to load vocab.json: " << error);
+        statusText = "vocab.json parse failed";
         return;
     }
     DBG("ModelInference: vocabulary loaded, size=" << (int)token2id.size());
+    if (modelLoaded)
+        statusText = "Model ready";
 }
 
 ModelInference::GenerationResult ModelInference::generateTokens(
-    const std::string& role,
     const std::string& key,
     int seed,
     float temperature,
@@ -147,7 +158,11 @@ ModelInference::GenerationResult ModelInference::generateTokens(
     int maxMelodyLeap,
     float harmonyBias,
     int maxLen,
-    float targetSeconds)
+    float targetSeconds,
+    float velocityFeel,
+    float grooveFeel,
+    int maxPolyphony,
+    int minBodyTokens)
 {
     GenerationResult result;
     
@@ -166,17 +181,16 @@ ModelInference::GenerationResult ModelInference::generateTokens(
     }
 
 #if !MIDI_GEN_USE_TORCH
-    (void)role; (void)key; (void)seed; (void)temperature; (void)topK; (void)topP;
+    (void)key; (void)seed; (void)temperature; (void)topK; (void)topP;
     (void)repetitionPenalty; (void)noRepeatNgramSize; (void)maxMelodyLeap;
     (void)harmonyBias; (void)maxLen; (void)targetSeconds;
+    (void)velocityFeel; (void)grooveFeel; (void)maxPolyphony; (void)minBodyTokens;
     result.errorMessage = "Built without LibTorch";
     result.success = false;
     return result;
 #else
-    // Map plugin UI "role" to a genre token for now (until we add explicit genre parameter).
-    std::string genreToken = "<GENRE_TRAP>";
-    if (role == "BASS")
-        genreToken = "<GENRE_CLASSICAL>";
+    // Full generation mode: use a fixed genre token unless/until we expose an explicit Genre parameter.
+    const std::string genreToken = "<GENRE_TRAP>";
 
     // Map UI key like "C_MAJOR" -> vocab key token like "<KEY_C_MAJ>"
     auto keyToken = std::string("<KEY_UNKNOWN>");
@@ -214,6 +228,11 @@ ModelInference::GenerationResult ModelInference::generateTokens(
     const int contextMax = 512; // matches model max_len in many configs; we clamp anyway
     double elapsedSeconds = 0.0;
     const double timeShiftResolution = 0.05;
+    const int prefixLen = (int)generated.size();
+    const int safeMaxPoly = juce::jlimit(1, 64, maxPolyphony);
+    const int safeMinBody = juce::jlimit(0, 1024, minBodyTokens);
+
+    std::unordered_set<int> activePitches;
 
     // Deterministic sampling per-request
     torch::manual_seed((uint64_t)juce::jmax(0, seed));
@@ -259,6 +278,70 @@ ModelInference::GenerationResult ModelInference::generateTokens(
         for (int id : bannedIds)
             logits.index_put_({id}, -INFINITY);
 
+        // Prevent early EOS
+        const int bodyLen = (int)generated.size() - prefixLen;
+        if (eosId >= 0 && bodyLen < safeMinBody)
+            logits.index_put_({eosId}, -INFINITY);
+
+        // Polyphony constraints (similar spirit to python generate.py)
+        if ((int)activePitches.size() >= safeMaxPoly && !noteOnIds.empty())
+        {
+            for (int id : noteOnIds)
+                logits.index_put_({id}, -INFINITY);
+        }
+        for (int pitch : activePitches)
+        {
+            auto itOn = noteOnPitchToId.find(pitch);
+            if (itOn != noteOnPitchToId.end())
+                logits.index_put_({itOn->second}, -INFINITY);
+        }
+        if (!noteOffPitchToId.empty())
+        {
+            // Disallow NOTE_OFF for pitches that are not active.
+            // (For performance we only do this when maxPolyphony constraint is active.)
+            // We'll approximate by banning all NOTE_OFF except those for active pitches.
+            // Start by banning all, then unban active.
+            for (int id : noteOffIds)
+                logits.index_put_({id}, -INFINITY);
+            for (int pitch : activePitches)
+            {
+                auto itOff = noteOffPitchToId.find(pitch);
+                if (itOff != noteOffPitchToId.end())
+                    logits.index_put_({itOff->second}, 0.0); // unban by resetting; will be re-filtered by top-k/p later
+            }
+        }
+
+        // Feel controls: bias token groups to steer the model.
+        // velocityFeel: >0 prefers higher VELOCITY bins, <0 prefers lower bins.
+        if (!velocityIdBins.empty() && std::abs(velocityFeel) > 1e-4f)
+        {
+            const float amount = juce::jlimit(-1.0f, 1.0f, velocityFeel);
+            for (const auto& kv : velocityIdBins)
+            {
+                const int id = kv.first;
+                const int bin = kv.second; // 0..7
+                const float t = (float)bin / 7.0f;
+                const float bias = amount * (t - 0.5f) * 2.0f; // [-1..+1]
+                logits.index_put_({id}, logits.index({id}) + bias);
+            }
+        }
+
+        // grooveFeel: >0 prefers shorter TIME_SHIFT steps (denser), <0 prefers longer (sparser).
+        if (!timeShiftIdSteps.empty() && std::abs(grooveFeel) > 1e-4f)
+        {
+            const float amount = juce::jlimit(-1.0f, 1.0f, grooveFeel);
+            // Normalize steps into [0..1] using a robust clamp.
+            for (const auto& kv : timeShiftIdSteps)
+            {
+                const int id = kv.first;
+                const int steps = kv.second;
+                const float t = juce::jlimit(0.0f, 1.0f, (float)steps / 32.0f);
+                const float preferShort = (1.0f - t); // 1 for short, 0 for long
+                const float bias = amount * (preferShort - 0.5f) * 1.6f;
+                logits.index_put_({id}, logits.index({id}) + bias);
+            }
+        }
+
         // No-repeat ngram (basic)
         if (noRepeatNgramSize > 1 && (int)generated.size() >= (noRepeatNgramSize - 1))
         {
@@ -301,6 +384,29 @@ ModelInference::GenerationResult ModelInference::generateTokens(
         const int last = (int)generated.back();
         if (eosId >= 0 && last == eosId)
             break;
+
+        // Update active pitch set from sampled token
+        auto itTok2 = id2token.find(last);
+        if (itTok2 != id2token.end())
+        {
+            const auto& name = itTok2->second;
+            if (name.rfind("NOTE_ON_", 0) == 0)
+            {
+                const auto pos = name.find_last_of('_');
+                if (pos != std::string::npos)
+                {
+                    try { activePitches.insert(std::stoi(name.substr(pos + 1), nullptr, 16)); } catch (...) {}
+                }
+            }
+            else if (name.rfind("NOTE_OFF_", 0) == 0)
+            {
+                const auto pos = name.find_last_of('_');
+                if (pos != std::string::npos)
+                {
+                    try { activePitches.erase(std::stoi(name.substr(pos + 1), nullptr, 16)); } catch (...) {}
+                }
+            }
+        }
 
         // Track approximate duration to stop near targetSeconds (based on TIME_SHIFT tokens)
         auto itTok = id2token.find(last);
@@ -358,6 +464,12 @@ bool ModelInference::loadVocabJsonFile(const juce::File& vocabPath, std::string&
     id2token.clear();
     genreTokenToIndex.clear();
     bannedIds.clear();
+    timeShiftIdSteps.clear();
+    velocityIdBins.clear();
+    noteOnIds.clear();
+    noteOffIds.clear();
+    noteOnPitchToId.clear();
+    noteOffPitchToId.clear();
 
     auto jsonText = vocabPath.loadFileAsString();
     auto parsed = juce::JSON::parse(jsonText);
@@ -422,6 +534,41 @@ bool ModelInference::loadVocabJsonFile(const juce::File& vocabPath, std::string&
         const int id = kv.second;
         if (tok == "<PAD>" || tok == "<BOS>" || tok == "<UNK>" || tok.rfind("<GENRE_", 0) == 0 || tok.rfind("<KEY_", 0) == 0)
             bannedIds.push_back(id);
+
+        if (tok.rfind("TIME_SHIFT_", 0) == 0)
+        {
+            const auto pos = tok.find_last_of('_');
+            if (pos != std::string::npos)
+            {
+                try { timeShiftIdSteps.emplace_back(id, std::stoi(tok.substr(pos + 1), nullptr, 16)); } catch (...) {}
+            }
+        }
+        else if (tok.rfind("VELOCITY_", 0) == 0)
+        {
+            const auto pos = tok.find_last_of('_');
+            if (pos != std::string::npos)
+            {
+                try { velocityIdBins.emplace_back(id, std::stoi(tok.substr(pos + 1), nullptr, 16)); } catch (...) {}
+            }
+        }
+        else if (tok.rfind("NOTE_ON_", 0) == 0)
+        {
+            noteOnIds.push_back(id);
+            const auto pos = tok.find_last_of('_');
+            if (pos != std::string::npos)
+            {
+                try { noteOnPitchToId.emplace(std::stoi(tok.substr(pos + 1), nullptr, 16), id); } catch (...) {}
+            }
+        }
+        else if (tok.rfind("NOTE_OFF_", 0) == 0)
+        {
+            noteOffIds.push_back(id);
+            const auto pos = tok.find_last_of('_');
+            if (pos != std::string::npos)
+            {
+                try { noteOffPitchToId.emplace(std::stoi(tok.substr(pos + 1), nullptr, 16), id); } catch (...) {}
+            }
+        }
     }
 
     if (bosId < 0)

@@ -1,6 +1,7 @@
 #include "GeneratorThread.h"
 #include "ModelInference.h"
 #include "MidiGenerator.h"
+#include "MidiPostProcessor.h"
 
 GeneratorThread::GeneratorThread(PluginProcessor& proc, ModelInference& model)
     : Thread("GeneratorThread"), processor(proc), modelInference(model)
@@ -32,7 +33,6 @@ void GeneratorThread::run()
 
         // Generate tokens
         auto result = modelInference.generateTokens(
-            currentParams.role.toStdString(),
             currentParams.key.toStdString(),
             currentParams.seed,
             currentParams.temperature,
@@ -43,11 +43,28 @@ void GeneratorThread::run()
             currentParams.maxMelodyLeap,
             currentParams.harmonyBias,
             currentParams.maxLen,
-            currentParams.targetSeconds);
+            currentParams.targetSeconds,
+            currentParams.velocityFeel,
+            currentParams.grooveFeel,
+            currentParams.maxPolyphony,
+            currentParams.minBodyTokens);
 
         if (result.success) {
             // Convert tokens to MIDI
             auto midiMessages = MidiGenerator::convertTokensToMidi(result.tokenIds);
+
+            MidiPostProcessor::Params post;
+            post.seed = currentParams.seed;
+            post.bpm = currentParams.bpm;
+            post.quantizeGrid = static_cast<MidiPostProcessor::QuantizeGrid>(currentParams.quantizeGrid);
+            post.quantizeAmount = currentParams.quantizeAmount;
+            post.swingAmount = currentParams.swingAmount;
+            post.humanizeTimeMs = currentParams.humanizeTimeMs;
+            post.humanizeVelocity = currentParams.humanizeVelocity;
+            post.velocityMin = currentParams.velocityMin;
+            post.velocityMax = currentParams.velocityMax;
+
+            midiMessages = MidiPostProcessor::process(midiMessages, post);
             processor.queueMidiOutput(midiMessages);
             DBG("Generated " << midiMessages.size() << " MIDI messages");
         } else {

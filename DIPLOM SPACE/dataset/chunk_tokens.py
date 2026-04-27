@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 
-MAX_LEN = 256
-STRIDE = 128
+MAX_LEN = 512
+STRIDE = 256
 
 BASE_DIR = Path(__file__).resolve().parent
 PROCESSED_DIR = BASE_DIR / "processed"

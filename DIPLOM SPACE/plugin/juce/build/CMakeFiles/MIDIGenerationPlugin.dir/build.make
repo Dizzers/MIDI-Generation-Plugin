@@ -100,10 +100,24 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/PluginEditor.cpp" -o CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.s
 
+CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
+CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/AnalogLookAndFeel.cpp
+CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/AnalogLookAndFeel.cpp"
+
+CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/AnalogLookAndFeel.cpp" > CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.i
+
+CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/AnalogLookAndFeel.cpp" -o CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.s
+
 CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/ModelInference.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/ModelInference.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.i: cmake_force
@@ -117,7 +131,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiGenerator.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiGenerator.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.i: cmake_force
@@ -128,10 +142,24 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiGenerator.cpp" -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.s
 
+CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
+CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiPostProcessor.cpp
+CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiPostProcessor.cpp"
+
+CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiPostProcessor.cpp" > CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.i
+
+CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiPostProcessor.cpp" -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.s
+
 CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/GeneratorThread.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/GeneratorThread.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.i: cmake_force
@@ -145,7 +173,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/RotaryKnob.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/RotaryKnob.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.i: cmake_force
@@ -159,7 +187,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/OutputWindow.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/OutputWindow.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.i: cmake_force
@@ -173,7 +201,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiVisualizer.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiVisualizer.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.i: cmake_force
@@ -187,7 +215,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiFileExporter.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/Source/MidiFileExporter.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.i: cmake_force
@@ -201,7 +229,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.s: cmake_force
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/juce_audio_processors.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_processors/juce_audio_processors.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.i: cmake_force
@@ -215,7 +243,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audi
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_gui_extra/juce_gui_extra.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_gui_extra/juce_gui_extra.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.i: cmake_force
@@ -229,7 +257,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.m
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_gui_basics/juce_gui_basics.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_gui_basics/juce_gui_basics.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.i: cmake_force
@@ -243,7 +271,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.i: cmake_force
@@ -257,7 +285,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Har
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building C object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.i: cmake_force
@@ -271,7 +299,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_She
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_graphics/juce_graphics.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.i: cmake_force
@@ -285,7 +313,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_events/juce_events.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_events/juce_events.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.i: cmake_force
@@ -299,7 +327,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.s: c
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_core/juce_core_CompilationTime.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_core/juce_core_CompilationTime.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.i: cmake_force
@@ -313,7 +341,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_Compilation
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_core/juce_core.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_core/juce_core.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.i: cmake_force
@@ -327,7 +355,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.s: cmake
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_data_structures/juce_data_structures.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_data_structures/juce_data_structures.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.i: cmake_force
@@ -341,7 +369,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.i: cmake_force
@@ -355,7 +383,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.i: cmake_force
@@ -369,7 +397,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.i: cmake_force
@@ -383,7 +411,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_basics/juce_audio_basics.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_basics/juce_audio_basics.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.i: cmake_force
@@ -397,7 +425,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_ba
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_formats/juce_audio_formats.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_formats/juce_audio_formats.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.i: cmake_force
@@ -411,7 +439,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_f
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_utils/juce_audio_utils.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_utils/juce_audio_utils.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.i: cmake_force
@@ -425,7 +453,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_uti
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/flags.make
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o: /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_devices/juce_audio_devices.mm
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o: CMakeFiles/MIDIGenerationPlugin.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o -MF CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o.d -o CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o -c "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/JUCE/modules/juce_audio_devices/juce_audio_devices.mm"
 
 CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.i: cmake_force
@@ -440,8 +468,10 @@ CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_d
 MIDIGenerationPlugin_OBJECTS = \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o" \
+"CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o" \
+"CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o" \
 "CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o" \
@@ -470,8 +500,10 @@ MIDIGenerationPlugin_EXTERNAL_OBJECTS =
 
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o
+MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o
+MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o
@@ -496,7 +528,7 @@ MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFi
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/build.make
 MIDIGenerationPlugin_artefacts/Release/libMIDI\ Generation_SharedCode.a: CMakeFiles/MIDIGenerationPlugin.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Linking CXX static library \"MIDIGenerationPlugin_artefacts/Release/libMIDI Generation_SharedCode.a\""
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_29) "Linking CXX static library \"MIDIGenerationPlugin_artefacts/Release/libMIDI Generation_SharedCode.a\""
 	$(CMAKE_COMMAND) -P CMakeFiles/MIDIGenerationPlugin.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MIDIGenerationPlugin.dir/link.txt --verbose=$(VERBOSE)
 	/opt/homebrew/bin/cmake -E echo Plugin\ compiled\ successfully!

@@ -14,7 +14,13 @@ public:
     ~MidiVisualizer() override;
 
     void paint(juce::Graphics& g) override;
+    void resized() override;
+    void mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override;
+    void mouseDown(const juce::MouseEvent& e) override;
+    void mouseDrag(const juce::MouseEvent& e) override;
+    void mouseDoubleClick(const juce::MouseEvent& e) override;
     void setMidiMessages(const std::vector<juce::MidiMessage>& messages);
+    void setBpm(float bpm);
 
 private:
     struct NoteRect
@@ -26,7 +32,22 @@ private:
     };
 
     void rebuildNotes();
+    double getMaxTimeSeconds() const;
+    int getMinPitch() const;
+    int getMaxPitch() const;
+    juce::Rectangle<int> getDrawArea() const;
+
+    void clampScroll();
 
     std::vector<juce::MidiMessage> midiMessages;
     std::vector<NoteRect> notes;
+
+    // View state
+    float zoomX = 1.0f;        // 1 = fit; >1 = zoom in
+    float scrollX = 0.0f;      // pixels
+    float scrollY = 0.0f;      // pixels
+    juce::Point<int> dragAnchor;
+    juce::Point<float> dragScrollAnchor;
+
+    float bpm = 120.0f;
 };

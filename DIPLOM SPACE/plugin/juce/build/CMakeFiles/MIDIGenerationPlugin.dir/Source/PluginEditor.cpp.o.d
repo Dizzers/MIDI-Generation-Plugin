@@ -1380,4 +1380,8 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o: \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_ParameterAttachments.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_AudioProcessorValueTreeState.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_PluginHostType.h \
-  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/PluginProcessor.h
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/AnalogLookAndFeel.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/PluginProcessor.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiVisualizer.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiFileExporter.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/AnimatedKnob.h

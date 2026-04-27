@@ -1381,6 +1381,7 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o: \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_AudioProcessorValueTreeState.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_PluginHostType.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/PluginEditor.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/AnalogLookAndFeel.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/GeneratorThread.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/ModelInference.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/OutputWindow.h

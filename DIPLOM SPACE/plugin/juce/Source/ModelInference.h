@@ -30,7 +30,6 @@ public:
 
     /**
      * Generate token sequence for MIDI
-     * @param role MELODY, BASS, or CHORDS
      * @param key A_MINOR, C_MAJOR, etc.
      * @param temperature Sampling temperature (>1 = more creative)
      * @param topK Keep top-K candidates
@@ -42,7 +41,6 @@ public:
      * @param harmonyBias Boost notes in key
      */
     GenerationResult generateTokens(
-        const std::string& role,
         const std::string& key,
         int seed,
         float temperature,
@@ -53,12 +51,19 @@ public:
         int maxMelodyLeap,
         float harmonyBias,
         int maxLen,
-        float targetSeconds);
+        float targetSeconds,
+        float velocityFeel,
+        float grooveFeel,
+        int maxPolyphony,
+        int minBodyTokens);
 
     bool isLoaded() const { return modelLoaded; }
+    bool isVocabularyLoaded() const { return !token2id.empty() && !id2token.empty() && bosId >= 0; }
+    juce::String getStatusText() const { return statusText; }
 
 private:
     bool modelLoaded = false;
+    juce::String statusText = "Initializing...";
     void loadCheckpoint();
     void loadVocabulary();
 
@@ -71,6 +76,12 @@ private:
     std::unordered_map<int, std::string> id2token;
     std::unordered_map<std::string, int> genreTokenToIndex;
     std::vector<int> bannedIds;
+    std::vector<std::pair<int, int>> timeShiftIdSteps; // (id, steps)
+    std::vector<std::pair<int, int>> velocityIdBins;   // (id, bin)
+    std::vector<int> noteOnIds;
+    std::vector<int> noteOffIds;
+    std::unordered_map<int, int> noteOnPitchToId;
+    std::unordered_map<int, int> noteOffPitchToId;
     int bosId = -1;
     int eosId = -1;
     int unkId = -1;

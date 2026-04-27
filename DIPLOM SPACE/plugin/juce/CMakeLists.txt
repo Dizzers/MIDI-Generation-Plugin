@@ -33,9 +33,12 @@ juce_add_plugin(MIDIGenerationPlugin
 target_sources(MIDIGenerationPlugin PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
+    Source/AnalogLookAndFeel.cpp
     Source/ModelInference.cpp
     Source/MidiGenerator.cpp
+    Source/MidiPostProcessor.cpp
     Source/GeneratorThread.cpp
+    Source/AnimatedKnob.h
     Source/RotaryKnob.cpp
     Source/OutputWindow.cpp
     Source/MidiVisualizer.cpp

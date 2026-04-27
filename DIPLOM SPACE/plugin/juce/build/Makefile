@@ -1002,6 +1002,30 @@ JUCE/modules/juce_gui_extra/juce_gui_extra.mm.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.s
 .PHONY : JUCE/modules/juce_gui_extra/juce_gui_extra.mm.s
 
+Source/AnalogLookAndFeel.o: Source/AnalogLookAndFeel.cpp.o
+.PHONY : Source/AnalogLookAndFeel.o
+
+# target to build an object file
+Source/AnalogLookAndFeel.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.o
+.PHONY : Source/AnalogLookAndFeel.cpp.o
+
+Source/AnalogLookAndFeel.i: Source/AnalogLookAndFeel.cpp.i
+.PHONY : Source/AnalogLookAndFeel.i
+
+# target to preprocess a source file
+Source/AnalogLookAndFeel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.i
+.PHONY : Source/AnalogLookAndFeel.cpp.i
+
+Source/AnalogLookAndFeel.s: Source/AnalogLookAndFeel.cpp.s
+.PHONY : Source/AnalogLookAndFeel.s
+
+# target to generate assembly for a file
+Source/AnalogLookAndFeel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/AnalogLookAndFeel.cpp.s
+.PHONY : Source/AnalogLookAndFeel.cpp.s
+
 Source/GeneratorThread.o: Source/GeneratorThread.cpp.o
 .PHONY : Source/GeneratorThread.o
 
@@ -1073,6 +1097,30 @@ Source/MidiGenerator.s: Source/MidiGenerator.cpp.s
 Source/MidiGenerator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.s
 .PHONY : Source/MidiGenerator.cpp.s
+
+Source/MidiPostProcessor.o: Source/MidiPostProcessor.cpp.o
+.PHONY : Source/MidiPostProcessor.o
+
+# target to build an object file
+Source/MidiPostProcessor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.o
+.PHONY : Source/MidiPostProcessor.cpp.o
+
+Source/MidiPostProcessor.i: Source/MidiPostProcessor.cpp.i
+.PHONY : Source/MidiPostProcessor.i
+
+# target to preprocess a source file
+Source/MidiPostProcessor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.i
+.PHONY : Source/MidiPostProcessor.cpp.i
+
+Source/MidiPostProcessor.s: Source/MidiPostProcessor.cpp.s
+.PHONY : Source/MidiPostProcessor.s
+
+# target to generate assembly for a file
+Source/MidiPostProcessor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiPostProcessor.cpp.s
+.PHONY : Source/MidiPostProcessor.cpp.s
 
 Source/MidiVisualizer.o: Source/MidiVisualizer.cpp.o
 .PHONY : Source/MidiVisualizer.o
@@ -1323,6 +1371,9 @@ help:
 	@echo "... JUCE/modules/juce_gui_extra/juce_gui_extra.o"
 	@echo "... JUCE/modules/juce_gui_extra/juce_gui_extra.i"
 	@echo "... JUCE/modules/juce_gui_extra/juce_gui_extra.s"
+	@echo "... Source/AnalogLookAndFeel.o"
+	@echo "... Source/AnalogLookAndFeel.i"
+	@echo "... Source/AnalogLookAndFeel.s"
 	@echo "... Source/GeneratorThread.o"
 	@echo "... Source/GeneratorThread.i"
 	@echo "... Source/GeneratorThread.s"
@@ -1332,6 +1383,9 @@ help:
 	@echo "... Source/MidiGenerator.o"
 	@echo "... Source/MidiGenerator.i"
 	@echo "... Source/MidiGenerator.s"
+	@echo "... Source/MidiPostProcessor.o"
+	@echo "... Source/MidiPostProcessor.i"
+	@echo "... Source/MidiPostProcessor.s"
 	@echo "... Source/MidiVisualizer.o"
 	@echo "... Source/MidiVisualizer.i"
 	@echo "... Source/MidiVisualizer.s"

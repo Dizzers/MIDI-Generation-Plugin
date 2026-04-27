@@ -181,12 +181,12 @@ JUCE/modules/clean:
 CMakeFiles/MIDIGenerationPlugin.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27 "Built target MIDIGenerationPlugin"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 "Built target MIDIGenerationPlugin"
 .PHONY : CMakeFiles/MIDIGenerationPlugin.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MIDIGenerationPlugin.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 27
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 29
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MIDIGenerationPlugin.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 0
 .PHONY : CMakeFiles/MIDIGenerationPlugin.dir/rule
@@ -198,7 +198,7 @@ MIDIGenerationPlugin: CMakeFiles/MIDIGenerationPlugin.dir/rule
 # codegen rule for target.
 CMakeFiles/MIDIGenerationPlugin.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin.dir/build.make CMakeFiles/MIDIGenerationPlugin.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27 "Finished codegen for target MIDIGenerationPlugin"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 "Finished codegen for target MIDIGenerationPlugin"
 .PHONY : CMakeFiles/MIDIGenerationPlugin.dir/codegen
 
 # clean rule for target.
@@ -220,7 +220,7 @@ CMakeFiles/MIDIGenerationPlugin_All.dir/all: CMakeFiles/MIDIGenerationPlugin_VST
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MIDIGenerationPlugin_All.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 68
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 70
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MIDIGenerationPlugin_All.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 0
 .PHONY : CMakeFiles/MIDIGenerationPlugin_All.dir/rule
@@ -249,12 +249,12 @@ CMakeFiles/MIDIGenerationPlugin_All.dir/clean:
 CMakeFiles/MIDIGenerationPlugin_Standalone.dir/all: CMakeFiles/MIDIGenerationPlugin.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_Standalone.dir/build.make CMakeFiles/MIDIGenerationPlugin_Standalone.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_Standalone.dir/build.make CMakeFiles/MIDIGenerationPlugin_Standalone.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=41,42,43,44,45,46,47,48,49,50,51,52,53 "Built target MIDIGenerationPlugin_Standalone"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=43,44,45,46,47,48,49,50,51,52,53,54,55 "Built target MIDIGenerationPlugin_Standalone"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_Standalone.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MIDIGenerationPlugin_Standalone.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 40
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 42
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MIDIGenerationPlugin_Standalone.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 0
 .PHONY : CMakeFiles/MIDIGenerationPlugin_Standalone.dir/rule
@@ -266,7 +266,7 @@ MIDIGenerationPlugin_Standalone: CMakeFiles/MIDIGenerationPlugin_Standalone.dir/
 # codegen rule for target.
 CMakeFiles/MIDIGenerationPlugin_Standalone.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_Standalone.dir/build.make CMakeFiles/MIDIGenerationPlugin_Standalone.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=41,42,43,44,45,46,47,48,49,50,51,52,53 "Finished codegen for target MIDIGenerationPlugin_Standalone"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=43,44,45,46,47,48,49,50,51,52,53,54,55 "Finished codegen for target MIDIGenerationPlugin_Standalone"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_Standalone.dir/codegen
 
 # clean rule for target.
@@ -281,12 +281,12 @@ CMakeFiles/MIDIGenerationPlugin_Standalone.dir/clean:
 CMakeFiles/MIDIGenerationPlugin_AU.dir/all: CMakeFiles/MIDIGenerationPlugin.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_AU.dir/build.make CMakeFiles/MIDIGenerationPlugin_AU.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_AU.dir/build.make CMakeFiles/MIDIGenerationPlugin_AU.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=28,29,30,31,32,33,34,35,36,37,38,39,40 "Built target MIDIGenerationPlugin_AU"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=30,31,32,33,34,35,36,37,38,39,40,41,42 "Built target MIDIGenerationPlugin_AU"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_AU.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MIDIGenerationPlugin_AU.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 40
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 42
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MIDIGenerationPlugin_AU.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 0
 .PHONY : CMakeFiles/MIDIGenerationPlugin_AU.dir/rule
@@ -298,7 +298,7 @@ MIDIGenerationPlugin_AU: CMakeFiles/MIDIGenerationPlugin_AU.dir/rule
 # codegen rule for target.
 CMakeFiles/MIDIGenerationPlugin_AU.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_AU.dir/build.make CMakeFiles/MIDIGenerationPlugin_AU.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=28,29,30,31,32,33,34,35,36,37,38,39,40 "Finished codegen for target MIDIGenerationPlugin_AU"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=30,31,32,33,34,35,36,37,38,39,40,41,42 "Finished codegen for target MIDIGenerationPlugin_AU"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_AU.dir/codegen
 
 # clean rule for target.
@@ -314,12 +314,12 @@ CMakeFiles/MIDIGenerationPlugin_VST3.dir/all: CMakeFiles/MIDIGenerationPlugin.di
 CMakeFiles/MIDIGenerationPlugin_VST3.dir/all: CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_VST3.dir/build.make CMakeFiles/MIDIGenerationPlugin_VST3.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_VST3.dir/build.make CMakeFiles/MIDIGenerationPlugin_VST3.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=54,55,56,57,58,59,60,61,62,63,64,65,66 "Built target MIDIGenerationPlugin_VST3"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=56,57,58,59,60,61,62,63,64,65,66,67,68 "Built target MIDIGenerationPlugin_VST3"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_VST3.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MIDIGenerationPlugin_VST3.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 42
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 44
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MIDIGenerationPlugin_VST3.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" 0
 .PHONY : CMakeFiles/MIDIGenerationPlugin_VST3.dir/rule
@@ -331,7 +331,7 @@ MIDIGenerationPlugin_VST3: CMakeFiles/MIDIGenerationPlugin_VST3.dir/rule
 # codegen rule for target.
 CMakeFiles/MIDIGenerationPlugin_VST3.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_VST3.dir/build.make CMakeFiles/MIDIGenerationPlugin_VST3.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=54,55,56,57,58,59,60,61,62,63,64,65,66 "Finished codegen for target MIDIGenerationPlugin_VST3"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=56,57,58,59,60,61,62,63,64,65,66,67,68 "Finished codegen for target MIDIGenerationPlugin_VST3"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_VST3.dir/codegen
 
 # clean rule for target.
@@ -346,7 +346,7 @@ CMakeFiles/MIDIGenerationPlugin_VST3.dir/clean:
 CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/build.make CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/build.make CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=67,68 "Built target MIDIGenerationPlugin_vst3_helper"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=69,70 "Built target MIDIGenerationPlugin_vst3_helper"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/all
 
 # Build rule for subdir invocation for target.
@@ -363,7 +363,7 @@ MIDIGenerationPlugin_vst3_helper: CMakeFiles/MIDIGenerationPlugin_vst3_helper.di
 # codegen rule for target.
 CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/build.make CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=67,68 "Finished codegen for target MIDIGenerationPlugin_vst3_helper"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles" --progress-num=69,70 "Finished codegen for target MIDIGenerationPlugin_vst3_helper"
 .PHONY : CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/codegen
 
 # clean rule for target.

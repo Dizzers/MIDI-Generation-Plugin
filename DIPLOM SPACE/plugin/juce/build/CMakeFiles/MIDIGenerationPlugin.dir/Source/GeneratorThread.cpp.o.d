@@ -1382,4 +1382,5 @@ CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o: \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/JUCE/modules/juce_audio_processors/utilities/juce_PluginHostType.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/PluginProcessor.h \
   /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/ModelInference.h \
-  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiGenerator.h
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiGenerator.h \
+  /Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM\ SPACE/plugin/juce/Source/MidiPostProcessor.h
