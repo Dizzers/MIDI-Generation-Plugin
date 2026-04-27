@@ -1,32 +1,32 @@
 # ninja log v7
-3	69	1777234111397470913	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
-107	2241	1777234111500554241	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o	923cf9c1c435e171
-106	2386	1777234111500223489	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o	10fab87bff952c7e
-2386	2425	1777234113780237122	CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o	a0c4e47a535ef5b7
-106	8828	1777234111499890194	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o	75559fa59316cc8a
-2241	11004	1777234113635304075	CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o	9d818a87d5ca3a3f
-106	10758	1777234111500397782	CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o	23fd20ea3da15270
-4953	7111	1777234116346789074	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o	e3e13ebb2e3f0f5c
-2425	4953	1777234113818915693	CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o	77cdc8efdf1249e2
-7111	9527	1777234118504732659	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o	912c77da37745b3f
-8828	14785	1777234120221930519	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o	5b02d201c258f10e
-14785	15480	1777234126179454420	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	99e90fccbf2f7465
-9527	18972	1777234120921163152	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o	923caeddd4ebd8ec
-18972	23220	1777234130366292908	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o	216c0e912df01c7c
-23221	23273	1777234134614900758	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o	4382cb427b156e00
-23273	42425	1777234134667327387	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o	b70abc6f8477a6a4
-11004	41206	1777234122398507239	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	f4e7d4bc3b537ce8
-42425	42481	1777234153819359121	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o	e5fa801b401deab5
-42482	42539	1777234153875885404	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o	2cd5d26fc5e5a1d1
-41206	44642	1777234152601217449	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o	197f0f5d9ee67b4b
-15480	44743	1777234126873843227	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o	fdbdb9d098f28f96
-42539	51452	1777234153933602113	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o	3d90ff1ed1c647d
-44642	54871	1777234156036603718	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o	8742ab4d535b0ca3
-10759	55264	1777234122152989090	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o	acb1459ab9b0154a
-51453	61126	1777234162847560074	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o	65cdac755a20c09f
-44743	62389	1777234156137762448	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o	b3cc5a30acb306b4
-54871	64631	1777234166265695427	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o	cde51bdcbfb12cad
-64631	64810	1777234176025662997	MIDIGenerationPlugin_artefacts/Release/libMIDI Generation_SharedCode.a	2b5a01689ee6fde6
+4	71	1777234582237246293	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
+116	2329	1777234582349243810	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o	d8336237d72b6259
+115	2360	1777234582348777265	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o	a393bd11b99becc4
+2360	2391	1777234584593420139	CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o	e1f9b5ad9ebdf07b
+115	7042	1777234582348211928	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o	f0366edac00ccd42
+2329	8927	1777234584562945877	CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o	af71c6d64835d9d6
+116	8630	1777234582349070184	CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o	f5c42c53b3eafe93
+4249	5854	1777234586482062317	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o	4d7df2a9e3836d6a
+2391	4249	1777234584624358154	CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o	89c27af92fe90a70
+5855	7761	1777234588088079039	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o	9532679b02c6ecda
+7042	11189	1777234589275298819	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o	17c24db84def07e2
+11189	11665	1777234593422555975	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	68881f43ed2158b0
+7761	13924	1777234589994364470	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o	13c81bfc8ef77d21
+13925	16457	1777234596158336772	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o	2e88df66dd6f58b8
+16458	16496	1777234598691241354	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o	4476b7756f1f85b8
+16496	27516	1777234598729468838	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o	c1fa38f4ae11e7db
+8927	26706	1777234591160907185	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	929ae6368f8240bc
+27516	27554	1777234609749388332	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o	424cbffbc08a0fba
+27554	27592	1777234609787747359	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o	fb2cd49412ba831f
+26706	28541	1777234608939559900	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o	ee763f159939b2cd
+11665	28692	1777234593897991450	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o	2d9bf3fd6af338c9
+27592	32241	1777234609825445006	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o	f5eb3323fb2141db
+28541	33948	1777234610774567651	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o	a24df09b1fc38dde
+8630	34144	1777234590863846040	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o	c57018404b0b51b1
+32242	37078	1777234614475468627	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o	3051bc83b08fa49d
+28692	37785	1777234610925683909	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o	2fcba921b6fe814
+33949	39127	1777234616182174410	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o	eae718e80d34a913
+39127	39255	1777234621360379557	MIDIGenerationPlugin_artefacts/Release/libMIDI Generation_SharedCode.a	2b5a01689ee6fde6
 39	45	1777233828042297417	help	ccf20b4b12c0a937
 26144	26156	1777233822208235200	MIDIGenerationPlugin_artefacts/Release/Standalone/MIDI Generation.app/Contents/Resources/RecentFilesMenuTemplate.nib	2dd9e3ffa6a48007
 29868	29968	1777233826030328553	MIDIGenerationPlugin_artefacts/JuceLibraryCode/MIDIGenerationPlugin_Standalone/PkgInfo	7b98027ae64e154f
@@ -57,36 +57,8 @@
 31550	31704	1777233827613983199	MIDIGenerationPlugin_artefacts/Release/Standalone/MIDI Generation.app/Contents/MacOS/MIDI Generation	a70d9e760a463f27
 64963	71086	1777234176357721645	CMakeFiles/MIDIGenerationPlugin_AU.dir/JUCE/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm.o	cd1e9733358720ff
 71087	71320	1777234182481145994	MIDIGenerationPlugin_artefacts/Release/AU/MIDI Generation.component/Contents/MacOS/MIDI Generation	3afe2f02286ff77a
-4	71	1777234582237246293	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
-116	2329	1777234582349243810	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o	d8336237d72b6259
-115	2360	1777234582348777265	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o	a393bd11b99becc4
-2360	2391	1777234584593420139	CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o	e1f9b5ad9ebdf07b
-2391	4249	1777234584624358154	CMakeFiles/MIDIGenerationPlugin.dir/Source/OutputWindow.cpp.o	89c27af92fe90a70
-4249	5854	1777234586482062317	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiVisualizer.cpp.o	4d7df2a9e3836d6a
-115	7042	1777234582348211928	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginProcessor.cpp.o	f0366edac00ccd42
-5855	7761	1777234588088079039	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiFileExporter.cpp.o	9532679b02c6ecda
-116	8630	1777234582349070184	CMakeFiles/MIDIGenerationPlugin.dir/Source/ModelInference.cpp.o	f5c42c53b3eafe93
-2329	8927	1777234584562945877	CMakeFiles/MIDIGenerationPlugin.dir/Source/GeneratorThread.cpp.o	af71c6d64835d9d6
-7042	11189	1777234589275298819	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors/juce_audio_processors.mm.o	17c24db84def07e2
-11189	11665	1777234593422555975	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	68881f43ed2158b0
-7761	13924	1777234589994364470	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_extra/juce_gui_extra.mm.o	13c81bfc8ef77d21
-13925	16457	1777234596158336772	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_events/juce_events.mm.o	2e88df66dd6f58b8
-16458	16496	1777234598691241354	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core_CompilationTime.cpp.o	4476b7756f1f85b8
-8927	26706	1777234591160907185	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	929ae6368f8240bc
-16496	27516	1777234598729468838	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_core/juce_core.mm.o	c1fa38f4ae11e7db
-27516	27554	1777234609749388332	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_ara.cpp.o	424cbffbc08a0fba
-27554	27592	1777234609787747359	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless_lv2_libs.cpp.o	fb2cd49412ba831f
-26706	28541	1777234608939559900	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_data_structures/juce_data_structures.mm.o	ee763f159939b2cd
-11665	28692	1777234593897991450	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_graphics/juce_graphics.mm.o	2d9bf3fd6af338c9
-27592	32241	1777234609825445006	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_processors_headless/juce_audio_processors_headless.mm.o	f5eb3323fb2141db
-28541	33948	1777234610774567651	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_basics/juce_audio_basics.mm.o	a24df09b1fc38dde
-8630	34144	1777234590863846040	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_gui_basics/juce_gui_basics.mm.o	c57018404b0b51b1
 34144	36231	1777234616377710447	CMakeFiles/MIDIGenerationPlugin_vst3_helper.dir/JUCE/modules/juce_audio_plugin_client/VST3/juce_VST3ManifestHelper.mm.o	b32506bb91939b1f
 36231	36447	1777234618465003688	MIDIGenerationPlugin_vst3_helper	2b73dd472629c197
-32242	37078	1777234614475468627	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_utils/juce_audio_utils.mm.o	3051bc83b08fa49d
-28692	37785	1777234610925683909	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_formats/juce_audio_formats.mm.o	2fcba921b6fe814
-33949	39127	1777234616182174410	CMakeFiles/MIDIGenerationPlugin.dir/JUCE/modules/juce_audio_devices/juce_audio_devices.mm.o	eae718e80d34a913
-39127	39255	1777234621360379557	MIDIGenerationPlugin_artefacts/Release/libMIDI Generation_SharedCode.a	2b5a01689ee6fde6
 39255	39327	1777234621559074658	MIDIGenerationPlugin_artefacts/JuceLibraryCode/MIDIGenerationPlugin_VST3/PkgInfo	6854262effe241a
 39255	39327	1777234621559074658	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/MIDIGenerationPlugin_artefacts/JuceLibraryCode/MIDIGenerationPlugin_VST3/PkgInfo	6854262effe241a
 39327	39354	1777234621561000006	CMakeFiles/MIDIGenerationPlugin_VST3.dir/JUCE/modules/juce_audio_plugin_client/juce_audio_plugin_client_Standalone.cpp.o	3219e11185f5daa0
@@ -99,3 +71,7 @@
 39356	39390	1777234621589187209	CMakeFiles/MIDIGenerationPlugin_VST3.dir/JUCE/modules/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm.o	f898ab0407844ac6
 39388	39421	1777234621621542609	CMakeFiles/MIDIGenerationPlugin_VST3.dir/JUCE/modules/juce_audio_plugin_client/juce_audio_plugin_client_LV2.mm.o	366f8da1a7ba174f
 39389	39423	1777234621622396824	CMakeFiles/MIDIGenerationPlugin_VST3.dir/JUCE/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST2.mm.o	d5fb78126d39762e
+5	72	1777234639625401384	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/CMakeFiles/cmake.verify_globs	7c6d17e1407d7f35
+110	2092	1777234639730302142	CMakeFiles/MIDIGenerationPlugin.dir/Source/MidiGenerator.cpp.o	979fc726459cd29
+109	2210	1777234639729968556	CMakeFiles/MIDIGenerationPlugin.dir/Source/PluginEditor.cpp.o	1a05e5859138e761
+2210	2245	1777234641831139815	CMakeFiles/MIDIGenerationPlugin.dir/Source/RotaryKnob.cpp.o	c65dcf9e597d24ea

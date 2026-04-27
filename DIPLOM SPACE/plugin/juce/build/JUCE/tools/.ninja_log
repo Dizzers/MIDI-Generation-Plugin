@@ -1,5 +1,5 @@
 # ninja log v7
-1	64	1777234101517393767	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
+2	72	1777234581541019433	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
 84	127	1777234101600234948	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_core/juce_core_CompilationTime.cpp.o	7def60674bd40889
 84	243	1777234101599730236	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Sheenbidi.c.o	fc373e6f24827c28
 85	1464	1777234101601223455	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_data_structures/juce_data_structures.mm.o	eb0f6d3d46ed3f0a
@@ -11,4 +11,4 @@
 84	6462	1777234101599546027	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_graphics/juce_graphics_Harfbuzz.cpp.o	d5fb72267efaed69
 83	8685	1777234101599258400	extras/Build/juceaide/CMakeFiles/juceaide.dir/__/__/__/modules/juce_gui_basics/juce_gui_basics.mm.o	f99df139d343943d
 8685	8855	1777234110201183523	extras/Build/juceaide/juceaide_artefacts/Custom/juceaide	9c318acdfa32e90e
-2	72	1777234581541019433	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
+2	71	1777234638841709933	/Volumes/T7/Университет/PythonProject/MIDI-Generation-Plugin/DIPLOM SPACE/plugin/juce/build/JUCE/tools/CMakeFiles/cmake.verify_globs	bd4750a0f0e4072e
