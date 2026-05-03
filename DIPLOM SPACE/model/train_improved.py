@@ -25,32 +25,35 @@ except Exception:
 
 SEED = 42
 DEVICE = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+NUM_GPUS = torch.cuda.device_count() if DEVICE == "cuda" else 0
 
-NUM_EPOCHS = 100
-BATCH_SIZE = 6
-LEARNING_RATE = 1e-4
-WEIGHT_DECAY = 0.02
-GRAD_ACCUM_STEPS = 4
+NUM_EPOCHS = 80
+# On Kaggle single T4/P100: 24; on 2x GPU DataParallel doubles effective batch automatically.
+# Effective batch = BATCH_SIZE * NUM_GPUS * GRAD_ACCUM_STEPS
+BATCH_SIZE = 24 if DEVICE == "cuda" else 6
+LEARNING_RATE = 2e-4
+WEIGHT_DECAY = 0.05
+GRAD_ACCUM_STEPS = 2 if DEVICE == "cuda" else 4
 LABEL_SMOOTHING = 0.05
-EARLY_STOPPING_PATIENCE = 15
+EARLY_STOPPING_PATIENCE = 12
 VAL_SPLIT = 0.1
 TEST_SPLIT = 0.1
 
-MAX_LEN = 512
+MAX_LEN = 768
 D_MODEL = 384
 N_HEADS = 8
-N_LAYERS = 8
-D_FF = 2048
-DROPOUT = 0.15
-WARMUP_EPOCHS = 8
+N_LAYERS = 6
+D_FF = 1536
+DROPOUT = 0.25
+WARMUP_EPOCHS = 4
 MIN_LR_SCALE = 0.05
 
 AUGMENT_CONFIG = {
-    "transpose_prob": 0.30,
-    "transpose_range": 5,
-    "time_stretch_prob": 0.25,
-    "time_stretch_range": (0.93, 1.07),
-    "velocity_jitter_prob": 0.15,
+    "transpose_prob": 0.60,
+    "transpose_range": 6,
+    "time_stretch_prob": 0.45,
+    "time_stretch_range": (0.88, 1.12),
+    "velocity_jitter_prob": 0.35,
     "velocity_jitter": 2,
 }
 
@@ -62,9 +65,9 @@ CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
 PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
 USE_AMP = True
-NUM_WORKERS = 4
+NUM_WORKERS = 2
 PIN_MEMORY = DEVICE == "cuda"
-PERSISTENT_WORKERS = True
+PERSISTENT_WORKERS = NUM_WORKERS > 0
 RESUME_FROM_CHECKPOINT = False
 RESUME_CHECKPOINT_PATH = CHECKPOINT_DIR / "model_best.pth"
 
@@ -325,6 +328,14 @@ def main():
     }
     model = TransformerLM(vocab_size, **model_config).to(DEVICE)
 
+    if RESUME_FROM_CHECKPOINT and RESUME_CHECKPOINT_PATH.exists():
+        checkpoint = torch.load(RESUME_CHECKPOINT_PATH, map_location=DEVICE)
+        model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
+
+    if NUM_GPUS > 1:
+        print(f"Using DataParallel on {NUM_GPUS} GPUs")
+        model = nn.DataParallel(model)
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     scheduler = build_scheduler(optimizer)
     amp_enabled = USE_AMP and DEVICE.startswith("cuda")
@@ -333,10 +344,6 @@ def main():
     history = {"train_loss": [], "val_loss": [], "val_acc": [], "val_ppl": [], "learning_rates": [], "music_metrics": []}
     best_val_loss = float("inf")
     early_stop_counter = 0
-
-    if RESUME_FROM_CHECKPOINT and RESUME_CHECKPOINT_PATH.exists():
-        checkpoint = torch.load(RESUME_CHECKPOINT_PATH, map_location=DEVICE)
-        model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
 
     for epoch in range(NUM_EPOCHS):
         model.train()
@@ -397,13 +404,14 @@ def main():
         )
         print(f"  LR: {optimizer.param_groups[0]['lr']:.2e}\n")
 
+        raw_model = model.module if isinstance(model, nn.DataParallel) else model
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             early_stop_counter = 0
             torch.save(
                 {
                     "epoch": epoch + 1,
-                    "model_state_dict": model.state_dict(),
+                    "model_state_dict": raw_model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "val_loss": val_loss,
                     "model_config": {**model_config, "vocab_size": vocab_size},
@@ -416,15 +424,17 @@ def main():
                 print("Early stopping activated.")
                 break
 
-    torch.save(model.state_dict(), CHECKPOINT_DIR / "model_final.pth")
+    raw_model = model.module if isinstance(model, nn.DataParallel) else model
+    torch.save(raw_model.state_dict(), CHECKPOINT_DIR / "model_final.pth")
     with open(CHECKPOINT_DIR / "history.json", "w") as handle:
         json.dump(history, handle, indent=2)
 
     best_cp = CHECKPOINT_DIR / "model_best.pth"
     if best_cp.exists():
         checkpoint = torch.load(best_cp, map_location=DEVICE)
-        model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
-        test_loss, test_acc, test_ppl, test_music_metrics = evaluate(model, test_loader, pad_id, id2token, amp_enabled)
+        eval_model = TransformerLM(vocab_size, **model_config).to(DEVICE)
+        eval_model.load_state_dict(clean_state_dict(checkpoint["model_state_dict"]))
+        test_loss, test_acc, test_ppl, test_music_metrics = evaluate(eval_model, test_loader, pad_id, id2token, amp_enabled)
         print("Test metrics (best checkpoint):")
         print(f"  Test Loss: {test_loss:.4f}")
         print(f"  Test Acc: {test_acc:.4f}")

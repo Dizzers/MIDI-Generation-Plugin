@@ -290,18 +290,18 @@ def generate_tokens(
     token2id,
     id2token,
     genre="TRAP",
-    max_len=512,
-    temperature=0.92,
-    top_k=40,
-    top_p=0.92,
-    repetition_penalty=1.15,
-    no_repeat_ngram_size=4,
+    max_len=768,
+    temperature=0.85,
+    top_k=50,
+    top_p=0.95,
+    repetition_penalty=1.05,
+    no_repeat_ngram_size=0,
     genre_to_index=None,
     primer_mode="dataset",
-    primer_len=64,
+    primer_len=48,
     full_sequences_cache=None,
-    min_body_tokens=64,
-    target_seconds=16.0,
+    min_body_tokens=160,
+    target_seconds=20.0,
     key_name="AUTO",
 ):
     if genre_to_index is None:
@@ -527,16 +527,16 @@ def parse_args():
     parser.add_argument("--checkpoint", type=str, default="checkpoints/model_best.pth")
     parser.add_argument("--vocab", type=str, default="dataset/processed/vocab.json")
     parser.add_argument("--genre", type=str, default="TRAP")
-    parser.add_argument("--max-len", type=int, default=512)
-    parser.add_argument("--temperature", type=float, default=0.92)
-    parser.add_argument("--top-k", type=int, default=40)
-    parser.add_argument("--top-p", type=float, default=0.92)
-    parser.add_argument("--repetition-penalty", type=float, default=1.15)
-    parser.add_argument("--no-repeat-ngram-size", type=int, default=4)
+    parser.add_argument("--max-len", type=int, default=768)
+    parser.add_argument("--temperature", type=float, default=0.85)
+    parser.add_argument("--top-k", type=int, default=50)
+    parser.add_argument("--top-p", type=float, default=0.95)
+    parser.add_argument("--repetition-penalty", type=float, default=1.05)
+    parser.add_argument("--no-repeat-ngram-size", type=int, default=0)
     parser.add_argument("--primer-mode", type=str, default="dataset", choices=["dataset", "none"])
-    parser.add_argument("--primer-len", type=int, default=64)
-    parser.add_argument("--min-body-tokens", type=int, default=64)
-    parser.add_argument("--target-seconds", type=float, default=16.0)
+    parser.add_argument("--primer-len", type=int, default=48)
+    parser.add_argument("--min-body-tokens", type=int, default=160)
+    parser.add_argument("--target-seconds", type=float, default=20.0)
     parser.add_argument("--key", type=str, default="AUTO")
     parser.add_argument("--samples", type=int, default=4)
     parser.add_argument("--candidates-per-sample", type=int, default=8)
