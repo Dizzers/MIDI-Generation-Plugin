@@ -33,6 +33,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from model.dataset import MIDITokenDataset
 from model.music_metrics import aggregate_metrics, sequence_metrics
+from model.paths import resolve_checkpoint_dir
 from model.transformer import TransformerLM, count_parameters
 
 try:
@@ -47,8 +48,6 @@ VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
 TRAIN_CHUNKS = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_train.npy"
 VAL_CHUNKS = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_val.npy"
 TEST_CHUNKS = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_test.npy"
-CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
-PLOTS_DIR = CHECKPOINT_DIR / "plots"
 
 DEFAULTS = dict(
     seed=42,
@@ -83,6 +82,13 @@ def parse_args() -> argparse.Namespace:
                    help="disable mixed-precision (default: on for cuda)")
     p.add_argument("--resume", type=str, default=None,
                    help="path to checkpoint to resume from")
+    p.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default=None,
+        help="writable dir for .pth / history / plots (default: project/checkpoints, "
+        "or /kaggle/working/midi_gen_checkpoints if project is under /kaggle/input)",
+    )
     return p.parse_args()
 
 
@@ -103,8 +109,15 @@ def set_seed(seed: int, device: str) -> None:
     if device == "cuda":
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.benchmark = True
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cudnn.allow_tf32 = True
+        try:
+            torch.backends.cuda.matmul.fp32_precision = "tf32"
+            torch.backends.cudnn.conv.fp32_precision = "tf32"
+        except Exception:
+            try:
+                torch.backends.cuda.matmul.allow_tf32 = True
+                torch.backends.cudnn.allow_tf32 = True
+            except Exception:
+                pass
         try:
             torch.set_float32_matmul_precision("high")
         except Exception:
@@ -249,8 +262,11 @@ def main() -> int:
         print("missing vocab.json or chunks; run dataset/* pipeline first")
         return 1
 
-    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-    PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+    checkpoint_dir = resolve_checkpoint_dir(PROJECT_ROOT, args.checkpoint_dir)
+    plots_dir = checkpoint_dir / "plots"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    print(f"checkpoints -> {checkpoint_dir}")
 
     train_ds, val_ds, test_ds, train_loader, val_loader, test_loader = build_loaders(
         args, VOCAB_PATH
@@ -362,9 +378,9 @@ def main() -> int:
             "time_seconds": round(time.time() - epoch_started, 2),
         }
         history.append(record)
-        with open(CHECKPOINT_DIR / "history.json", "w", encoding="utf-8") as h:
+        with open(checkpoint_dir / "history.json", "w", encoding="utf-8") as h:
             json.dump(history, h, indent=2, ensure_ascii=False)
-        maybe_plot(history, PLOTS_DIR / "loss_curve.png")
+        maybe_plot(history, plots_dir / "loss_curve.png")
         print(json.dumps(record, ensure_ascii=False))
 
         ckpt_payload = {
@@ -377,12 +393,12 @@ def main() -> int:
             "epochs_without_improve": epochs_without_improve,
             "args": vars(args),
         }
-        torch.save(ckpt_payload, CHECKPOINT_DIR / "model_last.pth")
+        torch.save(ckpt_payload, checkpoint_dir / "model_last.pth")
 
         if val_metrics["loss"] < best_val_loss - 1e-4:
             best_val_loss = val_metrics["loss"]
             epochs_without_improve = 0
-            torch.save(ckpt_payload, CHECKPOINT_DIR / "model_best.pth")
+            torch.save(ckpt_payload, checkpoint_dir / "model_best.pth")
             print(f"  -> new best val_loss={best_val_loss:.4f}")
         else:
             epochs_without_improve += 1
@@ -391,14 +407,14 @@ def main() -> int:
                 break
 
     print("training done; running final test eval")
-    if (CHECKPOINT_DIR / "model_best.pth").exists():
-        ckpt = torch.load(CHECKPOINT_DIR / "model_best.pth", map_location=device)
+    if (checkpoint_dir / "model_best.pth").exists():
+        ckpt = torch.load(checkpoint_dir / "model_best.pth", map_location=device)
         model.load_state_dict(ckpt["model"])
     test_metrics = evaluate(
         model, test_loader, pad_id, id2token, device, amp_enabled,
         args.sample_metric_max,
     )
-    with open(CHECKPOINT_DIR / "test_metrics.json", "w", encoding="utf-8") as h:
+    with open(checkpoint_dir / "test_metrics.json", "w", encoding="utf-8") as h:
         json.dump(test_metrics, h, indent=2, ensure_ascii=False)
     print(json.dumps({"test": test_metrics}, indent=2, ensure_ascii=False))
     return 0

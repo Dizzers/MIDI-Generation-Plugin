@@ -25,13 +25,10 @@ import torch
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from model.paths import resolve_checkpoint_dir, resolve_plugin_bin_dir
 from model.transformer import TransformerLM, count_parameters
 
-CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints"
-BEST_PTH = CHECKPOINT_DIR / "model_best.pth"
-EXPORT_PATH = CHECKPOINT_DIR / "model_best.ts.pt"
 VOCAB_PATH = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
-PLUGIN_BIN_DIR = PROJECT_ROOT / "plugin" / "juce" / "bin"
 
 
 def load_checkpoint(path: Path, device: str):
@@ -44,13 +41,31 @@ def load_checkpoint(path: Path, device: str):
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export trained TransformerLM to TorchScript")
     parser.add_argument("--device", type=str, default="cpu")
-    parser.add_argument("--ckpt", type=str, default=str(BEST_PTH))
-    parser.add_argument("--out", type=str, default=str(EXPORT_PATH))
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=str,
+        default=None,
+        help="checkpoint root (default: same as model.train; under /kaggle/input -> /kaggle/working/...)",
+    )
+    parser.add_argument(
+        "--ckpt",
+        type=str,
+        default=None,
+        help="path to model_best.pth (default: <checkpoint_dir>/model_best.pth)",
+    )
+    parser.add_argument(
+        "--out",
+        type=str,
+        default=None,
+        help="TorchScript output path (default: <checkpoint_dir>/model_best.ts.pt)",
+    )
     parser.add_argument("--copy-to-bin", action="store_true",
-                        help="copy resulting .ts.pt and vocab.json into plugin/juce/bin/")
+                        help="copy .ts.pt + vocab.json into plugin bin (writable path on Kaggle)")
     args = parser.parse_args()
 
-    ckpt_path = Path(args.ckpt)
+    checkpoint_dir = resolve_checkpoint_dir(PROJECT_ROOT, args.checkpoint_dir)
+    ckpt_path = Path(args.ckpt) if args.ckpt else checkpoint_dir / "model_best.pth"
+    plugin_bin_dir = resolve_plugin_bin_dir(PROJECT_ROOT)
     if not ckpt_path.exists():
         print(f"missing checkpoint: {ckpt_path}")
         return 1
@@ -92,7 +107,7 @@ def main() -> int:
     print(f"config: {cfg}")
 
     scripted = torch.jit.script(model)
-    out_path = Path(args.out)
+    out_path = Path(args.out) if args.out else checkpoint_dir / "model_best.ts.pt"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     scripted.save(str(out_path))
     print(f"saved {out_path}")
@@ -107,10 +122,10 @@ def main() -> int:
     print(f"roundtrip OK: forward(x[1,16], g[1]) -> {tuple(out.shape)}")
 
     if args.copy_to_bin:
-        PLUGIN_BIN_DIR.mkdir(parents=True, exist_ok=True)
-        shutil.copy(out_path, PLUGIN_BIN_DIR / "model_best.ts.pt")
-        shutil.copy(VOCAB_PATH, PLUGIN_BIN_DIR / "vocab.json")
-        print(f"copied {out_path.name} and vocab.json into {PLUGIN_BIN_DIR}")
+        plugin_bin_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(out_path, plugin_bin_dir / "model_best.ts.pt")
+        shutil.copy(VOCAB_PATH, plugin_bin_dir / "vocab.json")
+        print(f"copied {out_path.name} and vocab.json into {plugin_bin_dir}")
     return 0
 
 

@@ -28,11 +28,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from dataset.vocab_contract import TIME_SHIFT_RESOLUTION
+from model.paths import resolve_checkpoint_dir, resolve_generated_dir
 from model.transformer import TransformerLM
 
+_DEFAULT_CKPT_DIR = resolve_checkpoint_dir(PROJECT_ROOT)
 DEFAULT_VOCAB = PROJECT_ROOT / "dataset" / "processed" / "vocab.json"
-DEFAULT_TS_MODEL = PROJECT_ROOT / "checkpoints" / "model_best.ts.pt"
-DEFAULT_PTH_MODEL = PROJECT_ROOT / "checkpoints" / "model_best.pth"
+DEFAULT_TS_MODEL = _DEFAULT_CKPT_DIR / "model_best.ts.pt"
+DEFAULT_PTH_MODEL = _DEFAULT_CKPT_DIR / "model_best.pth"
+_DEFAULT_GEN_DIR = resolve_generated_dir(PROJECT_ROOT)
 
 
 def map_key_to_token(ui_key: str) -> str:
@@ -391,7 +394,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--max_len", type=int, default=512)
     p.add_argument("--target_seconds", type=float, default=4.0)
     p.add_argument("--bpm", type=float, default=120.0)
-    p.add_argument("--out", type=str, default=str(PROJECT_ROOT / "generated" / "sample.mid"))
+    p.add_argument("--out", type=str, default=str(_DEFAULT_GEN_DIR / "sample.mid"))
     return p.parse_args()
 
 

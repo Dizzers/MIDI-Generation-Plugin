@@ -14,6 +14,12 @@ import sys
 import warnings
 from pathlib import Path
 
+# When run as `python dataset/tokenize_midi.py`, sys.path[0] is `dataset/`, not the
+# project root — `import dataset` fails. Same fix as `python -m dataset.tokenize_midi`.
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 import music21 as m21
 import numpy as np
 from tqdm import tqdm
