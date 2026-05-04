@@ -19,6 +19,7 @@ import os
 import random
 import sys
 import time
+from collections import Counter
 from contextlib import nullcontext
 from pathlib import Path
 
@@ -26,13 +27,17 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from model.dataset import MIDITokenDataset
-from model.music_metrics import aggregate_metrics, sequence_metrics
+from model.music_metrics import (
+    TokenClassificationStats,
+    aggregate_metrics,
+    sequence_metrics,
+)
 from model.paths import resolve_checkpoint_dir
 from model.transformer import TransformerLM, count_parameters
 
@@ -51,15 +56,15 @@ TEST_CHUNKS = PROJECT_ROOT / "dataset" / "processed" / "chunks" / "full_chunks_t
 
 DEFAULTS = dict(
     seed=42,
-    num_epochs=60,
-    early_stopping_patience=10,
+    num_epochs=100,
+    early_stopping_patience=12,
     batch_size=16,
     grad_accum_steps=2,
     learning_rate=3e-4,
     weight_decay=0.05,
     label_smoothing=0.05,
     warmup_epochs=4,
-    min_lr_scale=0.05,
+    min_lr_scale=0.1,
     max_grad_norm=1.0,
     max_len=1024,
     d_model=512,
@@ -68,7 +73,10 @@ DEFAULTS = dict(
     d_ff=2048,
     dropout=0.2,
     num_workers=2,
-    sample_metric_max=8,
+    sample_metric_max=1024,
+    stratify_keys=1,
+    ema_decay=0.999,
+    key_weight_power=0.5,
 )
 
 
@@ -146,7 +154,27 @@ def build_loaders(args, vocab_path: Path):
         persistent_workers=(args.num_workers > 0),
         drop_last=False,
     )
-    train_loader = DataLoader(train_ds, shuffle=True, **common)
+
+    if int(getattr(args, "stratify_keys", 0)) > 0:
+        keys = train_ds.key_token_per_sample()
+        counts = Counter(keys)
+        power = float(getattr(args, "key_weight_power", 0.5))
+        weights = [1.0 / max(1, counts[k]) ** power for k in keys]
+        sampler = WeightedRandomSampler(
+            weights=torch.tensor(weights, dtype=torch.double),
+            num_samples=len(weights),
+            replacement=True,
+        )
+        train_loader = DataLoader(train_ds, sampler=sampler, **common)
+        rare = min(counts.items(), key=lambda kv: kv[1])
+        common_k = max(counts.items(), key=lambda kv: kv[1])
+        print(
+            f"key-stratified sampler enabled (power={power}); "
+            f"rarest={rare[0]}({rare[1]}), most={common_k[0]}({common_k[1]})"
+        )
+    else:
+        train_loader = DataLoader(train_ds, shuffle=True, **common)
+
     val_loader = DataLoader(val_ds, shuffle=False, **common)
     test_loader = DataLoader(test_ds, shuffle=False, **common)
     return train_ds, val_ds, test_ds, train_loader, val_loader, test_loader
@@ -172,6 +200,58 @@ def build_scheduler(optimizer, num_epochs: int, warmup: int, min_lr_scale: float
     )
 
 
+class ModelEMA:
+    """Exponential moving average of parameters, kept in fp32.
+
+    Use `update()` after every optimizer step. For evaluation, call
+    `apply()` to swap shadow weights into the model and `restore()` to
+    bring back the live training weights.
+    """
+
+    def __init__(self, model: nn.Module, decay: float = 0.999) -> None:
+        self.decay = float(decay)
+        self.shadow: dict[str, torch.Tensor] = {}
+        for name, param in model.named_parameters():
+            if param.requires_grad:
+                self.shadow[name] = param.detach().clone().to(dtype=torch.float32)
+
+    @torch.no_grad()
+    def update(self, model: nn.Module) -> None:
+        for name, param in model.named_parameters():
+            if name in self.shadow and param.requires_grad:
+                self.shadow[name].mul_(self.decay).add_(
+                    param.detach().to(dtype=torch.float32),
+                    alpha=1.0 - self.decay,
+                )
+
+    @torch.no_grad()
+    def apply(self, model: nn.Module) -> dict[str, torch.Tensor]:
+        backup: dict[str, torch.Tensor] = {}
+        for name, param in model.named_parameters():
+            if name in self.shadow:
+                backup[name] = param.detach().clone()
+                param.data.copy_(
+                    self.shadow[name].to(dtype=param.dtype, device=param.device)
+                )
+        return backup
+
+    @torch.no_grad()
+    def restore(self, model: nn.Module, backup: dict[str, torch.Tensor]) -> None:
+        for name, param in model.named_parameters():
+            if name in backup:
+                param.data.copy_(backup[name])
+
+    def state_dict(self) -> dict:
+        return {"decay": self.decay, "shadow": self.shadow}
+
+    def load_state_dict(self, state: dict) -> None:
+        self.decay = float(state.get("decay", self.decay))
+        loaded = state.get("shadow", {})
+        for name in list(self.shadow.keys()):
+            if name in loaded:
+                self.shadow[name].copy_(loaded[name].to(self.shadow[name]))
+
+
 def compute_loss(logits, targets, pad_id: int, label_smoothing: float):
     B, T, V = logits.shape
     flat_logits = logits.view(-1, V)
@@ -184,7 +264,7 @@ def compute_loss(logits, targets, pad_id: int, label_smoothing: float):
         label_smoothing=label_smoothing,
     ).view(B, T)
     valid = targets != pad_id
-    valid[:, :3] = False  # ignore <BOS>, <GENRE_*>, <KEY_*>
+    valid[:, :2] = False  # ignore predicting the deterministic <GENRE_*>/<KEY_*> from <BOS>
     valid_f = valid.float()
     token_count = valid_f.sum(dim=1).clamp_min(1.0)
     sample_loss = (losses * valid_f).sum(dim=1) / token_count
@@ -200,6 +280,7 @@ def evaluate(model, loader, pad_id, id2token, device, amp_enabled, sample_metric
     total_samples = 0
     metric_rows: list[dict] = []
     metric_budget = sample_metric_max
+    classification = TokenClassificationStats(id2token)
 
     for x, y, g in loader:
         x = x.to(device, non_blocking=True)
@@ -213,6 +294,8 @@ def evaluate(model, loader, pad_id, id2token, device, amp_enabled, sample_metric
         preds = logits.argmax(dim=-1)
         total_correct += int(((preds == y) & valid).sum().item())
         total_tokens += int(valid.sum().item())
+
+        classification.update(logits, y, valid)
 
         if metric_budget > 0:
             n = min(metric_budget, logits.size(0))
@@ -232,6 +315,7 @@ def evaluate(model, loader, pad_id, id2token, device, amp_enabled, sample_metric
         "perplexity": perplexity,
         "samples_for_music_metrics": len(metric_rows),
     })
+    metrics.update(classification.compute())
     return metrics
 
 
@@ -240,9 +324,11 @@ def maybe_plot(history: list[dict], path: Path) -> None:
         return
     epochs = [h["epoch"] for h in history]
     train = [h["train_loss"] for h in history]
+    train_ce = [h.get("train_ce", h["train_loss"]) for h in history]
     val = [h["val_loss"] for h in history]
     plt.figure(figsize=(8, 5))
-    plt.plot(epochs, train, label="train")
+    plt.plot(epochs, train, label="train (smoothed+aug)", linestyle="--", alpha=0.6)
+    plt.plot(epochs, train_ce, label="train CE (clean)")
     plt.plot(epochs, val, label="val")
     plt.xlabel("epoch")
     plt.ylabel("loss")
@@ -303,6 +389,11 @@ def main() -> int:
     amp_enabled = (not args.no_amp) and device == "cuda"
     scaler = torch.amp.GradScaler(enabled=amp_enabled)
 
+    ema_decay = float(getattr(args, "ema_decay", 0.0))
+    ema = ModelEMA(model, decay=ema_decay) if ema_decay > 0.0 else None
+    if ema is not None:
+        print(f"EMA enabled (decay={ema_decay})")
+
     start_epoch = 1
     history: list[dict] = []
     best_val_loss = float("inf")
@@ -317,6 +408,8 @@ def main() -> int:
         history = ckpt.get("history", [])
         best_val_loss = float(ckpt.get("best_val_loss", float("inf")))
         epochs_without_improve = int(ckpt.get("epochs_without_improve", 0))
+        if ema is not None and "ema" in ckpt and ckpt["ema"] is not None:
+            ema.load_state_dict(ckpt["ema"])
         print(f"resumed from {args.resume} at epoch {start_epoch}")
 
     id2token = train_ds.id2token
@@ -325,6 +418,7 @@ def main() -> int:
         model.train()
         epoch_started = time.time()
         train_loss_sum = 0.0
+        train_ce_sum = 0.0
         train_samples = 0
         optimizer.zero_grad(set_to_none=True)
 
@@ -342,6 +436,12 @@ def main() -> int:
             else:
                 loss.backward()
 
+            with torch.no_grad():
+                # unsmoothed cross-entropy on the same forward — directly
+                # comparable to val_loss (which also uses smoothing=0).
+                sample_ce, _ = compute_loss(logits.detach(), y, pad_id, 0.0)
+                train_ce_sum += float(sample_ce.sum().item())
+
             if (step + 1) % args.grad_accum_steps == 0:
                 if amp_enabled:
                     scaler.unscale_(optimizer)
@@ -352,28 +452,43 @@ def main() -> int:
                 else:
                     optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
+                if ema is not None:
+                    ema.update(model)
 
             train_loss_sum += float(sample_loss.sum().item())
             train_samples += logits.size(0)
 
         scheduler.step()
         avg_train_loss = train_loss_sum / max(1, train_samples)
+        avg_train_ce = train_ce_sum / max(1, train_samples)
 
+        ema_backup = ema.apply(model) if ema is not None else None
         val_metrics = evaluate(
             model, val_loader, pad_id, id2token, device, amp_enabled,
             args.sample_metric_max,
         )
+        if ema is not None and ema_backup is not None:
+            ema.restore(model, ema_backup)
 
         record = {
             "epoch": epoch,
             "train_loss": avg_train_loss,
+            "train_ce": avg_train_ce,
             "val_loss": val_metrics["loss"],
             "val_accuracy": val_metrics["accuracy"],
+            "val_top5_accuracy": val_metrics["top5_accuracy"],
             "val_perplexity": val_metrics["perplexity"],
+            "val_macro_f1": val_metrics["category_macro_f1"],
+            "val_micro_f1": val_metrics["category_micro_f1"],
+            "val_weighted_f1": val_metrics["category_weighted_f1"],
+            "val_macro_precision": val_metrics["category_macro_precision"],
+            "val_macro_recall": val_metrics["category_macro_recall"],
+            "val_pitch_class_iou": val_metrics["pitch_class_iou"],
             "val_repeat_rate": val_metrics["repeat_rate"],
             "val_unique_token_ratio": val_metrics["unique_token_ratio"],
             "val_rhythm_diversity": val_metrics["rhythm_diversity"],
             "val_scale_coverage": val_metrics["scale_coverage"],
+            "val_per_category": val_metrics["per_category"],
             "lr": optimizer.param_groups[0]["lr"],
             "time_seconds": round(time.time() - epoch_started, 2),
         }
@@ -392,13 +507,23 @@ def main() -> int:
             "best_val_loss": best_val_loss,
             "epochs_without_improve": epochs_without_improve,
             "args": vars(args),
+            "ema": ema.state_dict() if ema is not None else None,
         }
         torch.save(ckpt_payload, checkpoint_dir / "model_last.pth")
 
         if val_metrics["loss"] < best_val_loss - 1e-4:
             best_val_loss = val_metrics["loss"]
             epochs_without_improve = 0
-            torch.save(ckpt_payload, checkpoint_dir / "model_best.pth")
+            # Persist the EMA-evaluated weights as the "best" snapshot so
+            # downstream torchscript export uses what we just validated.
+            best_payload = dict(ckpt_payload)
+            if ema is not None:
+                best_state = {k: v.detach().clone() for k, v in model.state_dict().items()}
+                for name, shadow in ema.shadow.items():
+                    if name in best_state:
+                        best_state[name] = shadow.detach().clone().to(best_state[name].dtype)
+                best_payload["model"] = best_state
+            torch.save(best_payload, checkpoint_dir / "model_best.pth")
             print(f"  -> new best val_loss={best_val_loss:.4f}")
         else:
             epochs_without_improve += 1
@@ -409,7 +534,7 @@ def main() -> int:
     print("training done; running final test eval")
     if (checkpoint_dir / "model_best.pth").exists():
         ckpt = torch.load(checkpoint_dir / "model_best.pth", map_location=device)
-        model.load_state_dict(ckpt["model"])
+        model.load_state_dict(ckpt["model"], strict=False)
     test_metrics = evaluate(
         model, test_loader, pad_id, id2token, device, amp_enabled,
         args.sample_metric_max,

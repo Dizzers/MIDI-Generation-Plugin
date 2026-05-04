@@ -37,8 +37,8 @@ class MIDITokenDataset(Dataset):
         self.max_len = int(max_len)
         self.augment = bool(augment)
         self.aug_cfg = augment_config or {
-            "transpose_prob": 0.6,
-            "transpose_range": 6,
+            "transpose_prob": 0.8,
+            "transpose_range": 11,
             "time_stretch_prob": 0.45,
             "time_stretch_range": (0.88, 1.12),
             "velocity_jitter_prob": 0.35,
@@ -83,6 +83,9 @@ class MIDITokenDataset(Dataset):
         spec = f"#0{width}x"
         return format(value, spec)
 
+    _PC_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+    _PC_NAME_TO_INDEX = {name: idx for idx, name in enumerate(_PC_NAMES)}
+
     def _transpose_token(self, token: str, shift: int) -> str:
         if token.startswith("NOTE_ON_") or token.startswith("NOTE_OFF_"):
             try:
@@ -92,6 +95,19 @@ class MIDITokenDataset(Dataset):
             new_pitch = max(0, min(127, pitch + shift))
             kind = "NOTE_ON_" if token.startswith("NOTE_ON_") else "NOTE_OFF_"
             return f"{kind}{self._hex(new_pitch, 4)}"
+        if token.startswith("<KEY_") and token != "<KEY_UNKNOWN>":
+            inner = token[len("<KEY_"):-1]
+            if inner.endswith("_MAJ"):
+                pc_name, suffix = inner[:-4], "_MAJ"
+            elif inner.endswith("_MIN"):
+                pc_name, suffix = inner[:-4], "_MIN"
+            else:
+                return token
+            pc = self._PC_NAME_TO_INDEX.get(pc_name)
+            if pc is None:
+                return token
+            new_pc = (pc + shift) % 12
+            return f"<KEY_{self._PC_NAMES[new_pc]}{suffix}>"
         return token
 
     def _stretch_time_token(self, token: str, factor: float) -> str:
@@ -158,6 +174,22 @@ class MIDITokenDataset(Dataset):
             if tok.startswith("<GENRE_"):
                 return self.genre_token_to_index.get(tok, 0)
         return 0
+
+    def key_token_per_sample(self) -> list[str]:
+        """Return the <KEY_*> token of each chunk (used by WeightedRandomSampler).
+
+        chunk_tokens.py guarantees the key sits within the first few prefix
+        positions; we fall back to <KEY_UNKNOWN> if absent.
+        """
+        keys: list[str] = []
+        for tokens in self.data:
+            found = "<KEY_UNKNOWN>"
+            for tok in list(tokens)[:5]:
+                if tok.startswith("<KEY_"):
+                    found = tok
+                    break
+            keys.append(found)
+        return keys
 
     def encode(self, tokens: list[str]) -> list[int]:
         ids = [self.bos]
