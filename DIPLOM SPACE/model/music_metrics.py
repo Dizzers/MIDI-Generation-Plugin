@@ -204,6 +204,44 @@ class TokenClassificationStats:
             self._iou_sum += inter / max(1, union)
             self._iou_count += 1
 
+    def all_reduce(self, device) -> None:
+        """All-reduce internal counters across distributed ranks.
+
+        Safe to call when distributed is not initialized — it then becomes
+        a no-op. Call this BEFORE `compute()` in DDP eval.
+        """
+        import torch.distributed as dist
+
+        if not dist.is_available() or not dist.is_initialized():
+            return
+
+        counts_long = torch.stack([self._tp, self._fp, self._fn, self._support]).to(device)
+        dist.all_reduce(counts_long, op=dist.ReduceOp.SUM)
+        counts_long = counts_long.cpu()
+        self._tp = counts_long[0]
+        self._fp = counts_long[1]
+        self._fn = counts_long[2]
+        self._support = counts_long[3]
+
+        scalars = torch.tensor(
+            [
+                float(self._total_valid),
+                float(self._top1_hits),
+                float(self._top5_hits),
+                float(self._iou_count),
+                float(self._iou_sum),
+            ],
+            dtype=torch.float64,
+            device=device,
+        )
+        dist.all_reduce(scalars, op=dist.ReduceOp.SUM)
+        flat = scalars.cpu().tolist()
+        self._total_valid = int(flat[0])
+        self._top1_hits = int(flat[1])
+        self._top5_hits = int(flat[2])
+        self._iou_count = int(flat[3])
+        self._iou_sum = float(flat[4])
+
     def compute(self) -> dict:
         eps = 1e-9
         tp = self._tp.float()
