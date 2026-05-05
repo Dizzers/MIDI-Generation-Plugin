@@ -39,9 +39,9 @@ class MIDITokenDataset(Dataset):
         self.aug_cfg = augment_config or {
             "transpose_prob": 0.8,
             "transpose_range": 11,
-            "time_stretch_prob": 0.45,
-            "time_stretch_range": (0.88, 1.12),
-            "velocity_jitter_prob": 0.35,
+            "time_stretch_prob": 0.65,
+            "time_stretch_range": (0.80, 1.20),
+            "velocity_jitter_prob": 0.45,
             "velocity_jitter": 2,
         }
         self.rng = random.Random(seed)

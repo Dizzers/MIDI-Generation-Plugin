@@ -72,7 +72,8 @@ DEFAULTS = dict(
     grad_accum_steps=2,
     learning_rate=3e-4,
     weight_decay=0.05,
-    label_smoothing=0.05,
+    label_smoothing=0.02,
+    eos_weight=12.0,
     warmup_epochs=4,
     min_lr_scale=0.1,
     max_grad_norm=1.0,
@@ -368,13 +369,28 @@ class ModelEMA:
                 self.shadow[name].copy_(loaded[name].to(self.shadow[name]))
 
 
-def compute_loss(logits, targets, pad_id: int, label_smoothing: float):
+def compute_loss(
+    logits,
+    targets,
+    pad_id: int,
+    label_smoothing: float,
+    eos_id: int | None = None,
+    eos_weight: float = 1.0,
+):
     B, T, V = logits.shape
     flat_logits = logits.view(-1, V)
     flat_targets = targets.view(-1)
+
+    # Up-weight EOS to fix severe class imbalance (EOS support ~100x less than note_on).
+    weight: torch.Tensor | None = None
+    if eos_id is not None and eos_weight != 1.0:
+        weight = torch.ones(V, device=logits.device, dtype=logits.dtype)
+        weight[eos_id] = eos_weight
+
     losses = F.cross_entropy(
         flat_logits,
         flat_targets,
+        weight=weight,
         reduction="none",
         ignore_index=pad_id,
         label_smoothing=label_smoothing,
@@ -616,7 +632,11 @@ def main() -> int:
             g = g.to(device, non_blocking=True)
             with amp_context(device, amp_enabled):
                 logits = ddp_model(x, g)
-                sample_loss, _ = compute_loss(logits, y, pad_id, args.label_smoothing)
+                sample_loss, _ = compute_loss(
+                    logits, y, pad_id, args.label_smoothing,
+                    eos_id=train_ds.eos,
+                    eos_weight=float(getattr(args, "eos_weight", 1.0)),
+                )
                 loss = sample_loss.mean() / args.grad_accum_steps
 
             if amp_enabled:

@@ -10,14 +10,19 @@ result as a .mid file.
 
 Usage:
     python -m model.generate \
-        --key C_MAJOR --seed 42 --temperature 0.95 --topK 12 --topP 0.9 \
+        --key C_MAJOR --seed 42 --temperature 0.95 --top_k 12 --top_p 0.9 \
         --target_seconds 4.0 --bpm 120 --out generated/sample.mid
+
+    Strict A/B with the JUCE plugin (disable Python-only note guards):
+
+    python3 -m model.generate --key C_MAJOR --seed 42 --min_note_ons 0 --note_on_logit_boost 0
 """
 from __future__ import annotations
 
 import argparse
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -126,6 +131,37 @@ def in_key_pitch_classes(key_token: str) -> set[int]:
     return {(root + s) % 12 for s in scale}
 
 
+def _body_note_on_count(generated: list[int], id2token: dict[int, str], prefix_len: int) -> int:
+    n = 0
+    for tid in generated[prefix_len:]:
+        tok = id2token.get(int(tid), "")
+        if isinstance(tok, str) and tok.startswith("NOTE_ON_"):
+            n += 1
+    return n
+
+
+def _summarize_body_tokens(generated: list[int], id2token: dict[int, str], prefix_len: int) -> dict[str, int]:
+    counts = {
+        "note_on": 0, "note_off": 0, "time_shift": 0, "velocity": 0, "other": 0,
+    }
+    for tid in generated[prefix_len:]:
+        tok = id2token.get(int(tid), "")
+        if not isinstance(tok, str):
+            counts["other"] += 1
+            continue
+        if tok.startswith("NOTE_ON_"):
+            counts["note_on"] += 1
+        elif tok.startswith("NOTE_OFF_"):
+            counts["note_off"] += 1
+        elif tok.startswith("TIME_SHIFT_"):
+            counts["time_shift"] += 1
+        elif tok.startswith("VELOCITY_"):
+            counts["velocity"] += 1
+        else:
+            counts["other"] += 1
+    return counts
+
+
 def top_k_top_p_filter(logits: torch.Tensor, top_k: int, top_p: float) -> torch.Tensor:
     out = logits.clone()
     V = out.size(0)
@@ -185,6 +221,8 @@ def load_model(token2id: dict[str, int], device: str):
 
 
 def generate(args) -> int:
+    if os.environ.get("MIDI_GEN_PRINT_PATH", "").strip():
+        print(f"model.generate loaded from: {__file__}", file=sys.stderr)
     token2id, id2token = load_vocab(Path(args.vocab))
     cls = build_token_class_indices(token2id)
 
@@ -240,8 +278,17 @@ def generate(args) -> int:
         logits[banned_t] = float("-inf")
 
         body_len = len(generated) - prefix_len
+        n_note_on_body = _body_note_on_count(generated, id2token, prefix_len)
         if body_len < args.min_body_tokens:
             logits[eos_id] = float("-inf")
+        if int(getattr(args, "min_note_ons", 0)) > 0 and n_note_on_body < int(args.min_note_ons):
+            logits[eos_id] = float("-inf")
+
+        boost = float(getattr(args, "note_on_logit_boost", 0.0))
+        min_n_goal = int(getattr(args, "min_note_ons", 0))
+        if boost > 0.0 and min_n_goal > 0 and n_note_on_body < min_n_goal and cls["note_on_ids"]:
+            for tid in cls["note_on_ids"]:
+                logits[tid] = logits[tid] + boost
 
         if len(active_pitches) >= args.max_polyphony and note_on_ids_t.numel() > 0:
             logits[note_on_ids_t] = float("-inf")
@@ -314,14 +361,27 @@ def generate(args) -> int:
             except ValueError:
                 pass
 
-        if args.target_seconds > 0 and elapsed_seconds >= args.target_seconds and len(generated) > 64:
+        min_notes = int(getattr(args, "min_note_ons", 0))
+        notes_ok = (min_notes <= 0) or (
+            _body_note_on_count(generated, id2token, prefix_len) >= min_notes
+        )
+        if (
+            args.target_seconds > 0
+            and elapsed_seconds >= args.target_seconds
+            and len(generated) > 64
+            and notes_ok
+        ):
             generated.append(eos_id)
             break
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     write_midi(generated, id2token, out_path, args.bpm)
-    print(f"generated {len(generated)} tokens, ~{elapsed_seconds:.2f}s -> {out_path}")
+    stats = _summarize_body_tokens(generated, id2token, prefix_len)
+    print(
+        f"generated {len(generated)} tokens, ~{elapsed_seconds:.2f}s -> {out_path}\n"
+        f"  body token mix: {stats} (if note_on is tiny, MIDI will be mostly silence / few notes)"
+    )
     return 0
 
 
@@ -376,21 +436,48 @@ def write_midi(token_ids: list[int], id2token: dict[int, str], out_path: Path, b
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Generate MIDI from trained model")
+    p = argparse.ArgumentParser(
+        description=(
+            "Generate MIDI from trained model. "
+            "This build supports --min_note_ons and --note_on_logit_boost; if `python3 -m model.generate -h` "
+            "does not list them, you are not running this checkout (wrong cwd, stale file, or shadowed package)."
+        ),
+        epilog=(
+            "Example (match JUCE defaults for note guards): "
+            "python3 -m model.generate --key C_MAJOR --seed 42 "
+            "--min_note_ons 0 --note_on_logit_boost 0"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     p.add_argument("--vocab", type=str, default=str(DEFAULT_VOCAB))
     p.add_argument("--device", type=str, default="cpu")
-    p.add_argument("--key", type=str, default="C_MAJOR")
+    p.add_argument("--key", type=str, default="A_MINOR")
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--temperature", type=float, default=0.95)
-    p.add_argument("--top_k", type=int, default=12)
-    p.add_argument("--top_p", type=float, default=0.9)
+    p.add_argument("--temperature", type=float, default=1.0)
+    p.add_argument("--top_k", type=int, default=25)
+    p.add_argument("--top_p", type=float, default=0.93)
     p.add_argument("--repetition_penalty", type=float, default=1.15)
-    p.add_argument("--no_repeat_ngram_size", type=int, default=4)
+    p.add_argument("--no_repeat_ngram_size", type=int, default=3)
     p.add_argument("--harmony_bias", type=float, default=0.35)
     p.add_argument("--velocity_feel", type=float, default=0.0)
-    p.add_argument("--groove_feel", type=float, default=0.0)
+    p.add_argument("--groove_feel", type=float, default=0.3)
     p.add_argument("--max_polyphony", type=int, default=8)
     p.add_argument("--min_body_tokens", type=int, default=48)
+    p.add_argument(
+        "--min_note_ons",
+        type=int,
+        default=4,
+        help="require at least this many NOTE_ON in the body before EOS or target_seconds "
+        "may end generation (0 disables). Default 4 avoids mostly-silence MIDI when the LM "
+        "samples long TIME_SHIFT runs.",
+    )
+    p.add_argument(
+        "--note_on_logit_boost",
+        type=float,
+        default=0.2,
+        help="while body has fewer than --min_note_ons NOTE_ON, add this to every NOTE_ON logit "
+        "(only if --min_note_ons > 0). Set 0 to disable.",
+    )
     p.add_argument("--max_len", type=int, default=512)
     p.add_argument("--target_seconds", type=float, default=4.0)
     p.add_argument("--bpm", type=float, default=120.0)
