@@ -43,6 +43,82 @@ from torch.utils.data import DataLoader
 from midi_model import MIDIModelConfig, config_name_list
 from train import MidiDataset, TrainMIDIModel, get_midi_list
 
+import torch.nn.functional as F
+from sklearn.metrics import f1_score, recall_score, precision_score
+
+
+class ExtendedTrainMIDIModel(TrainMIDIModel):
+    """TrainMIDIModel with richer validation metrics.
+
+    Extra metrics logged each validation step:
+      val/perplexity   – exp(val_loss), standard LM metric
+      val/top3_acc     – top-3 token accuracy (reflects sampling quality)
+      val/top5_acc     – top-5 token accuracy
+      val/f1_micro     – micro-averaged F1 across all token classes
+      val/f1_macro     – macro-averaged F1 (equal weight to rare tokens)
+      val/recall_macro – macro-averaged recall
+      val/prec_macro   – macro-averaged precision
+    """
+
+    def validation_step(self, batch, batch_idx):
+        x = batch[:, :-1].contiguous()
+        y = batch[:, 1:].contiguous()
+        hidden = self.forward(x)
+        hidden = hidden.reshape(-1, hidden.shape[-1])
+        y_flat = y.reshape(-1, y.shape[-1])
+        x_in = y_flat[:, :-1]
+        logits = self.forward_token(hidden, x_in)
+
+        targets = y_flat.reshape(-1)
+        logits_2d = logits.view(-1, self.tokenizer.vocab_size)
+
+        pad_id = self.tokenizer.pad_id
+        mask = targets != pad_id
+        logits_m = logits_2d[mask]
+        targets_m = targets[mask]
+
+        loss = F.cross_entropy(logits_2d, targets, reduction="mean", ignore_index=pad_id)
+        perplexity = torch.exp(loss)
+
+        # Token-level accuracy (top-1)
+        preds = logits_m.argmax(dim=-1)
+        acc = (preds == targets_m).float().mean()
+
+        # Top-k accuracy
+        def topk_acc(k):
+            topk = logits_m.topk(k, dim=-1).indices
+            return (topk == targets_m.unsqueeze(-1)).any(dim=-1).float().mean()
+
+        top3 = topk_acc(3)
+        top5 = topk_acc(5)
+
+        # sklearn classification metrics (computed on CPU, sampled if too large)
+        y_np = targets_m.cpu().numpy()
+        p_np = preds.cpu().numpy()
+        MAX_SAMPLES = 50_000
+        if len(y_np) > MAX_SAMPLES:
+            idx = np.random.choice(len(y_np), MAX_SAMPLES, replace=False)
+            y_np, p_np = y_np[idx], p_np[idx]
+
+        sk_kw = dict(zero_division=0)
+        f1_micro   = f1_score(y_np, p_np, average="micro",  **sk_kw)
+        f1_macro   = f1_score(y_np, p_np, average="macro",  **sk_kw)
+        rec_macro  = recall_score(y_np,   p_np, average="macro", **sk_kw)
+        prec_macro = precision_score(y_np, p_np, average="macro", **sk_kw)
+
+        self.log_dict({
+            "val/loss":        loss,
+            "val/acc":         acc,
+            "val/perplexity":  perplexity,
+            "val/top3_acc":    top3,
+            "val/top5_acc":    top5,
+            "val/f1_micro":    torch.tensor(f1_micro,   dtype=torch.float32),
+            "val/f1_macro":    torch.tensor(f1_macro,   dtype=torch.float32),
+            "val/recall_macro": torch.tensor(rec_macro, dtype=torch.float32),
+            "val/prec_macro":  torch.tensor(prec_macro, dtype=torch.float32),
+        }, sync_dist=True)
+        return loss
+
 
 def _try_load_pretrained(model: TrainMIDIModel, source: str) -> None:
     """Load a pretrained checkpoint into ``model``.
@@ -143,6 +219,23 @@ def main() -> None:
     if not midi_files:
         print(f"[finetune] ERROR: no MIDI files found under {opt.data}", file=sys.stderr)
         sys.exit(2)
+
+    # Pre-filter files that are too small or too large to avoid DataLoader recursion errors
+    MIN_FILE_SIZE = 3000
+    MAX_FILE_SIZE = 384000
+    before = len(midi_files)
+    midi_files = [
+        p for p in midi_files
+        if MIN_FILE_SIZE <= os.path.getsize(p) <= MAX_FILE_SIZE
+    ]
+    removed = before - len(midi_files)
+    if removed:
+        print(f"[finetune] filtered out {removed} files outside size range "
+              f"[{MIN_FILE_SIZE}, {MAX_FILE_SIZE}] bytes")
+    if not midi_files:
+        print(f"[finetune] ERROR: no valid MIDI files remain after size filtering", file=sys.stderr)
+        sys.exit(2)
+
     random.shuffle(midi_files)
     val_n = min(opt.data_val_split, max(1, len(midi_files) // 20))
     train_files = midi_files[:-val_n]
@@ -170,7 +263,7 @@ def main() -> None:
         torch.backends.cuda.enable_mem_efficient_sdp(True)
         torch.backends.cuda.enable_flash_sdp(True)
 
-    model = TrainMIDIModel(
+    model = ExtendedTrainMIDIModel(
         config,
         lr=opt.lr,
         weight_decay=opt.weight_decay,

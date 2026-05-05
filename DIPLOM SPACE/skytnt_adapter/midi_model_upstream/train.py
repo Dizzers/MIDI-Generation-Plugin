@@ -46,25 +46,39 @@ class MidiDataset(Dataset):
         return len(self.midi_list)
 
     def load_midi(self, index):
-        path = self.midi_list[index]
-        try:
-            with open(path, 'rb') as f:
-                datas = f.read()
-            if len(datas) > self.max_file_size:  # large midi file will spend too much time to load
-                raise ValueError("file too large")
-            elif len(datas) < self.min_file_size:
-                raise ValueError("file too small")
-            mid = MIDI.midi2score(datas)
-            if max([0] + [len(track) for track in mid[1:]]) == 0:
-                raise ValueError("empty track")
-            mid = self.tokenizer.tokenize(mid)
-            if self.check_quality and not self.tokenizer.check_quality(mid)[0]:
-                raise ValueError("bad quality")
-            if self.aug:
-                mid = self.tokenizer.augment(mid)
-        except Exception:
-            mid = self.load_midi(random.randint(0, self.__len__() - 1))
-        return mid
+        max_attempts = min(200, self.__len__())
+        tried = set()
+        current = index
+        last_exc = None
+        for _ in range(max_attempts):
+            tried.add(current)
+            path = self.midi_list[current]
+            try:
+                with open(path, 'rb') as f:
+                    datas = f.read()
+                if len(datas) > self.max_file_size:
+                    raise ValueError("file too large")
+                elif len(datas) < self.min_file_size:
+                    raise ValueError("file too small")
+                mid = MIDI.midi2score(datas)
+                if max([0] + [len(track) for track in mid[1:]]) == 0:
+                    raise ValueError("empty track")
+                mid = self.tokenizer.tokenize(mid)
+                if self.check_quality and not self.tokenizer.check_quality(mid)[0]:
+                    raise ValueError("bad quality")
+                if self.aug:
+                    mid = self.tokenizer.augment(mid)
+                return mid
+            except Exception as e:
+                last_exc = e
+                candidates = [i for i in range(self.__len__()) if i not in tried]
+                if not candidates:
+                    break
+                current = random.choice(candidates)
+        raise RuntimeError(
+            f"Could not load a valid MIDI after {max_attempts} attempts "
+            f"(dataset size={self.__len__()}). Last error: {last_exc}"
+        )
 
     def __getitem__(self, index):
         mid = self.load_midi(index)
