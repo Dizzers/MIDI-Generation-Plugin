@@ -1,19 +1,26 @@
 #pragma once
 
-#include <vector>
+#include <atomic>
+#include <memory>
 #include <string>
-#include <unordered_map>
+#include <vector>
+
+#include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_core/juce_core.h>
 
-#if MIDI_GEN_USE_TORCH
-    #include <torch/script.h>
-#endif
-
-class PluginProcessor;
+namespace skytnt { class Runtime; }
 
 /**
- * PyTorch model inference wrapper
- * Loads pre-trained checkpoint and generates token sequences
+ *  Facade over the SkyTNT ONNX runtime. Public surface is intentionally
+ *  small so the rest of the plugin doesn't need to change much:
+ *
+ *    - generateMidi() returns a fully-formed list of MidiMessages with
+ *      seconds-based timestamps (tempo applied via `bpm`).
+ *    - isLoaded() reflects whether both ONNX models + tokenizer config were
+ *      successfully loaded.
+ *
+ *  No tokens are exposed to callers any more; the SkyTNT vocab grid is an
+ *  internal detail of this class.
  */
 class ModelInference
 {
@@ -23,70 +30,37 @@ public:
 
     struct GenerationResult
     {
-        std::vector<int> tokenIds;
+        std::vector<juce::MidiMessage> messages;
         bool success = false;
         std::string errorMessage;
     };
 
-    /**
-     * Generate token sequence for MIDI
-     * @param key A_MINOR, C_MAJOR, etc.
-     * @param temperature Sampling temperature (>1 = more creative)
-     * @param topK Keep top-K candidates
-     * @param topP Nucleus sampling threshold
-     * @param repetitionPenalty Penalize repeating tokens
-     * @param maxLen Maximum sequence length
-     * @param targetSeconds Target duration estimate
-     * @param maxMelodyLeap Max semitones between notes (melody only)
-     * @param harmonyBias Boost notes in key
-     */
-    GenerationResult generateTokens(
-        const std::string& key,
-        int seed,
-        float temperature,
-        int topK,
-        float topP,
-        float repetitionPenalty,
-        int noRepeatNgramSize,
-        int maxMelodyLeap,
-        float harmonyBias,
-        int maxLen,
-        float targetSeconds,
-        float velocityFeel,
-        float grooveFeel,
-        int maxPolyphony,
-        int minBodyTokens);
+    struct GenerationParams
+    {
+        juce::String key = "C_MAJOR"; // free-form, mapped to (sf, mi)
+        int seed = 42;
+        float temperature = 1.0f;
+        int topK = 20;
+        float topP = 0.94f;
+        int maxLen = 256;          // total midi steps
+        float bpm = 120.0f;
+        bool disableControlChange = false;
+        bool disablePatchChange = false;
+    };
 
-    bool isLoaded() const { return modelLoaded; }
-    bool isVocabularyLoaded() const { return !token2id.empty() && !id2token.empty() && bosId >= 0; }
-    juce::String getStatusText() const { return statusText; }
+    GenerationResult generateMidi(const GenerationParams& params);
+
+    void cancel() { abortFlag.store(true); }
+
+    bool isLoaded() const;
+    juce::String getStatusText() const;
 
 private:
-    bool modelLoaded = false;
-    juce::String statusText = "Initializing...";
-    void loadCheckpoint();
-    void loadVocabulary();
+    void tryLoadFromDefaultLocations();
 
-    bool loadVocabJsonFile(const juce::File& vocabPath, std::string& errorOut);
-    juce::File findModelFile() const;
-    juce::File findVocabFile() const;
+    std::unique_ptr<skytnt::Runtime> runtime;
+    juce::String statusText { "Initialising..." };
+    std::atomic<bool> abortFlag { false };
 
-    // Vocab / conditioning
-    std::unordered_map<std::string, int> token2id;
-    std::unordered_map<int, std::string> id2token;
-    std::unordered_map<std::string, int> genreTokenToIndex;
-    std::vector<int> bannedIds;
-    std::vector<std::pair<int, int>> timeShiftIdSteps; // (id, steps)
-    std::vector<std::pair<int, int>> velocityIdBins;   // (id, bin)
-    std::vector<int> noteOnIds;
-    std::vector<int> noteOffIds;
-    std::unordered_map<int, int> noteOnPitchToId;
-    std::unordered_map<int, int> noteOffPitchToId;
-    int bosId = -1;
-    int eosId = -1;
-    int unkId = -1;
-
-#if MIDI_GEN_USE_TORCH
-    torch::jit::Module module;
-#endif
+    static juce::File findArtifact(const char* relativePath);
 };

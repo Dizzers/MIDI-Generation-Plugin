@@ -1,581 +1,154 @@
 #include "ModelInference.h"
-#include <juce_core/juce_core.h>
+#include "SkyTNTRuntime.h"
 
-#if MIDI_GEN_USE_TORCH
-    #include <torch/script.h>
-    #include <torch/torch.h>
-#endif
+#include <utility>
 
 namespace
 {
-    juce::File findBinFileNearby(const juce::String& filename)
-    {
-        const auto tryPath = [&](const juce::File& base) -> juce::File
-        {
-            auto f = base.getChildFile("bin").getChildFile(filename);
-            return f.existsAsFile() ? f : juce::File();
-        };
+struct KeySpec { const char* name; int sf; int mi; };
 
-        {
-            auto f = tryPath(juce::File::getCurrentWorkingDirectory());
-            if (f.existsAsFile())
-                return f;
-        }
+const KeySpec kKeyTable[] = {
+    {"C_MAJOR", 0, 0},   {"G_MAJOR", 1, 0},   {"D_MAJOR", 2, 0},  {"A_MAJOR", 3, 0},
+    {"E_MAJOR", 4, 0},   {"B_MAJOR", 5, 0},   {"F_SHARP_MAJOR", 6, 0},
+    {"C_SHARP_MAJOR", 7, 0},
+    {"F_MAJOR", -1, 0},  {"B_FLAT_MAJOR", -2, 0}, {"E_FLAT_MAJOR", -3, 0},
+    {"A_FLAT_MAJOR", -4, 0},
+    {"A_MINOR", 0, 1},   {"E_MINOR", 1, 1},   {"B_MINOR", 2, 1},
+    {"F_SHARP_MINOR", 3, 1}, {"C_SHARP_MINOR", 4, 1},
+    {"G_SHARP_MINOR", 5, 1}, {"D_SHARP_MINOR", 6, 1}, {"A_SHARP_MINOR", 7, 1},
+    {"D_MINOR", -1, 1},  {"G_MINOR", -2, 1},  {"C_MINOR", -3, 1},  {"F_MINOR", -4, 1}
+};
 
-        {
-            auto exe = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
-            auto dir = exe.getParentDirectory();
-            for (int i = 0; i < 8; ++i)
-            {
-                auto f = tryPath(dir);
-                if (f.existsAsFile())
-                    return f;
-                dir = dir.getParentDirectory();
-            }
-        }
-
-        return {};
-    }
-
-#if MIDI_GEN_USE_TORCH
-    torch::Tensor topKTopPFilter(torch::Tensor logits, int topK, double topP)
-    {
-        // logits: (V)
-        auto filtered = logits.clone();
-        const int64_t vocab = filtered.size(0);
-
-        if (topK > 0)
-        {
-            const int64_t k = std::min<int64_t>(topK, vocab);
-            auto topk = std::get<0>(filtered.topk(k));
-            auto threshold = topk.index({k - 1});
-            filtered = torch::where(filtered < threshold, torch::full_like(filtered, -INFINITY), filtered);
-        }
-
-        if (topP < 1.0)
-        {
-            auto sortPair = filtered.sort(/*dim=*/0, /*descending=*/true);
-            auto sortedLogits = std::get<0>(sortPair);
-            auto sortedIdx = std::get<1>(sortPair);
-            auto probs = torch::softmax(sortedLogits, 0);
-            auto cumulative = torch::cumsum(probs, 0);
-            auto removeMask = cumulative > topP;
-            if (removeMask.numel() > 1)
-            {
-                auto shifted = removeMask.clone();
-                shifted.index_put_({torch::indexing::Slice(1, torch::indexing::None)}, removeMask.index({torch::indexing::Slice(0, -1)}));
-                shifted.index_put_({0}, false);
-                removeMask = shifted;
-            }
-            sortedLogits.index_put_({removeMask}, -INFINITY);
-            filtered = torch::full_like(filtered, -INFINITY);
-            filtered.scatter_(0, sortedIdx, sortedLogits);
-        }
-
-        return filtered;
-    }
-#endif
+bool keyToSfMi(const juce::String& key, int& sf, int& mi)
+{
+    for (const auto& k : kKeyTable)
+        if (key == k.name) { sf = k.sf; mi = k.mi; return true; }
+    return false;
 }
+} // namespace
 
 ModelInference::ModelInference()
+    : runtime(std::make_unique<skytnt::Runtime>())
 {
-    statusText = "Initializing...";
-    loadCheckpoint();
-    loadVocabulary();
-    if (modelLoaded && isVocabularyLoaded())
-        statusText = "Model ready";
-    DBG("ModelInference initialized: " << statusText);
+    tryLoadFromDefaultLocations();
 }
 
-ModelInference::~ModelInference()
-{
-    DBG("ModelInference destroyed");
-}
+ModelInference::~ModelInference() = default;
 
-void ModelInference::loadCheckpoint()
+juce::File ModelInference::findArtifact(const char* relativePath)
 {
-#if MIDI_GEN_USE_TORCH
-    auto modelPath = findModelFile();
-    if (!modelPath.existsAsFile())
+    // Search up to project root for an artifacts/ folder. The plugin can also
+    // override locations via env vars (handy on dev boxes).
+    auto envOverride = juce::SystemStats::getEnvironmentVariable("MIDIGEN_ARTIFACT_DIR", {});
+    if (envOverride.isNotEmpty())
     {
-        DBG("ModelInference: model file not found");
-        modelLoaded = false;
-        statusText = "Model file not found (bin/model_best.ts.pt)";
+        juce::File f = juce::File(envOverride).getChildFile(relativePath);
+        if (f.existsAsFile()) return f;
+    }
+    const std::vector<juce::File> roots {
+        juce::File::getSpecialLocation(juce::File::currentExecutableFile).getParentDirectory(),
+        juce::File::getSpecialLocation(juce::File::currentApplicationFile).getParentDirectory(),
+        juce::File::getCurrentWorkingDirectory()
+    };
+    for (auto root : roots)
+    {
+        for (int i = 0; i < 8 && root.exists(); ++i)
+        {
+            juce::File candidate = root.getChildFile("artifacts").getChildFile(relativePath);
+            if (candidate.existsAsFile()) return candidate;
+            candidate = root.getChildFile("plugin/juce/bin").getChildFile(relativePath);
+            if (candidate.existsAsFile()) return candidate;
+            candidate = root.getChildFile("bin").getChildFile(relativePath);
+            if (candidate.existsAsFile()) return candidate;
+            root = root.getParentDirectory();
+        }
+    }
+    return {};
+}
+
+void ModelInference::tryLoadFromDefaultLocations()
+{
+    juce::File baseFile  = findArtifact("onnx/model_base.onnx");
+    juce::File tokenFile = findArtifact("onnx/model_token.onnx");
+    juce::File tokFile   = findArtifact("tokenizer/tokenizer_config.json");
+
+    if (!baseFile.existsAsFile() || !tokenFile.existsAsFile())
+    {
+        statusText = "ONNX models not found. Drop model_base.onnx + model_token.onnx into artifacts/onnx/";
         return;
     }
 
-    try
-    {
-        module = torch::jit::load(modelPath.getFullPathName().toStdString());
-        module.eval();
-        modelLoaded = true;
-        statusText = "Model loaded";
-        DBG("ModelInference: loaded model " << modelPath.getFullPathName());
-    }
-    catch (const c10::Error& e)
-    {
-        DBG("ModelInference: torch::jit::load failed: " << e.what());
-        modelLoaded = false;
-        statusText = "Model load failed (TorchScript)";
-    }
-#else
-    DBG("ModelInference: built without LibTorch (USE_TORCH=OFF)");
-    modelLoaded = false;
-    statusText = "Built without LibTorch (USE_TORCH=OFF)";
-#endif
+    juce::String err;
+    if (!runtime->loadModels(baseFile, tokenFile, tokFile, err))
+        statusText = "Load failed: " + err;
+    else
+        statusText = runtime->getStatus();
 }
 
-void ModelInference::loadVocabulary()
+bool ModelInference::isLoaded() const
 {
-    std::string error;
-    auto vocabPath = findVocabFile();
-    if (!vocabPath.existsAsFile())
-    {
-        DBG("ModelInference: vocab.json not found");
-        if (statusText == "Model ready" || statusText == "Model loaded" || statusText == "Initializing...")
-            statusText = "vocab.json not found (bin/vocab.json)";
-        return;
-    }
-    if (!loadVocabJsonFile(vocabPath, error))
-    {
-        DBG("ModelInference: failed to load vocab.json: " << error);
-        statusText = "vocab.json parse failed";
-        return;
-    }
-    DBG("ModelInference: vocabulary loaded, size=" << (int)token2id.size());
-    if (modelLoaded)
-        statusText = "Model ready";
+    return runtime && runtime->isLoaded();
 }
 
-ModelInference::GenerationResult ModelInference::generateTokens(
-    const std::string& key,
-    int seed,
-    float temperature,
-    int topK,
-    float topP,
-    float repetitionPenalty,
-    int noRepeatNgramSize,
-    int maxMelodyLeap,
-    float harmonyBias,
-    int maxLen,
-    float targetSeconds,
-    float velocityFeel,
-    float grooveFeel,
-    int maxPolyphony,
-    int minBodyTokens)
+juce::String ModelInference::getStatusText() const
 {
-    GenerationResult result;
-    
-    if (!modelLoaded)
-    {
-        result.errorMessage = "Model not loaded (or built without LibTorch)";
-        result.success = false;
-        return result;
-    }
-
-    if (token2id.empty() || id2token.empty() || bosId < 0)
-    {
-        result.errorMessage = "Vocabulary not loaded";
-        result.success = false;
-        return result;
-    }
-
-#if !MIDI_GEN_USE_TORCH
-    (void)key; (void)seed; (void)temperature; (void)topK; (void)topP;
-    (void)repetitionPenalty; (void)noRepeatNgramSize; (void)maxMelodyLeap;
-    (void)harmonyBias; (void)maxLen; (void)targetSeconds;
-    (void)velocityFeel; (void)grooveFeel; (void)maxPolyphony; (void)minBodyTokens;
-    result.errorMessage = "Built without LibTorch";
-    result.success = false;
-    return result;
-#else
-    // Full generation mode: use a fixed genre token unless/until we expose an explicit Genre parameter.
-    const std::string genreToken = "<GENRE_TRAP>";
-
-    // Map UI key like "C_MAJOR" -> vocab key token like "<KEY_C_MAJ>"
-    auto keyToken = std::string("<KEY_UNKNOWN>");
-    {
-        auto upper = juce::String(key).toUpperCase();
-        if (upper.endsWith("_MAJOR"))
-            upper = upper.replace("_MAJOR", "_MAJ");
-        if (upper.endsWith("_MINOR"))
-            upper = upper.replace("_MINOR", "_MIN");
-        keyToken = "<KEY_" + upper.toStdString() + ">";
-        if (token2id.find(keyToken) == token2id.end())
-            keyToken = "<KEY_UNKNOWN>";
-    }
-
-    auto itGenre = token2id.find(genreToken);
-    if (itGenre == token2id.end())
-        itGenre = token2id.find("<GENRE_TRAP>");
-
-    int genreIndex = 0;
-    {
-        auto itIdx = genreTokenToIndex.find(itGenre->first);
-        genreIndex = (itIdx != genreTokenToIndex.end()) ? itIdx->second : 0;
-    }
-
-    std::vector<int64_t> generated;
-    generated.reserve((size_t)maxLen + 8);
-    generated.push_back((int64_t)bosId);
-    generated.push_back((int64_t)itGenre->second);
-
-    auto itKey = token2id.find(keyToken);
-    if (itKey != token2id.end())
-        generated.push_back((int64_t)itKey->second);
-
-    // Generation loop (single-sample)
-    const int contextMax = 512; // matches model max_len in many configs; we clamp anyway
-    double elapsedSeconds = 0.0;
-    const double timeShiftResolution = 0.05;
-    const int prefixLen = (int)generated.size();
-    const int safeMaxPoly = juce::jlimit(1, 64, maxPolyphony);
-    const int safeMinBody = juce::jlimit(0, 1024, minBodyTokens);
-
-    std::unordered_set<int> activePitches;
-
-    // Deterministic sampling per-request
-    torch::manual_seed((uint64_t)juce::jmax(0, seed));
-
-    for (int step = 0; step < maxLen; ++step)
-    {
-        // Context window
-        const int64_t start = (int64_t)std::max<int>(0, (int)generated.size() - contextMax);
-        const int64_t T = (int64_t)generated.size() - start;
-
-        auto options = torch::TensorOptions().dtype(torch::kInt64).device(torch::kCPU);
-        auto x = torch::empty({1, T}, options);
-        auto* data = x.data_ptr<int64_t>();
-        for (int64_t i = 0; i < T; ++i)
-            data[i] = generated[(size_t)start + (size_t)i];
-
-        auto g = torch::tensor({genreIndex}, torch::TensorOptions().dtype(torch::kInt64).device(torch::kCPU));
-
-        torch::NoGradGuard guard;
-        auto out = module.forward({x, g}).toTensor(); // (1, T, V)
-        auto logits = out.index({0, T - 1});          // (V)
-
-        // Temperature
-        const double temp = std::max(1e-5, (double)temperature);
-        logits = logits / temp;
-
-        // Repetition penalty (simple set-based window)
-        if (repetitionPenalty > 1.0f)
-        {
-            const int window = 128;
-            std::unordered_set<int64_t> recent;
-            for (int i = (int)generated.size() - 1; i >= 0 && (int)recent.size() < window && i >= 0; --i)
-                recent.insert(generated[(size_t)i]);
-
-            for (auto tok : recent)
-            {
-                auto v = logits.index({tok});
-                logits.index_put_({tok}, torch::where(v >= 0, v / repetitionPenalty, v * repetitionPenalty));
-            }
-        }
-
-        // Ban special tokens and genre/key tokens, etc.
-        for (int id : bannedIds)
-            logits.index_put_({id}, -INFINITY);
-
-        // Prevent early EOS
-        const int bodyLen = (int)generated.size() - prefixLen;
-        if (eosId >= 0 && bodyLen < safeMinBody)
-            logits.index_put_({eosId}, -INFINITY);
-
-        // Polyphony constraints (similar spirit to python generate.py)
-        if ((int)activePitches.size() >= safeMaxPoly && !noteOnIds.empty())
-        {
-            for (int id : noteOnIds)
-                logits.index_put_({id}, -INFINITY);
-        }
-        for (int pitch : activePitches)
-        {
-            auto itOn = noteOnPitchToId.find(pitch);
-            if (itOn != noteOnPitchToId.end())
-                logits.index_put_({itOn->second}, -INFINITY);
-        }
-        if (!noteOffPitchToId.empty())
-        {
-            // Disallow NOTE_OFF for pitches that are not active.
-            // (For performance we only do this when maxPolyphony constraint is active.)
-            // We'll approximate by banning all NOTE_OFF except those for active pitches.
-            // Start by banning all, then unban active.
-            for (int id : noteOffIds)
-                logits.index_put_({id}, -INFINITY);
-            for (int pitch : activePitches)
-            {
-                auto itOff = noteOffPitchToId.find(pitch);
-                if (itOff != noteOffPitchToId.end())
-                    logits.index_put_({itOff->second}, 0.0); // unban by resetting; will be re-filtered by top-k/p later
-            }
-        }
-
-        // Feel controls: bias token groups to steer the model.
-        // velocityFeel: >0 prefers higher VELOCITY bins, <0 prefers lower bins.
-        if (!velocityIdBins.empty() && std::abs(velocityFeel) > 1e-4f)
-        {
-            const float amount = juce::jlimit(-1.0f, 1.0f, velocityFeel);
-            for (const auto& kv : velocityIdBins)
-            {
-                const int id = kv.first;
-                const int bin = kv.second; // 0..7
-                const float t = (float)bin / 7.0f;
-                const float bias = amount * (t - 0.5f) * 2.0f; // [-1..+1]
-                logits.index_put_({id}, logits.index({id}) + bias);
-            }
-        }
-
-        // grooveFeel: >0 prefers shorter TIME_SHIFT steps (denser), <0 prefers longer (sparser).
-        if (!timeShiftIdSteps.empty() && std::abs(grooveFeel) > 1e-4f)
-        {
-            const float amount = juce::jlimit(-1.0f, 1.0f, grooveFeel);
-            // Normalize steps into [0..1] using a robust clamp.
-            for (const auto& kv : timeShiftIdSteps)
-            {
-                const int id = kv.first;
-                const int steps = kv.second;
-                const float t = juce::jlimit(0.0f, 1.0f, (float)steps / 32.0f);
-                const float preferShort = (1.0f - t); // 1 for short, 0 for long
-                const float bias = amount * (preferShort - 0.5f) * 1.6f;
-                logits.index_put_({id}, logits.index({id}) + bias);
-            }
-        }
-
-        // No-repeat ngram (basic)
-        if (noRepeatNgramSize > 1 && (int)generated.size() >= (noRepeatNgramSize - 1))
-        {
-            const int n = noRepeatNgramSize;
-            std::vector<int64_t> prefix(generated.end() - (n - 1), generated.end());
-            for (size_t i = 0; i + (size_t)n <= generated.size(); ++i)
-            {
-                bool match = true;
-                for (int j = 0; j < n - 1; ++j)
-                {
-                    if (generated[i + (size_t)j] != prefix[(size_t)j])
-                    {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match)
-                {
-                    int64_t banned = generated[i + (size_t)(n - 1)];
-                    logits.index_put_({banned}, -INFINITY);
-                }
-            }
-        }
-
-        // Top-k / top-p filter
-        logits = topKTopPFilter(logits, topK, (double)topP);
-
-        auto probs = torch::softmax(logits, 0);
-        if (torch::isnan(probs).any().item<bool>() || probs.sum().item<double>() <= 0.0)
-        {
-            auto next = logits.argmax().item<int64_t>();
-            generated.push_back(next);
-        }
-        else
-        {
-            auto next = torch::multinomial(probs, 1).item<int64_t>();
-            generated.push_back(next);
-        }
-
-        const int last = (int)generated.back();
-        if (eosId >= 0 && last == eosId)
-            break;
-
-        // Update active pitch set from sampled token
-        auto itTok2 = id2token.find(last);
-        if (itTok2 != id2token.end())
-        {
-            const auto& name = itTok2->second;
-            if (name.rfind("NOTE_ON_", 0) == 0)
-            {
-                const auto pos = name.find_last_of('_');
-                if (pos != std::string::npos)
-                {
-                    try { activePitches.insert(std::stoi(name.substr(pos + 1), nullptr, 16)); } catch (...) {}
-                }
-            }
-            else if (name.rfind("NOTE_OFF_", 0) == 0)
-            {
-                const auto pos = name.find_last_of('_');
-                if (pos != std::string::npos)
-                {
-                    try { activePitches.erase(std::stoi(name.substr(pos + 1), nullptr, 16)); } catch (...) {}
-                }
-            }
-        }
-
-        // Track approximate duration to stop near targetSeconds (based on TIME_SHIFT tokens)
-        auto itTok = id2token.find(last);
-        if (itTok != id2token.end())
-        {
-            const auto& name = itTok->second;
-            if (name.rfind("TIME_SHIFT_", 0) == 0)
-            {
-                const auto pos = name.find_last_of('_');
-                if (pos != std::string::npos)
-                {
-                    try
-                    {
-                        int steps = std::stoi(name.substr(pos + 1), nullptr, 16);
-                        elapsedSeconds += (double)steps * timeShiftResolution;
-                    }
-                    catch (...) {}
-                }
-            }
-        }
-
-        if (targetSeconds > 0.0f && elapsedSeconds >= (double)targetSeconds && (int)generated.size() > 64)
-        {
-            if (eosId >= 0)
-                generated.push_back((int64_t)eosId);
-            break;
-        }
-    }
-
-    result.tokenIds.reserve(generated.size());
-    for (auto id : generated)
-        result.tokenIds.push_back((int)id);
-    result.success = true;
-    return result;
-#endif
+    if (runtime && runtime->isLoaded()) return runtime->getStatus();
+    return statusText;
 }
 
-juce::File ModelInference::findModelFile() const
+ModelInference::GenerationResult ModelInference::generateMidi(const GenerationParams& p)
 {
-    auto f = findBinFileNearby("model_best.ts.pt");
-    if (f.existsAsFile())
-        return f;
-    return findBinFileNearby("model_best.pt");
-}
-
-juce::File ModelInference::findVocabFile() const
-{
-    return findBinFileNearby("vocab.json");
-}
-
-bool ModelInference::loadVocabJsonFile(const juce::File& vocabPath, std::string& errorOut)
-{
-    errorOut.clear();
-    token2id.clear();
-    id2token.clear();
-    genreTokenToIndex.clear();
-    bannedIds.clear();
-    timeShiftIdSteps.clear();
-    velocityIdBins.clear();
-    noteOnIds.clear();
-    noteOffIds.clear();
-    noteOnPitchToId.clear();
-    noteOffPitchToId.clear();
-
-    auto jsonText = vocabPath.loadFileAsString();
-    auto parsed = juce::JSON::parse(jsonText);
-    if (parsed.isVoid() || !parsed.isObject())
+    GenerationResult r;
+    if (!runtime || !runtime->isLoaded())
     {
-        errorOut = "invalid json";
-        return false;
+        r.errorMessage = "Model not loaded: " + getStatusText().toStdString();
+        return r;
     }
 
-    auto* obj = parsed.getDynamicObject();
-    if (obj == nullptr)
+    abortFlag.store(false);
+
+    skytnt::Runtime::GenerateOptions opt;
+    opt.maxLen = juce::jmax(8, p.maxLen);
+    opt.temperature = juce::jlimit(0.05f, 4.0f, p.temperature);
+    opt.topP = juce::jlimit(0.05f, 1.0f, p.topP);
+    opt.topK = juce::jlimit(1, 1024, p.topK);
+    opt.seed = (uint32_t) p.seed;
+    opt.disablePatchChange = p.disablePatchChange;
+    opt.disableControlChange = p.disableControlChange;
+    opt.abortFlag = &abortFlag;
+
+    // Setup events: tempo and (V2 only) key signature.
+    if (p.bpm > 0.0f)
     {
-        errorOut = "not an object";
-        return false;
+        int bpm = juce::jlimit(1, 383, (int) std::round(p.bpm));
+        // event order: time1, time2, track, bpm
+        opt.setupEvents.emplace_back("set_tempo", std::vector<int>{ 0, 0, 0, bpm });
     }
-
-    auto vToken2Id = obj->getProperty("token2id");
-    auto vId2Token = obj->getProperty("id2token");
-    if (!vToken2Id.isObject() || !vId2Token.isObject())
+    int sf = 0, mi = 0;
+    if (keyToSfMi(p.key, sf, mi))
     {
-        errorOut = "missing token2id/id2token";
-        return false;
-    }
-
-    auto* token2idObj = vToken2Id.getDynamicObject();
-    auto* id2tokenObj = vId2Token.getDynamicObject();
-    if (!token2idObj || !id2tokenObj)
-    {
-        errorOut = "dynamic object missing";
-        return false;
-    }
-
-    // token2id
-    for (const auto& entry : token2idObj->getProperties())
-        token2id.emplace(entry.name.toString().toStdString(), (int)entry.value.toString().getIntValue());
-
-    // id2token
-    for (const auto& entry : id2tokenObj->getProperties())
-        id2token.emplace(entry.name.toString().getIntValue(), entry.value.toString().toStdString());
-
-    auto it = token2id.find("<BOS>");
-    bosId = (it != token2id.end()) ? it->second : -1;
-    it = token2id.find("<EOS>");
-    eosId = (it != token2id.end()) ? it->second : -1;
-    it = token2id.find("<UNK>");
-    unkId = (it != token2id.end()) ? it->second : -1;
-
-    // Genre index mapping must match python (sorted genre tokens).
-    std::vector<std::string> genres;
-    genres.reserve(8);
-    for (const auto& kv : token2id)
-        if (kv.first.rfind("<GENRE_", 0) == 0)
-            genres.push_back(kv.first);
-    std::sort(genres.begin(), genres.end());
-    for (size_t idx = 0; idx < genres.size(); ++idx)
-        genreTokenToIndex.emplace(genres[idx], (int)idx);
-
-    // Precompute banned ids similar to python generate.py
-    for (const auto& kv : token2id)
-    {
-        const auto& tok = kv.first;
-        const int id = kv.second;
-        if (tok == "<PAD>" || tok == "<BOS>" || tok == "<UNK>" || tok.rfind("<GENRE_", 0) == 0 || tok.rfind("<KEY_", 0) == 0)
-            bannedIds.push_back(id);
-
-        if (tok.rfind("TIME_SHIFT_", 0) == 0)
+        if (runtime->getTokenizer().getVersion() == "v2")
         {
-            const auto pos = tok.find_last_of('_');
-            if (pos != std::string::npos)
-            {
-                try { timeShiftIdSteps.emplace_back(id, std::stoi(tok.substr(pos + 1), nullptr, 16)); } catch (...) {}
-            }
-        }
-        else if (tok.rfind("VELOCITY_", 0) == 0)
-        {
-            const auto pos = tok.find_last_of('_');
-            if (pos != std::string::npos)
-            {
-                try { velocityIdBins.emplace_back(id, std::stoi(tok.substr(pos + 1), nullptr, 16)); } catch (...) {}
-            }
-        }
-        else if (tok.rfind("NOTE_ON_", 0) == 0)
-        {
-            noteOnIds.push_back(id);
-            const auto pos = tok.find_last_of('_');
-            if (pos != std::string::npos)
-            {
-                try { noteOnPitchToId.emplace(std::stoi(tok.substr(pos + 1), nullptr, 16), id); } catch (...) {}
-            }
-        }
-        else if (tok.rfind("NOTE_OFF_", 0) == 0)
-        {
-            noteOffIds.push_back(id);
-            const auto pos = tok.find_last_of('_');
-            if (pos != std::string::npos)
-            {
-                try { noteOffPitchToId.emplace(std::stoi(tok.substr(pos + 1), nullptr, 16), id); } catch (...) {}
-            }
+            opt.setupEvents.emplace_back(
+                "key_signature",
+                std::vector<int>{ 0, 0, 0, sf + 7, mi });
         }
     }
+    // Default acoustic-grand patch on channel 0 so the stream produces audible piano.
+    opt.setupEvents.emplace_back("patch_change", std::vector<int>{ 0, 0, 0, 0, 0 });
 
-    if (bosId < 0)
+    std::vector<std::vector<int>> grid;
+    juce::String err;
+    if (!runtime->generate(opt, grid, err))
     {
-        errorOut = "missing <BOS>";
-        return false;
+        r.errorMessage = err.toStdString();
+        return r;
     }
 
-    return true;
+    auto sequence = runtime->getTokenizer().detokenize(grid, p.bpm);
+    r.messages.reserve((size_t) sequence.getNumEvents());
+    for (int i = 0; i < sequence.getNumEvents(); ++i)
+        r.messages.push_back(sequence.getEventPointer(i)->message);
+    r.success = true;
+    return r;
 }

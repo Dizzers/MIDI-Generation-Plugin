@@ -1,6 +1,5 @@
 #include "GeneratorThread.h"
 #include "ModelInference.h"
-#include "MidiGenerator.h"
 #include "MidiPostProcessor.h"
 
 GeneratorThread::GeneratorThread(PluginProcessor& proc, ModelInference& model)
@@ -15,44 +14,34 @@ GeneratorThread::~GeneratorThread()
 
 void GeneratorThread::run()
 {
-    while (!threadShouldExit()) {
-        // Wait for generation request
+    while (!threadShouldExit())
+    {
         wakeupEvent.wait(100);
-        
-        if (threadShouldExit())
-            break;
+        if (threadShouldExit()) break;
 
         {
             juce::ScopedLock lock(paramLock);
-            if (!shouldGenerate)
-                continue;
+            if (!shouldGenerate) continue;
             isRunning = true;
         }
 
-        DBG("Generation thread: starting token generation");
+        DBG("Generation thread: invoking SkyTNT runtime");
 
-        // Generate tokens
-        auto result = modelInference.generateTokens(
-            currentParams.key.toStdString(),
-            currentParams.seed,
-            currentParams.temperature,
-            currentParams.topK,
-            currentParams.topP,
-            currentParams.repetitionPenalty,
-            currentParams.noRepeatNgramSize,
-            currentParams.maxMelodyLeap,
-            currentParams.harmonyBias,
-            currentParams.maxLen,
-            currentParams.targetSeconds,
-            currentParams.velocityFeel,
-            currentParams.grooveFeel,
-            currentParams.maxPolyphony,
-            currentParams.minBodyTokens);
+        ModelInference::GenerationParams mp;
+        mp.key            = currentParams.key;
+        mp.seed           = currentParams.seed;
+        mp.temperature    = currentParams.temperature;
+        mp.topK           = currentParams.topK;
+        mp.topP           = currentParams.topP;
+        mp.maxLen         = currentParams.maxLen;
+        mp.bpm            = currentParams.bpm;
+        mp.disablePatchChange = false;
+        mp.disableControlChange = false;
 
-        if (result.success) {
-            // Convert tokens to MIDI
-            auto midiMessages = MidiGenerator::convertTokensToMidi(result.tokenIds);
+        auto res = modelInference.generateMidi(mp);
 
+        if (res.success)
+        {
             MidiPostProcessor::Params post;
             post.seed = currentParams.seed;
             post.bpm = currentParams.bpm;
@@ -64,11 +53,13 @@ void GeneratorThread::run()
             post.velocityMin = currentParams.velocityMin;
             post.velocityMax = currentParams.velocityMax;
 
-            midiMessages = MidiPostProcessor::process(midiMessages, post);
-            processor.queueMidiOutput(midiMessages);
-            DBG("Generated " << midiMessages.size() << " MIDI messages");
-        } else {
-            DBG("Token generation failed: " << result.errorMessage);
+            auto post_msgs = MidiPostProcessor::process(res.messages, post);
+            processor.queueMidiOutput(post_msgs);
+            DBG("Generated " << post_msgs.size() << " MIDI messages");
+        }
+        else
+        {
+            DBG("SkyTNT generation failed: " << res.errorMessage);
         }
 
         {
@@ -87,13 +78,15 @@ void GeneratorThread::startGeneration(const PluginProcessor::GenerationParams& p
         shouldGenerate = true;
     }
     wakeupEvent.signal();
-    DBG("Generation requested");
 }
 
 void GeneratorThread::cancelGeneration()
 {
-    juce::ScopedLock lock(paramLock);
-    shouldGenerate = false;
+    {
+        juce::ScopedLock lock(paramLock);
+        shouldGenerate = false;
+    }
+    modelInference.cancel();
 }
 
 bool GeneratorThread::isGenerating() const

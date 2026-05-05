@@ -201,7 +201,7 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 
 bool PluginProcessor::isModelReady() const
 {
-    return modelInference && modelInference->isLoaded() && modelInference->isVocabularyLoaded();
+    return modelInference && modelInference->isLoaded();
 }
 
 juce::String PluginProcessor::getModelStatusText() const

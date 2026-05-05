@@ -46,9 +46,29 @@ checkpoints/*.pth
 checkpoints/*.pt
 checkpoints/*.ckpt
 checkpoints/*.bin
+checkpoints/skytnt/
+checkpoints/lightning_ckpt/
+checkpoints/lightning_logs/
 checkpoints/history.json
 checkpoints/generation_metrics.json
 checkpoints/plots/
+
+# =========================
+# SkyTNT-export artefacts (large)
+# =========================
+artifacts/onnx/*.onnx
+artifacts/onnx/*.onnx_data
+artifacts/tokenizer/config.json
+artifacts/examples/*.mid
+!artifacts/.gitkeep
+!artifacts/onnx/.gitkeep
+!artifacts/tokenizer/.gitkeep
+!artifacts/examples/.gitkeep
+
+# Vendored upstream cache
+skytnt_adapter/midi_model_upstream/__pycache__/
+skytnt_adapter/midi_model_upstream/lightning_logs/
+skytnt_adapter/midi_model_upstream/sample/
 
 # Generated audio/MIDI
 generated/
