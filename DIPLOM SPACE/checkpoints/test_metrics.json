@@ -1,0 +1,52 @@
+{
+  "repeat_rate": 0.014936574974464253,
+  "unique_token_ratio": 0.16056637804693072,
+  "rhythm_diversity": 0.11854706637411934,
+  "scale_coverage": 0.9909651693330669,
+  "loss": 0.6543242851560584,
+  "accuracy": 0.8398839008764876,
+  "perplexity": 1.9238421094026334,
+  "samples_for_music_metrics": 956,
+  "top1_accuracy": 0.8399007953938787,
+  "top5_accuracy": 0.9675794211262561,
+  "category_micro_f1": 0.9568716760037033,
+  "category_macro_f1": 0.8842614889144897,
+  "category_weighted_f1": 0.9568013548851013,
+  "category_macro_precision": 0.880031406879425,
+  "category_weighted_precision": 0.9568314552307129,
+  "category_macro_recall": 0.889121413230896,
+  "category_weighted_recall": 0.9568716883659363,
+  "pitch_class_iou": 0.9370324207405808,
+  "per_category": {
+    "note_on": {
+      "precision": 1.0,
+      "recall": 0.999963641166687,
+      "f1": 0.9999818205833435,
+      "support": 82470
+    },
+    "note_off": {
+      "precision": 0.962483286857605,
+      "recall": 0.9775829911231995,
+      "f1": 0.9699743390083313,
+      "support": 82482
+    },
+    "time_shift": {
+      "precision": 0.9283846020698547,
+      "recall": 0.9024016261100769,
+      "f1": 0.9152087569236755,
+      "support": 47593
+    },
+    "velocity": {
+      "precision": 0.9287066459655762,
+      "recall": 0.9281322956085205,
+      "f1": 0.9284193515777588,
+      "support": 82471
+    },
+    "special": {
+      "precision": 0.5805824995040894,
+      "recall": 0.6375266313552856,
+      "f1": 0.6077235341072083,
+      "support": 938
+    }
+  }
+}
