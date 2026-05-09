@@ -36,7 +36,8 @@ import numpy as np
 import torch
 import lightning as pl
 from lightning.pytorch import Trainer
-from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
+from lightning.pytorch.utilities.rank_zero import rank_zero_only
 from torch.utils.data import DataLoader
 
 # Upstream modules (now importable thanks to skytnt_adapter.__init__)
@@ -58,7 +59,22 @@ class ExtendedTrainMIDIModel(TrainMIDIModel):
       val/f1_macro     – macro-averaged F1 (equal weight to rare tokens)
       val/recall_macro – macro-averaged recall
       val/prec_macro   – macro-averaged precision
+
+    At the end of each training epoch, prints a short summary and appends one
+    JSON line to ``<output>/epoch_metrics.jsonl`` (same folder as ``--output``).
     """
+
+    def training_step(self, batch, batch_idx):
+        loss = super().training_step(batch, batch_idx)
+        self.log(
+            "train/loss_epoch_avg",
+            loss,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=False,
+            sync_dist=True,
+        )
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x = batch[:, :-1].contiguous()
@@ -118,6 +134,59 @@ class ExtendedTrainMIDIModel(TrainMIDIModel):
             "val/prec_macro":  torch.tensor(prec_macro, dtype=torch.float32),
         }, sync_dist=True)
         return loss
+
+    @staticmethod
+    def _metrics_to_jsonable(raw: dict) -> dict[str, float | int | str]:
+        out: dict[str, float | int | str] = {}
+        for k, v in raw.items():
+            if not k.startswith(("train/", "val/")):
+                continue
+            if torch.is_tensor(v):
+                out[k] = float(v.detach().float().cpu().item())
+            elif isinstance(v, (float, int)):
+                out[k] = v
+            else:
+                try:
+                    out[k] = float(v)
+                except (TypeError, ValueError):
+                    out[k] = str(v)
+        return out
+
+    @rank_zero_only
+    def on_train_epoch_end(self) -> None:
+        trainer = self.trainer
+        if trainer is None:
+            return
+        flat = self._metrics_to_jsonable(dict(trainer.callback_metrics))
+        row = {
+            "epoch": int(self.current_epoch),
+            "global_step": int(self.global_step),
+            **flat,
+        }
+        root = Path(trainer.default_root_dir or ".")
+        log_path = root / "epoch_metrics.jsonl"
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+        t_loss = flat.get("train/loss_epoch_avg", flat.get("train/loss"))
+        v_loss = flat.get("val/loss")
+        parts = [
+            f"[finetune] epoch {self.current_epoch} end",
+            f"step={self.global_step}",
+        ]
+        if t_loss is not None:
+            parts.append(f"train_loss={t_loss:.6f}")
+        if v_loss is not None:
+            parts.append(f"val_loss={v_loss:.6f}")
+            for key in (
+                "val/acc",
+                "val/perplexity",
+                "val/f1_macro",
+                "val/top3_acc",
+            ):
+                if key in flat:
+                    parts.append(f"{key}={flat[key]:.4f}")
+        print(" | ".join(parts), flush=True)
 
 
 def _try_load_pretrained(model: TrainMIDIModel, source: str) -> None:
@@ -181,7 +250,19 @@ def main() -> None:
                         help="Pretrained source (HF Hub id / .ckpt / .safetensors / directory)")
     parser.add_argument("--output", type=str, default="checkpoints/skytnt",
                         help="Output directory for checkpoints + tokenizer config")
-    parser.add_argument("--data-val-split", type=int, default=64)
+    parser.add_argument(
+        "--data-val-split",
+        type=int,
+        default=64,
+        help="Upper cap on how many MIDI files go to validation (see also --val-fraction)",
+    )
+    parser.add_argument(
+        "--val-fraction",
+        type=float,
+        default=0.15,
+        help="Fraction of files for validation after shuffle (default 0.15). "
+        "Capped by --data-val-split and at least 1 train file remains.",
+    )
     parser.add_argument("--max-len", type=int, default=2048)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--batch-size-val", type=int, default=2)
@@ -206,6 +287,35 @@ def main() -> None:
     parser.add_argument("--quality", action="store_true", default=False)
     parser.add_argument("--resume", type=str, default="",
                         help="Resume Lightning ckpt path")
+    parser.add_argument(
+        "--ckpt-weights-only",
+        action="store_true",
+        help="Lightning checkpoints store only weights (smaller on disk; full ckpt needed for --resume)",
+    )
+    parser.add_argument(
+        "--no-save-last",
+        action="store_true",
+        help="Do not write last.ckpt (keeps only best; saves one large file on disk)",
+    )
+    parser.add_argument(
+        "--early-stop-patience",
+        type=int,
+        default=0,
+        help="Stop if val/loss does not improve for this many validation runs (0 = off)",
+    )
+    parser.add_argument(
+        "--min-file-bytes",
+        type=int,
+        default=3000,
+        help="Skip MIDI files smaller than this (bytes). Tiny files are often broken or empty.",
+    )
+    parser.add_argument(
+        "--max-file-bytes",
+        type=int,
+        default=384000,
+        help="Skip MIDI files larger than this (bytes). Raise if your corpus is mostly "
+        "long multi-track exports (may need smaller --max-len / batch if OOM or loader errors).",
+    )
 
     opt = parser.parse_args()
     os.makedirs(opt.output, exist_ok=True)
@@ -220,32 +330,56 @@ def main() -> None:
         print(f"[finetune] ERROR: no MIDI files found under {opt.data}", file=sys.stderr)
         sys.exit(2)
 
-    # Pre-filter files that are too small or too large to avoid DataLoader recursion errors
-    MIN_FILE_SIZE = 3000
-    MAX_FILE_SIZE = 384000
+    # Pre-filter by file size on disk (not musical length). Defaults drop tiny junk and
+    # very large exports that sometimes break loaders or blow memory after tokenization.
+    lo, hi = opt.min_file_bytes, opt.max_file_bytes
+    if lo < 0 or hi < lo:
+        print("[finetune] ERROR: need 0 <= --min-file-bytes <= --max-file-bytes", file=sys.stderr)
+        sys.exit(2)
     before = len(midi_files)
-    midi_files = [
-        p for p in midi_files
-        if MIN_FILE_SIZE <= os.path.getsize(p) <= MAX_FILE_SIZE
-    ]
+    midi_files = [p for p in midi_files if lo <= os.path.getsize(p) <= hi]
     removed = before - len(midi_files)
     if removed:
-        print(f"[finetune] filtered out {removed} files outside size range "
-              f"[{MIN_FILE_SIZE}, {MAX_FILE_SIZE}] bytes")
+        print(f"[finetune] filtered out {removed} files outside size range [{lo}, {hi}] bytes")
     if not midi_files:
         print(f"[finetune] ERROR: no valid MIDI files remain after size filtering", file=sys.stderr)
         sys.exit(2)
 
+    if not (0.0 < opt.val_fraction < 1.0):
+        print("[finetune] ERROR: --val-fraction must be between 0 and 1 (exclusive)", file=sys.stderr)
+        sys.exit(2)
+
     random.shuffle(midi_files)
-    val_n = min(opt.data_val_split, max(1, len(midi_files) // 20))
+    val_n = int(round(len(midi_files) * opt.val_fraction))
+    val_n = max(1, val_n)
+    val_n = min(val_n, opt.data_val_split, len(midi_files) - 1)
     train_files = midi_files[:-val_n]
     val_files = midi_files[-val_n:]
-    print(f"[finetune] dataset: train={len(train_files)} val={len(val_files)}")
+    print(
+        f"[finetune] dataset: train={len(train_files)} val={len(val_files)} "
+        f"(val_fraction={opt.val_fraction}, cap={opt.data_val_split})"
+    )
 
-    train_ds = MidiDataset(train_files, tokenizer, max_len=opt.max_len, aug=True,
-                           check_quality=opt.quality, rand_start=True)
-    val_ds = MidiDataset(val_files, tokenizer, max_len=opt.max_len, aug=False,
-                         check_quality=opt.quality, rand_start=False)
+    train_ds = MidiDataset(
+        train_files,
+        tokenizer,
+        max_len=opt.max_len,
+        min_file_size=opt.min_file_bytes,
+        max_file_size=opt.max_file_bytes,
+        aug=True,
+        check_quality=opt.quality,
+        rand_start=True,
+    )
+    val_ds = MidiDataset(
+        val_files,
+        tokenizer,
+        max_len=opt.max_len,
+        min_file_size=opt.min_file_bytes,
+        max_file_size=opt.max_file_bytes,
+        aug=False,
+        check_quality=opt.quality,
+        rand_start=False,
+    )
     train_dl = DataLoader(
         train_ds, batch_size=opt.batch_size, shuffle=True,
         num_workers=opt.workers, pin_memory=True,
@@ -296,11 +430,22 @@ def main() -> None:
         monitor="val/loss",
         mode="min",
         save_top_k=1,
-        save_last=True,
+        save_last=not opt.no_save_last,
+        save_weights_only=opt.ckpt_weights_only,
         auto_insert_metric_name=False,
         filename="best-epoch={epoch:02d}-val={val/loss:.4f}",
     )
     lr_monitor = LearningRateMonitor(logging_interval="step")
+    callbacks: list = [ckpt_callback, lr_monitor]
+    if opt.early_stop_patience > 0:
+        callbacks.append(
+            EarlyStopping(
+                monitor="val/loss",
+                mode="min",
+                patience=opt.early_stop_patience,
+                verbose=True,
+            )
+        )
 
     trainer = Trainer(
         default_root_dir=opt.output,
@@ -312,7 +457,7 @@ def main() -> None:
         max_steps=opt.max_step,
         val_check_interval=opt.val_step or None,
         log_every_n_steps=10,
-        callbacks=[ckpt_callback, lr_monitor],
+        callbacks=callbacks,
     )
     trainer.fit(model, train_dl, val_dl, ckpt_path=opt.resume or None)
 
