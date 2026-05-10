@@ -41,11 +41,25 @@ def sample_top_p_k(probs, p, k, generator=None):
     mask = np.zeros(probs_sort.shape[-1])
     mask[:k] = 1
     probs_sort = probs_sort * mask
-    probs_sort /= np.sum(probs_sort, axis=-1, keepdims=True)
+    axis_sum = np.sum(probs_sort, axis=-1, keepdims=True)
+    denom = np.maximum(axis_sum, 1e-12)
+    probs_sort = np.divide(probs_sort, denom, out=np.zeros_like(probs_sort), where=axis_sum > 0)
     shape = probs_sort.shape
     probs_sort_flat = probs_sort.reshape(-1, shape[-1])
     probs_idx_flat = probs_idx.reshape(-1, shape[-1])
-    next_token = np.stack([generator.choice(idxs, p=pvals) for pvals, idxs in zip(probs_sort_flat, probs_idx_flat)])
+    choices = []
+    for pvals, idxs in zip(probs_sort_flat, probs_idx_flat):
+        pv = np.clip(np.asarray(pvals, dtype=np.float64), 0.0, None)
+        s = float(pv.sum())
+        if s <= 0.0 or not np.isfinite(s):
+            choices.append(int(idxs[0]))
+            continue
+        pv = pv / s
+        st = float(pv.sum())
+        if not np.isclose(st, 1.0, rtol=0.0, atol=1e-8):
+            pv = pv / st
+        choices.append(int(generator.choice(idxs, p=pv)))
+    next_token = np.stack(choices)
     next_token = next_token.reshape(*shape[:-1])
     return next_token
 

@@ -8,19 +8,37 @@ from transformers import LlamaConfig, DynamicCache
 from midi_model import MIDIModel, config_name_list, MIDIModelConfig
 
 
+def _dynamic_cache_from_past_kv(past_kv):
+    """Build DynamicCache from legacy ``List[Tuple[k,v]]`` (HF >= ~4.58 dropped ``from_legacy_cache``)."""
+    if past_kv is None:
+        return None
+    if hasattr(DynamicCache, "from_legacy_cache"):
+        return DynamicCache.from_legacy_cache(past_kv)
+    return DynamicCache(past_kv)
+
+
+def _dynamic_cache_to_past_kv(cache):
+    """Legacy tuple-of-per-layer-(key,value) for ONNX I/O (HF >= ~4.58 dropped ``to_legacy_cache``)."""
+    if cache is None:
+        return None
+    if hasattr(cache, "to_legacy_cache"):
+        return cache.to_legacy_cache()
+    return tuple((layer.keys, layer.values) for layer in cache.layers)
+
+
 class MIDIModelBase(nn.Module):
     def __init__(self, model):
         super().__init__()
         self.net = model.net
 
     def forward(self, x, past_kv):
-        cache = DynamicCache.from_legacy_cache(past_kv)
+        cache = _dynamic_cache_from_past_kv(past_kv)
         x = self.net.embed_tokens(x)
         x = x.sum(dim=-2)
         x = self.net.forward(inputs_embeds=x,
                              past_key_values=cache,
                              use_cache=True)
-        return x.last_hidden_state, cache.to_legacy_cache()
+        return x.last_hidden_state, _dynamic_cache_to_past_kv(cache)
 
 
 class MIDIModelToken(nn.Module):
@@ -30,14 +48,14 @@ class MIDIModelToken(nn.Module):
         self.lm_head = model.lm_head
 
     def forward(self, hidden_state, x, past_kv):
-        cache = DynamicCache.from_legacy_cache(past_kv)
+        cache = _dynamic_cache_from_past_kv(past_kv)
         x = self.net_token.embed_tokens(x)
         x = torch.cat([hidden_state, x], dim=1)
         hidden_state = x
         hidden_state = self.net_token.forward(inputs_embeds=hidden_state,
                                               past_key_values=cache,
                                               use_cache=True).last_hidden_state
-        return self.lm_head(hidden_state), cache.to_legacy_cache()
+        return self.lm_head(hidden_state), _dynamic_cache_to_past_kv(cache)
 
 
 def export_onnx(model, model_inputs, input_names, output_names, dynamic_axes, meta_data, path):
@@ -47,7 +65,9 @@ def export_onnx(model, model_inputs, input_names, output_names, dynamic_axes, me
                       model_inputs,  # model input (or a tuple for multiple inputs)
                       path,  # where to save the model (can be a file or file-like object)
                       export_params=True,  # store the trained parameter weights inside the model file
-                      opset_version=14,  # the ONNX version to export the model to
+                      # PyTorch 2.x dynamo exporter targets opset >= 18; down-converting to 14
+                      # often fails in onnx.version_converter (axes_input_to_attribute assert).
+                      opset_version=18,
                       do_constant_folding=True,  # whether to execute constant folding for optimization
                       input_names=input_names,  # the model's input names
                       output_names=output_names,  # the model's output names

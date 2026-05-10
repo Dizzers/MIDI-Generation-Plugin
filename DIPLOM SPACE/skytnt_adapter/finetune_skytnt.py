@@ -36,7 +36,12 @@ import numpy as np
 import torch
 import lightning as pl
 from lightning.pytorch import Trainer
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, LearningRateMonitor
+from lightning.pytorch.callbacks import (
+    Callback,
+    EarlyStopping,
+    ModelCheckpoint,
+    LearningRateMonitor,
+)
 from lightning.pytorch.utilities.rank_zero import rank_zero_only
 from torch.utils.data import DataLoader
 
@@ -46,6 +51,56 @@ from train import MidiDataset, TrainMIDIModel, get_midi_list
 
 import torch.nn.functional as F
 from sklearn.metrics import f1_score, recall_score, precision_score
+
+
+def _ascii_progress_bar(fraction: float, width: int) -> str:
+    """TTY-free progress strip (new line per update; safe for Kaggle ``!python``)."""
+    if width <= 0:
+        return ""
+    fraction = max(0.0, min(1.0, float(fraction)))
+    filled = int(round(width * fraction))
+    return "[" + "#" * filled + "-" * (width - filled) + "]"
+
+
+class CompactTrainLogCallback(Callback):
+    """TTY-free progress: ASCII bar + loss when Lightning tqdm is off.
+
+    Uses plain ``print`` + newline only (no ``\\r``), so it does not spam thousands
+    of tqdm lines in Jupyter/Kaggle subprocesses without a real terminal.
+
+    Logs in ``on_before_optimizer_step`` (once per optimizer step, after grad
+    accumulation). ``on_train_batch_end`` + ``batch_idx`` is unreliable across
+    versions and produced duplicate lines at the same ``global_step``.
+    """
+
+    def __init__(self, every_n_steps: int, bar_width: int = 28) -> None:
+        self.every_n_steps = max(0, every_n_steps)
+        self.bar_width = max(0, int(bar_width))
+
+    @rank_zero_only
+    def on_before_optimizer_step(self, trainer, pl_module, optimizer) -> None:
+        if self.every_n_steps <= 0:
+            return
+        # After micro-batches, metrics reflect the last forward; global_step is the
+        # optimizer step index Lightning uses with max_steps.
+        s = int(trainer.global_step)
+        if s <= 0 or s % self.every_n_steps != 0:
+            return
+        loss = trainer.callback_metrics.get("train/loss")
+        if loss is None:
+            return
+        loss_f = float(loss.detach().item()) if torch.is_tensor(loss) else float(loss)
+        cap = trainer.max_steps
+        if not isinstance(cap, int) or cap <= 0:
+            cap = int(getattr(trainer, "estimated_stepping_batches", 0) or 0)
+        line = f"[finetune] step {s}"
+        if isinstance(cap, int) and cap > 0:
+            line += f"/{cap}"
+            if self.bar_width > 0:
+                pct = s / cap
+                line += f"  {_ascii_progress_bar(pct, self.bar_width)}  {100.0 * pct:5.1f}%"
+        line += f"  train_loss={loss_f:.4f}"
+        print(line, flush=True)
 
 
 class ExtendedTrainMIDIModel(TrainMIDIModel):
@@ -304,6 +359,23 @@ def main() -> None:
         help="Stop if val/loss does not improve for this many validation runs (0 = off)",
     )
     parser.add_argument(
+        "--no-progress-bar",
+        action="store_true",
+        help="Disable Lightning tqdm bars (avoids endless line-by-line scrolling in !python / no TTY).",
+    )
+    parser.add_argument(
+        "--progress-log-every",
+        type=int,
+        default=250,
+        help="With --no-progress-bar: log every N optimizer steps (0 = off; epoch lines still print).",
+    )
+    parser.add_argument(
+        "--progress-bar-width",
+        type=int,
+        default=28,
+        help="With --no-progress-bar: ASCII bar length (# vs -); 0 = step/loss only, no bar.",
+    )
+    parser.add_argument(
         "--min-file-bytes",
         type=int,
         default=3000,
@@ -446,6 +518,10 @@ def main() -> None:
                 verbose=True,
             )
         )
+    if opt.no_progress_bar and opt.progress_log_every > 0:
+        callbacks.append(
+            CompactTrainLogCallback(opt.progress_log_every, opt.progress_bar_width)
+        )
 
     trainer = Trainer(
         default_root_dir=opt.output,
@@ -457,6 +533,7 @@ def main() -> None:
         max_steps=opt.max_step,
         val_check_interval=opt.val_step or None,
         log_every_n_steps=10,
+        enable_progress_bar=not opt.no_progress_bar,
         callbacks=callbacks,
     )
     trainer.fit(model, train_dl, val_dl, ckpt_path=opt.resume or None)

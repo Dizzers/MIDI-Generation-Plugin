@@ -57,10 +57,24 @@ def _sample_top_p_k(probs: np.ndarray, p: float, k: int, rng: np.random.Generato
     cutoff_mask = np.zeros(probs_sort.shape[-1])
     cutoff_mask[:k] = 1
     probs_sort = probs_sort * cutoff_mask
-    probs_sort /= np.sum(probs_sort, axis=-1, keepdims=True) + 1e-12
+    axis_sum = np.sum(probs_sort, axis=-1, keepdims=True)
+    denom = np.maximum(axis_sum, 1e-12)
+    probs_sort = np.divide(probs_sort, denom, out=np.zeros_like(probs_sort), where=axis_sum > 0)
     flat_probs = probs_sort.reshape(-1, probs_sort.shape[-1])
     flat_idx = probs_idx.reshape(-1, probs_idx.shape[-1])
-    out = np.stack([rng.choice(idxs, p=pvals) for pvals, idxs in zip(flat_probs, flat_idx)])
+    choices = []
+    for pvals, idxs in zip(flat_probs, flat_idx):
+        pv = np.clip(np.asarray(pvals, dtype=np.float64), 0.0, None)
+        s = float(pv.sum())
+        if s <= 0.0 or not np.isfinite(s):
+            choices.append(int(idxs[0]))
+            continue
+        pv = pv / s
+        st = float(pv.sum())
+        if not np.isclose(st, 1.0, rtol=0.0, atol=1e-8):
+            pv = pv / st
+        choices.append(int(rng.choice(idxs, p=pv)))
+    out = np.stack(choices)
     return out.reshape(*probs_sort.shape[:-1])
 
 
@@ -167,7 +181,12 @@ def _generate_onnx(base_session, token_session, tokenizer, *,
                     "x": x.astype(np.int64)}
             feed.update(token_past_dict)
             outs = token_session.run(None, feed)
-            logits = outs[0]
+            logits = np.asarray(outs[0], dtype=np.float32)
+            # Match PyTorch `forward_token(... )[:, -1:]`: sample from the last timestep only.
+            if logits.ndim == 2:
+                logits = logits[:, None, :]
+            elif logits.ndim == 3 and logits.shape[1] > 1:
+                logits = logits[:, -1:, :]
             new_present = outs[1:]
             token_past_dict = {}
             for li in range(token_layers):
